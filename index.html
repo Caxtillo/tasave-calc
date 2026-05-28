@@ -2,7 +2,7 @@
 <html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TasaVes - Tasas de Cambio Venezuela</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -10,8 +10,10 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f0c1d; /* Fondo azul muy oscuro/morado */
+            background-color: #0f0c1d;
             color: #f3f0ff;
+            overflow: hidden; /* Evita el scroll global */
+            height: 100dvh; /* Altura dinámica del viewport */
         }
         .glass {
             background: rgba(30, 20, 50, 0.6);
@@ -23,12 +25,9 @@
             color: #a78bfa;
             text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
         }
-        .bg-purple-accent {
-            background-color: #a78bfa;
-        }
         .input-focus:focus {
             border-color: rgba(167, 139, 250, 0.5);
-            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.1);
         }
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -38,114 +37,117 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+        /* Ajuste para teclados móviles que desplazan el layout */
+        @media (max-height: 600px) {
+            h1 { font-size: 1.5rem !important; }
+            .rates-grid { gap: 0.5rem !important; }
+            .main-card { padding: 1rem !important; gap: 1rem !important; }
+            input { py: 3 !important; font-size: 1.5rem !important; }
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
+<body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d] flex items-center justify-center overflow-hidden">
 
-    <div id="app" class="w-full max-w-md">
+    <div id="app" class="w-full max-w-md h-full flex flex-col p-4 sm:p-6">
         <!-- Loading State -->
-        <div id="loading" class="flex flex-col items-center justify-center space-y-4 py-20">
+        <div id="loading" class="flex-1 flex flex-col items-center justify-center space-y-4">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-            <p class="text-purple-300 animate-pulse">Consultando tasas...</p>
+            <p class="text-purple-300 animate-pulse font-medium">Consultando tasas...</p>
         </div>
 
         <!-- Error State -->
-        <div id="error" class="hidden glass rounded-3xl p-8 text-center space-y-4">
-            <i data-lucide="alert-circle" class="mx-auto h-12 w-12 text-red-400"></i>
-            <h2 class="text-xl font-semibold text-purple-100">Error de conexión</h2>
-            <p class="text-purple-300/70">No pudimos conectar con el servidor de tasas. Revisa tu internet.</p>
-            <button onclick="location.reload()" class="w-full py-3 bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 rounded-xl transition-all border border-purple-500/30">Reintentar</button>
+        <div id="error" class="hidden flex-1 flex flex-col items-center justify-center space-y-6">
+            <div class="glass rounded-3xl p-8 text-center space-y-4 w-full">
+                <i data-lucide="alert-circle" class="mx-auto h-12 w-12 text-red-400"></i>
+                <h2 class="text-xl font-semibold text-purple-100">Error de conexión</h2>
+                <p class="text-purple-300/70">No pudimos conectar con el servidor.</p>
+                <button onclick="location.reload()" class="w-full py-3 bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 rounded-xl transition-all border border-purple-500/30">Reintentar</button>
+            </div>
         </div>
 
         <!-- Main Content -->
-        <div id="content" class="hidden space-y-6">
-            <!-- Header -->
-            <div class="text-center space-y-1">
-                <h1 class="text-4xl font-extrabold tracking-tight">Tasa<span class="purple-glow text-purple-400">Ves</span></h1>
-                <p id="last-update" class="text-[10px] text-purple-300/50 flex items-center justify-center gap-1 uppercase tracking-widest">
-                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+        <div id="content" class="hidden flex-1 flex flex-col justify-between">
+            <!-- Header (Top) -->
+            <header class="text-center py-2 shrink-0">
+                <h1 class="text-3xl font-extrabold tracking-tight">Tasa<span class="purple-glow text-purple-400">Ves</span></h1>
+                <p id="last-update" class="text-[9px] text-purple-300/40 flex items-center justify-center gap-1 uppercase tracking-widest mt-1">
+                    <i data-lucide="refresh-cw" class="w-2.5 h-2.5"></i>
                     Sincronizado
                 </p>
-            </div>
+            </header>
 
-            <!-- Rates Cards -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="glass rounded-2xl p-4 flex flex-col items-center justify-center space-y-1">
-                    <span class="text-[10px] uppercase tracking-widest text-purple-300/60 font-semibold">BCV Oficial</span>
-                    <div class="flex items-center gap-1">
-                        <span class="text-2xl font-bold text-white" id="rate-bcv">--.--</span>
-                    </div>
-                    <span class="text-[9px] text-purple-400/80 font-medium">VES/USD</span>
+            <!-- Rates Grid (Middle Top) -->
+            <div class="rates-grid grid grid-cols-2 gap-3 py-2 shrink-0">
+                <div class="glass rounded-2xl p-3 flex flex-col items-center justify-center">
+                    <span class="text-[9px] uppercase tracking-widest text-purple-300/50 font-bold mb-0.5">BCV Oficial</span>
+                    <span class="text-xl font-bold text-white leading-tight" id="rate-bcv">--.--</span>
+                    <span class="text-[8px] text-purple-400/60 font-medium">VES/USD</span>
                 </div>
-                <div class="glass rounded-2xl p-4 flex flex-col items-center justify-center space-y-1">
-                    <span class="text-[10px] uppercase tracking-widest text-purple-300/60 font-semibold">Binance P2P</span>
-                    <div class="flex items-center gap-1">
-                        <span class="text-2xl font-bold text-white" id="rate-binance">--.--</span>
-                    </div>
-                    <span class="text-[9px] text-purple-400/80 font-medium">VES/USDT</span>
+                <div class="glass rounded-2xl p-3 flex flex-col items-center justify-center">
+                    <span class="text-[9px] uppercase tracking-widest text-purple-300/50 font-bold mb-0.5">Binance P2P</span>
+                    <span class="text-xl font-bold text-white leading-tight" id="rate-binance">--.--</span>
+                    <span class="text-[8px] text-purple-400/60 font-medium">VES/USDT</span>
                 </div>
             </div>
 
-            <!-- Calculator Card -->
-            <div class="glass rounded-3xl p-6 space-y-6 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+            <!-- Calculator Card (Centerpiece) -->
+            <div class="main-card glass rounded-3xl p-5 flex flex-col gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)] mb-2">
                 <!-- Source Selector -->
-                <div class="flex bg-black/40 p-1.5 rounded-2xl">
-                    <button id="btn-bcv" onclick="setSource('bcv')" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-purple-400 text-purple-950 shadow-lg shadow-purple-500/20">
+                <div class="flex bg-black/40 p-1 rounded-xl">
+                    <button id="btn-bcv" onclick="setSource('bcv')" class="flex-1 py-2 text-[10px] font-black rounded-lg transition-all bg-purple-400 text-purple-950">
                         TASA BCV
                     </button>
-                    <button id="btn-binance" onclick="setSource('binance')" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-purple-300 hover:text-white">
+                    <button id="btn-binance" onclick="setSource('binance')" class="flex-1 py-2 text-[10px] font-black rounded-lg transition-all text-purple-300">
                         BINANCE P2P
                     </button>
                 </div>
 
                 <!-- Inputs -->
-                <div class="space-y-4">
-                    <div class="relative group">
-                        <label class="text-[10px] uppercase tracking-[0.15em] text-purple-300/60 ml-1 mb-2 block font-bold">Dólares (USD/USDT)</label>
+                <div class="flex-1 flex flex-col justify-center space-y-4 py-2">
+                    <div class="relative w-full">
+                        <label class="text-[9px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 mb-1.5 block font-bold">Dólares (USD/USDT)</label>
                         <div class="relative flex items-center">
-                            <span class="absolute left-5 text-purple-400 font-bold">$</span>
+                            <span class="absolute left-4 text-purple-400 font-bold text-lg">$</span>
                             <input type="number" id="input-usd" placeholder="0.00" step="0.01"
-                                class="w-full bg-black/40 border border-purple-500/10 rounded-2xl py-5 pl-10 pr-5 text-3xl font-bold text-white focus:outline-none input-focus transition-all placeholder:text-purple-900/50">
+                                class="w-full bg-black/40 border border-purple-500/10 rounded-2xl py-4 pl-10 pr-4 text-2xl font-bold text-white focus:outline-none input-focus transition-all placeholder:text-purple-900/30">
                         </div>
                     </div>
 
-                    <div class="flex justify-center -my-3 relative z-10">
-                        <div class="bg-purple-500/20 p-2.5 rounded-full border border-purple-500/30 backdrop-blur-sm">
-                            <i data-lucide="repeat" class="w-4 h-4 text-purple-300"></i>
+                    <div class="flex justify-center -my-4 relative z-10">
+                        <div class="bg-purple-950/80 p-1.5 rounded-full border border-purple-500/30 backdrop-blur-sm">
+                            <i data-lucide="arrow-down-up" class="w-3.5 h-3.5 text-purple-300"></i>
                         </div>
                     </div>
 
-                    <div class="relative group">
-                        <label class="text-[10px] uppercase tracking-[0.15em] text-purple-300/60 ml-1 mb-2 block font-bold">Bolívares (VES)</label>
+                    <div class="relative w-full">
+                        <label class="text-[9px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 mb-1.5 block font-bold">Bolívares (VES)</label>
                         <div class="relative flex items-center">
-                            <span class="absolute left-5 text-purple-400 font-bold text-sm">Bs</span>
+                            <span class="absolute left-4 text-purple-400 font-bold text-xs">Bs</span>
                             <input type="number" id="input-ves" placeholder="0.00" step="0.01"
-                                class="w-full bg-black/40 border border-purple-500/10 rounded-2xl py-5 pl-12 pr-5 text-3xl font-bold text-white focus:outline-none input-focus transition-all placeholder:text-purple-900/50">
+                                class="w-full bg-black/40 border border-purple-500/10 rounded-2xl py-4 pl-12 pr-4 text-2xl font-bold text-white focus:outline-none input-focus transition-all placeholder:text-purple-900/30">
                         </div>
                     </div>
                 </div>
 
-                <div class="pt-4 border-t border-purple-500/10">
-                    <p class="text-[10px] text-center text-purple-400/50 font-medium uppercase tracking-widest">
-                        Calculando con <span id="current-label" class="text-purple-300">Tasa BCV</span>
+                <div class="pt-2 border-t border-purple-500/10">
+                    <p class="text-[8px] text-center text-purple-400/40 font-bold uppercase tracking-[0.2em]">
+                        Calculadora con <span id="current-label" class="text-purple-300">Tasa BCV</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <footer class="text-center space-y-2 opacity-40">
-                <p class="text-[10px] uppercase tracking-[0.3em]">TasaVes v1.0</p>
+            <!-- Footer (Bottom) -->
+            <footer class="text-center py-2 shrink-0">
+                <p class="text-[8px] uppercase tracking-[0.4em] opacity-20 font-bold">TasaVes &bull; 2026</p>
             </footer>
         </div>
     </div>
 
     <script>
-        // State
         let rates = { bcv: 0, binance: 0 };
         let currentSource = 'bcv';
         let lastEdited = 'usd';
 
-        // Elements
         const loadingEl = document.getElementById('loading');
         const errorEl = document.getElementById('error');
         const contentEl = document.getElementById('content');
@@ -160,10 +162,17 @@
 
         lucide.createIcons();
 
+        // Prevents zooming on double tap in iOS
+        document.addEventListener('touchstart', function (event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
         async function fetchRates() {
             try {
                 const response = await fetch('https://ve.dolarapi.com/v1/dolares');
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
                 const results = Array.isArray(data) ? data : data.value;
 
@@ -171,12 +180,10 @@
                 const paraleloData = results.find(item => item.fuente === 'paralelo');
 
                 if (bcvData) rates.bcv = bcvData.promedio || bcvData.venta;
-                // We use 'paralelo' as the data source but label it 'Binance P2P' for the user
                 if (paraleloData) rates.binance = paraleloData.promedio || paraleloData.venta;
 
                 updateUI(bcvData?.fechaActualizacion || paraleloData?.fechaActualizacion);
             } catch (error) {
-                console.error('Error:', error);
                 loadingEl.classList.add('hidden');
                 errorEl.classList.remove('hidden');
             }
@@ -188,7 +195,7 @@
             
             if (dateString) {
                 const date = new Date(dateString);
-                lastUpdateEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3 h-3"></i> Datos al: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                lastUpdateEl.innerHTML = `<i data-lucide="check-circle-2" class="w-2.5 h-2.5"></i> ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
                 lucide.createIcons();
             }
 
@@ -198,50 +205,32 @@
 
         function setSource(source) {
             currentSource = source;
-            
             if (source === 'bcv') {
-                btnBcv.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-purple-400 text-purple-950 shadow-lg shadow-purple-500/20';
-                btnBinance.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-purple-300 hover:text-white';
+                btnBcv.className = 'flex-1 py-2 text-[10px] font-black rounded-lg transition-all bg-purple-400 text-purple-950';
+                btnBinance.className = 'flex-1 py-2 text-[10px] font-black rounded-lg transition-all text-purple-300';
                 currentLabel.textContent = 'Tasa BCV';
             } else {
-                btnBinance.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-purple-400 text-purple-950 shadow-lg shadow-purple-500/20';
-                btnBcv.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-purple-300 hover:text-white';
+                btnBinance.className = 'flex-1 py-2 text-[10px] font-black rounded-lg transition-all bg-purple-400 text-purple-950';
+                btnBcv.className = 'flex-1 py-2 text-[10px] font-black rounded-lg transition-all text-purple-300';
                 currentLabel.textContent = 'Binance P2P';
             }
-
             calculate(lastEdited);
         }
 
         function calculate(triggerField) {
             const rate = rates[currentSource];
             if (!rate || rate === 0) return;
-
             if (triggerField === 'usd') {
                 const val = parseFloat(inputUsd.value);
-                if (!isNaN(val)) {
-                    inputVes.value = (val * rate).toFixed(2);
-                } else {
-                    inputVes.value = '';
-                }
+                inputVes.value = !isNaN(val) ? (val * rate).toFixed(2) : '';
             } else {
                 const val = parseFloat(inputVes.value);
-                if (!isNaN(val)) {
-                    inputUsd.value = (val / rate).toFixed(2);
-                } else {
-                    inputUsd.value = '';
-                }
+                inputUsd.value = !isNaN(val) ? (val / rate).toFixed(2) : '';
             }
         }
 
-        inputUsd.addEventListener('input', () => {
-            lastEdited = 'usd';
-            calculate('usd');
-        });
-
-        inputVes.addEventListener('input', () => {
-            lastEdited = 'ves';
-            calculate('ves');
-        });
+        inputUsd.addEventListener('input', () => { lastEdited = 'usd'; calculate('usd'); });
+        inputVes.addEventListener('input', () => { lastEdited = 'ves'; calculate('ves'); });
 
         fetchRates();
     </script>
