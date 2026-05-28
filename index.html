@@ -200,8 +200,19 @@
         
         const currentLabel = document.getElementById('current-label');
         const installBtn = document.getElementById('install-btn');
+        const refreshBtnIcon = document.querySelector('#refresh-btn i');
 
         lucide.createIcons();
+
+        // Manual Refresh with animation
+        async function manualRefresh() {
+            if (refreshBtnIcon) refreshBtnIcon.classList.add('animate-spin');
+            lastUpdateEl.textContent = 'Actualizando...';
+            await fetchRates();
+            setTimeout(() => {
+                if (refreshBtnIcon) refreshBtnIcon.classList.remove('animate-spin');
+            }, 500);
+        }
 
         // PWA Install Logic
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -308,14 +319,6 @@
                 navigator.serviceWorker.register('./sw.js')
                     .then(reg => console.log('SW registered'))
                     .catch(err => console.log('SW error', err));
-            });
-        }
-
-        fetchRates();
-    </script>
-</body>
-</html>
- => console.log('SW error', err));
             });
         }
 
