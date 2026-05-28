@@ -1,0 +1,17 @@
+{
+  "name": "TasaVes",
+  "short_name": "TasaVes",
+  "description": "Calculadora de tasas de cambio para Venezuela",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f0c1d",
+  "theme_color": "#a78bfa",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3045/3045387.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
