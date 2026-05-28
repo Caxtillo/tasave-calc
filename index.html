@@ -78,11 +78,11 @@
                     <span class="text-[9px] text-purple-400/80 font-medium">VES/USD</span>
                 </div>
                 <div class="glass rounded-2xl p-4 flex flex-col items-center justify-center space-y-1">
-                    <span class="text-[10px] uppercase tracking-widest text-purple-300/60 font-semibold">Paralelo</span>
+                    <span class="text-[10px] uppercase tracking-widest text-purple-300/60 font-semibold">Binance P2P</span>
                     <div class="flex items-center gap-1">
-                        <span class="text-2xl font-bold text-white" id="rate-paralelo">--.--</span>
+                        <span class="text-2xl font-bold text-white" id="rate-binance">--.--</span>
                     </div>
-                    <span class="text-[9px] text-purple-400/80 font-medium">VES/USD</span>
+                    <span class="text-[9px] text-purple-400/80 font-medium">VES/USDT</span>
                 </div>
             </div>
 
@@ -91,17 +91,17 @@
                 <!-- Source Selector -->
                 <div class="flex bg-black/40 p-1.5 rounded-2xl">
                     <button id="btn-bcv" onclick="setSource('bcv')" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-purple-400 text-purple-950 shadow-lg shadow-purple-500/20">
-                        USAR BCV
+                        TASA BCV
                     </button>
-                    <button id="btn-paralelo" onclick="setSource('paralelo')" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-purple-300 hover:text-white">
-                        PARALELO
+                    <button id="btn-binance" onclick="setSource('binance')" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-purple-300 hover:text-white">
+                        BINANCE P2P
                     </button>
                 </div>
 
                 <!-- Inputs -->
                 <div class="space-y-4">
                     <div class="relative group">
-                        <label class="text-[10px] uppercase tracking-[0.15em] text-purple-300/60 ml-1 mb-2 block font-bold">Dólares (USD)</label>
+                        <label class="text-[10px] uppercase tracking-[0.15em] text-purple-300/60 ml-1 mb-2 block font-bold">Dólares (USD/USDT)</label>
                         <div class="relative flex items-center">
                             <span class="absolute left-5 text-purple-400 font-bold">$</span>
                             <input type="number" id="input-usd" placeholder="0.00" step="0.01"
@@ -127,7 +127,7 @@
 
                 <div class="pt-4 border-t border-purple-500/10">
                     <p class="text-[10px] text-center text-purple-400/50 font-medium uppercase tracking-widest">
-                        Calculando con tasa <span id="current-label" class="text-purple-300">BCV</span>
+                        Calculando con <span id="current-label" class="text-purple-300">Tasa BCV</span>
                     </p>
                 </div>
             </div>
@@ -141,7 +141,7 @@
 
     <script>
         // State
-        let rates = { bcv: 0, paralelo: 0 };
+        let rates = { bcv: 0, binance: 0 };
         let currentSource = 'bcv';
         let lastEdited = 'usd';
 
@@ -150,12 +150,12 @@
         const errorEl = document.getElementById('error');
         const contentEl = document.getElementById('content');
         const rateBcvEl = document.getElementById('rate-bcv');
-        const rateParaleloEl = document.getElementById('rate-paralelo');
+        const rateBinanceEl = document.getElementById('rate-binance');
         const lastUpdateEl = document.getElementById('last-update');
         const inputUsd = document.getElementById('input-usd');
         const inputVes = document.getElementById('input-ves');
         const btnBcv = document.getElementById('btn-bcv');
-        const btnParalelo = document.getElementById('btn-paralelo');
+        const btnBinance = document.getElementById('btn-binance');
         const currentLabel = document.getElementById('current-label');
 
         lucide.createIcons();
@@ -171,7 +171,8 @@
                 const paraleloData = results.find(item => item.fuente === 'paralelo');
 
                 if (bcvData) rates.bcv = bcvData.promedio || bcvData.venta;
-                if (paraleloData) rates.paralelo = paraleloData.promedio || paraleloData.venta;
+                // We use 'paralelo' as the data source but label it 'Binance P2P' for the user
+                if (paraleloData) rates.binance = paraleloData.promedio || paraleloData.venta;
 
                 updateUI(bcvData?.fechaActualizacion || paraleloData?.fechaActualizacion);
             } catch (error) {
@@ -183,7 +184,7 @@
 
         function updateUI(dateString) {
             rateBcvEl.textContent = rates.bcv.toFixed(2);
-            rateParaleloEl.textContent = rates.paralelo.toFixed(2);
+            rateBinanceEl.textContent = rates.binance.toFixed(2);
             
             if (dateString) {
                 const date = new Date(dateString);
@@ -200,12 +201,12 @@
             
             if (source === 'bcv') {
                 btnBcv.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-purple-400 text-purple-950 shadow-lg shadow-purple-500/20';
-                btnParalelo.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-purple-300 hover:text-white';
-                currentLabel.textContent = 'BCV';
+                btnBinance.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-purple-300 hover:text-white';
+                currentLabel.textContent = 'Tasa BCV';
             } else {
-                btnParalelo.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-purple-400 text-purple-950 shadow-lg shadow-purple-500/20';
+                btnBinance.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all bg-purple-400 text-purple-950 shadow-lg shadow-purple-500/20';
                 btnBcv.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all text-purple-300 hover:text-white';
-                currentLabel.textContent = 'Paralelo';
+                currentLabel.textContent = 'Binance P2P';
             }
 
             calculate(lastEdited);
