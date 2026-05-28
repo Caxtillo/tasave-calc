@@ -85,10 +85,14 @@
             <!-- Header -->
             <header class="text-center shrink-0 relative">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Tasa<span class="purple-glow text-purple-400">Ves</span></h1>
-                <p id="last-update" class="text-[8px] text-purple-300/40 flex items-center justify-center gap-1 uppercase tracking-widest mt-0.5">
-                    <i data-lucide="refresh-cw" class="w-2.5 h-2.5"></i>
-                    Sincronizando...
-                </p>
+                <div class="flex items-center justify-center gap-2 mt-0.5">
+                    <p id="last-update" class="text-[8px] text-purple-300/40 uppercase tracking-widest">
+                        Sincronizando...
+                    </p>
+                    <button onclick="manualRefresh()" id="refresh-btn" class="p-1 hover:bg-purple-500/10 rounded-full transition-colors group">
+                        <i data-lucide="refresh-cw" class="w-3 h-3 text-purple-400/50 group-active:rotate-180 transition-transform duration-500"></i>
+                    </button>
+                </div>
                 
                 <button id="install-btn" class="hidden absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-purple-500/20 rounded-full border border-purple-500/30 text-purple-300">
                     <i data-lucide="download" class="w-4 h-4"></i>
@@ -304,6 +308,14 @@
                 navigator.serviceWorker.register('./sw.js')
                     .then(reg => console.log('SW registered'))
                     .catch(err => console.log('SW error', err));
+            });
+        }
+
+        fetchRates();
+    </script>
+</body>
+</html>
+ => console.log('SW error', err));
             });
         }
 
