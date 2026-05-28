@@ -197,7 +197,8 @@
         const contentEl = document.getElementById('content');
         const rateBcvEl = document.getElementById('rate-bcv');
         const rateBinanceEl = document.getElementById('rate-binance');
-        const lastUpdateEl = document.getElementById('last-update');
+        const lastDateEl = document.getElementById('last-date');
+        const lastTimeEl = document.getElementById('last-time');
         const inputUsd = document.getElementById('input-usd');
         const inputVes = document.getElementById('input-ves');
         const inputCustomRate = document.getElementById('input-custom-rate');
@@ -216,7 +217,8 @@
         // Manual Refresh with animation
         async function manualRefresh() {
             if (refreshBtnIcon) refreshBtnIcon.classList.add('animate-spin');
-            lastUpdateEl.textContent = 'Actualizando...';
+            lastDateEl.textContent = 'Actualizando...';
+            lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> --:--';
             await fetchRates();
             setTimeout(() => {
                 if (refreshBtnIcon) refreshBtnIcon.classList.remove('animate-spin');
@@ -267,8 +269,11 @@
             
             if (dateString) {
                 const date = new Date(dateString);
-                lastUpdateEl.innerHTML = `<i data-lucide="check-circle-2" class="w-2.5 h-2.5"></i> ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-                lucide.createIcons();
+                const optionsDate = { day: '2-digit', month: 'long', year: 'numeric' };
+                const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
+                
+                lastDateEl.textContent = date.toLocaleDateString('es-VE', optionsDate);
+                lastTimeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ${date.toLocaleTimeString('es-VE', optionsTime)}`;
             }
 
             loadingEl.classList.add('hidden');
