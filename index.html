@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TasaVe Calc - Tasas de Cambio Venezuela</title>
+    <title>TasaVes - Tasas de Cambio Venezuela</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -45,7 +45,7 @@
             <p class="text-gray-400 animate-pulse">Cargando tasas actualizadas...</p>
         </div>
 
-        <!-- Error State (Hidden by default) -->
+        <!-- Error State -->
         <div id="error" class="hidden glass rounded-3xl p-8 text-center space-y-4">
             <i data-lucide="alert-circle" class="mx-auto h-12 w-12 text-red-500"></i>
             <h2 class="text-xl font-semibold">Error al cargar datos</h2>
@@ -53,11 +53,11 @@
             <button onclick="location.reload()" class="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all">Reintentar</button>
         </div>
 
-        <!-- Main Content (Hidden until data loaded) -->
+        <!-- Main Content -->
         <div id="content" class="hidden space-y-6">
             <!-- Header -->
             <div class="text-center space-y-1">
-                <h1 class="text-3xl font-bold tracking-tight">TasaVe <span class="neon-green">Calc</span></h1>
+                <h1 class="text-3xl font-bold tracking-tight">Tasa<span class="neon-green">Ves</span></h1>
                 <p id="last-update" class="text-xs text-gray-500 flex items-center justify-center gap-1">
                     <i data-lucide="clock" class="w-3 h-3"></i>
                     Actualizado en tiempo real
@@ -74,9 +74,9 @@
                     </div>
                 </div>
                 <div class="glass rounded-2xl p-4 flex flex-col items-center justify-center space-y-1 border-green-500/20">
-                    <span class="text-[10px] uppercase tracking-widest text-gray-400 font-medium">Binance P2P</span>
+                    <span class="text-[10px] uppercase tracking-widest text-gray-400 font-medium">Paralelo</span>
                     <div class="flex items-center gap-1">
-                        <span class="text-xl font-bold" id="rate-binance">--.--</span>
+                        <span class="text-xl font-bold" id="rate-paralelo">--.--</span>
                         <span class="text-[10px] text-gray-500">VES</span>
                     </div>
                 </div>
@@ -89,15 +89,15 @@
                     <button id="btn-bcv" onclick="setSource('bcv')" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-neon-green text-black">
                         Tasa BCV
                     </button>
-                    <button id="btn-binance" onclick="setSource('binance')" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all text-gray-400 hover:text-white">
-                        Binance P2P
+                    <button id="btn-paralelo" onclick="setSource('paralelo')" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all text-gray-400 hover:text-white">
+                        Paralelo
                     </button>
                 </div>
 
                 <!-- Inputs -->
                 <div class="space-y-4">
                     <div class="relative">
-                        <label class="text-[10px] uppercase tracking-widest text-gray-500 ml-1 mb-1 block font-semibold">Dólares (USD/USDT)</label>
+                        <label class="text-[10px] uppercase tracking-widest text-gray-500 ml-1 mb-1 block font-semibold">Dólares (USD)</label>
                         <div class="relative flex items-center">
                             <span class="absolute left-4 text-gray-400 font-medium">$</span>
                             <input type="number" id="input-usd" placeholder="0.00" step="0.01"
@@ -123,21 +123,21 @@
 
                 <div class="pt-2">
                     <p class="text-[10px] text-center text-gray-500">
-                        Los cálculos se basan en la tasa de <span id="current-label">BCV</span> seleccionada.
+                        Los cálculos se basan en la tasa <span id="current-label">BCV</span>.
                     </p>
                 </div>
             </div>
 
             <!-- Footer -->
             <footer class="text-center text-[10px] text-gray-600 uppercase tracking-[0.2em] pt-4">
-                &copy; 2026 TasaVe Calc &bull; Vercel Deployment
+                &copy; 2026 TasaVes &bull; Vercel Deployment
             </footer>
         </div>
     </div>
 
     <script>
         // State
-        let rates = { bcv: 0, binance: 0 };
+        let rates = { bcv: 0, paralelo: 0 };
         let currentSource = 'bcv';
         let lastEdited = 'usd';
 
@@ -146,12 +146,12 @@
         const errorEl = document.getElementById('error');
         const contentEl = document.getElementById('content');
         const rateBcvEl = document.getElementById('rate-bcv');
-        const rateBinanceEl = document.getElementById('rate-binance');
+        const rateParaleloEl = document.getElementById('rate-paralelo');
         const lastUpdateEl = document.getElementById('last-update');
         const inputUsd = document.getElementById('input-usd');
         const inputVes = document.getElementById('input-ves');
         const btnBcv = document.getElementById('btn-bcv');
-        const btnBinance = document.getElementById('btn-binance');
+        const btnParalelo = document.getElementById('btn-paralelo');
         const currentLabel = document.getElementById('current-label');
 
         // Initialize Lucide
@@ -164,13 +164,17 @@
                 if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
 
-                const bcvData = data.find(item => item.source === 'bcv');
-                const binanceData = data.find(item => item.source === 'binance');
+                // Note: The API returns an array, sometimes directly, sometimes in a 'value' property 
+                // depending on the fetch environment.
+                const results = Array.isArray(data) ? data : data.value;
+
+                const bcvData = results.find(item => item.fuente === 'oficial');
+                const paraleloData = results.find(item => item.fuente === 'paralelo');
 
                 if (bcvData) rates.bcv = bcvData.promedio || bcvData.venta;
-                if (binanceData) rates.binance = binanceData.promedio || binanceData.venta;
+                if (paraleloData) rates.paralelo = paraleloData.promedio || paraleloData.venta;
 
-                updateUI(bcvData?.fechaActualizacion);
+                updateUI(bcvData?.fechaActualizacion || paraleloData?.fechaActualizacion);
             } catch (error) {
                 console.error('Fetch error:', error);
                 loadingEl.classList.add('hidden');
@@ -180,11 +184,11 @@
 
         function updateUI(dateString) {
             rateBcvEl.textContent = rates.bcv.toFixed(2);
-            rateBinanceEl.textContent = rates.binance.toFixed(2);
+            rateParaleloEl.textContent = rates.paralelo.toFixed(2);
             
             if (dateString) {
                 const date = new Date(dateString);
-                lastUpdateEl.innerHTML = `<i data-lucide="clock" class="w-3 h-3"></i> Actualizado: ${date.toLocaleTimeString()}`;
+                lastUpdateEl.innerHTML = `<i data-lucide="clock" class="w-3 h-3"></i> Actualizado: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
                 lucide.createIcons();
             }
 
@@ -198,12 +202,12 @@
             // Update UI buttons
             if (source === 'bcv') {
                 btnBcv.className = 'flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-neon-green text-black';
-                btnBinance.className = 'flex-1 py-2 text-sm font-medium rounded-lg transition-all text-gray-400 hover:text-white';
+                btnParalelo.className = 'flex-1 py-2 text-sm font-medium rounded-lg transition-all text-gray-400 hover:text-white';
                 currentLabel.textContent = 'BCV';
             } else {
-                btnBinance.className = 'flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-neon-green text-black';
+                btnParalelo.className = 'flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-neon-green text-black';
                 btnBcv.className = 'flex-1 py-2 text-sm font-medium rounded-lg transition-all text-gray-400 hover:text-white';
-                currentLabel.textContent = 'Binance';
+                currentLabel.textContent = 'Paralelo';
             }
 
             // Recalculate based on last edited field
@@ -212,7 +216,7 @@
 
         function calculate(triggerField) {
             const rate = rates[currentSource];
-            if (!rate) return;
+            if (!rate || rate === 0) return;
 
             if (triggerField === 'usd') {
                 const val = parseFloat(inputUsd.value);
