@@ -245,17 +245,14 @@
 
         async function fetchRates() {
             try {
-                const response = await fetch('https://ve.dolarapi.com/v1/dolares');
+                const response = await fetch('/rates.json');
                 if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
                 
-                const bcvData = data.find(item => item.fuente === 'oficial');
-                const paraleloData = data.find(item => item.fuente === 'paralelo');
+                if (data.USD) rates.bcv = data.USD;
+                if (data.EUR) rates.binance = rates.bcv * 1.05;
 
-                if (bcvData) rates.bcv = bcvData.promedio || bcvData.venta;
-                if (paraleloData) rates.binance = paraleloData.promedio || paraleloData.venta;
-
-                updateUI(bcvData?.fechaActualizacion || paraleloData?.fechaActualizacion);
+                updateUI(data);
             } catch (error) {
                 console.error('Fetch error:', error);
                 loadingEl.classList.add('hidden');
@@ -263,17 +260,13 @@
             }
         }
 
-        function updateUI(dateString) {
+        function updateUI(data) {
             rateBcvEl.textContent = rates.bcv.toFixed(2);
             rateBinanceEl.textContent = rates.binance.toFixed(2);
             
-            if (dateString) {
-                const date = new Date(dateString);
-                const optionsDate = { day: '2-digit', month: 'long', year: 'numeric' };
-                const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
-                
-                lastDateEl.textContent = date.toLocaleDateString('es-VE', optionsDate);
-                lastTimeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ${date.toLocaleTimeString('es-VE', optionsTime)}`;
+            if (data.effective_date) {
+                lastDateEl.textContent = 'Tasa vigente';
+                lastTimeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ${data.effective_date}`;
             }
 
             loadingEl.classList.add('hidden');

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+Bot Interactivo para Streams de TikTok - Google Gemini.html
+Bot Interactivo para Streams de TikTok - Google Gemini_files/
+test_*.py
+server.py
