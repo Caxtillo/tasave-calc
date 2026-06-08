@@ -377,9 +377,12 @@
         function triggerCalc() {
             calculate(lastEdited);
             focusInput(lastEdited);
-            const base = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--input-fs'));
-            autoSize(inputUsd, base);
-            autoSize(inputVes, base);
+            autoSize(inputUsd, '--input-fs');
+            autoSize(inputVes, '--input-fs');
+        }
+
+        function manualRefresh() {
+            location.reload();
         }
 
         function manualRefresh() {
@@ -426,10 +429,9 @@
             rateBcvEl.textContent = rates.bcv > 0 ? rates.bcv.toFixed(2) : '--.--';
             rateBinanceEl.textContent = rates.binance > 0 ? rates.binance.toFixed(2) : '--.--';
             ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
-            const rBase = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rate-value'));
-            autoSizeRate(rateBcvEl, rBase);
-            autoSizeRate(rateBinanceEl, rBase);
-            autoSizeRate(ratePropiaEl, rBase);
+            autoSizeRate(rateBcvEl, '--rate-value');
+            autoSizeRate(rateBinanceEl, '--rate-value');
+            autoSizeRate(ratePropiaEl, '--rate-value');
             if (data && data.effective_date) {
                 lastDateEl.textContent = data.effective_date;
                 lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Vigente';
@@ -463,7 +465,9 @@
             calculate(source === 'custom' ? 'custom' : lastEdited);
         }
 
-        function autoSize(el, base) {
+        function autoSize(el, varName) {
+            const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            const base = raw.endsWith('rem') ? parseFloat(raw) * 16 : parseFloat(raw);
             const len = el.value.length;
             let scale = 1;
             if (len > 12) scale = 0.55;
@@ -472,7 +476,9 @@
             el.style.fontSize = (base * scale) + 'px';
         }
 
-        function autoSizeRate(el, base) {
+        function autoSizeRate(el, varName) {
+            const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            const base = raw.endsWith('rem') ? parseFloat(raw) * 16 : parseFloat(raw);
             const len = el.textContent.length;
             let scale = 1;
             if (len > 9) scale = 0.6;
@@ -495,8 +501,7 @@
             let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
             rates.custom = parseFloat(inputCustomRate.value) || 0;
             ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
-            const rBase = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rate-value'));
-            autoSizeRate(ratePropiaEl, rBase);
+            autoSizeRate(ratePropiaEl, '--rate-value');
 
             if (!rate || isNaN(rate) || rate === 0) {
                 if (triggerField === 'usd' || triggerField === 'custom') inputVes.value = '';
@@ -504,15 +509,14 @@
                 return;
             }
 
-            const iBase = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--input-fs'));
             if (triggerField === 'usd' || triggerField === 'custom') {
                 const val = parseSum(inputUsd.value);
                 inputVes.value = !isNaN(val) ? (val * rate).toFixed(2) : '';
-                autoSize(inputVes, iBase);
+                autoSize(inputVes, '--input-fs');
             } else {
                 const val = parseSum(inputVes.value);
                 inputUsd.value = !isNaN(val) ? (val / rate).toFixed(2) : '';
-                autoSize(inputUsd, iBase);
+                autoSize(inputUsd, '--input-fs');
             }
         }
 
