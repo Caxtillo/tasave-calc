@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TasaVes - Tasas de Cambio Venezuela</title>
     
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f0c1d">
     <meta name="mobile-web-app-capable" content="yes">
@@ -25,6 +24,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: manipulation;
         }
         .glass {
             background: rgba(30, 20, 50, 0.6);
@@ -36,153 +36,151 @@
             color: #a78bfa;
             text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
         }
-        .input-focus:focus {
-            border-color: rgba(167, 139, 250, 0.5);
-            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.1);
-        }
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
         .main-container {
-            height: auto;
-            max-height: 100dvh;
+            height: 100dvh;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.5rem;
+            padding: 0.5rem;
         }
-        @media (min-width: 640px) {
-            .main-container {
-                gap: 1.25rem;
-            }
+        .keypad-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            background: rgba(30, 20, 50, 0.5);
+            border: 1px solid rgba(167, 139, 250, 0.15);
+            color: #f3f0ff;
+            transition: all 100ms;
+            user-select: none;
+            -webkit-user-select: none;
+            min-height: 0;
+        }
+        .keypad-btn:active {
+            background: rgba(167, 139, 250, 0.25);
+            transform: scale(0.96);
+        }
+        .keypad-btn-op {
+            background: rgba(167, 139, 250, 0.15);
+            border-color: rgba(167, 139, 250, 0.3);
+            color: #a78bfa;
+        }
+        .keypad-btn-large {
+            grid-column: span 2;
+        }
+        .input-highlight {
+            border-color: rgba(167, 139, 250, 0.5);
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.15);
         }
     </style>
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
 
-    <div id="app" class="w-full max-w-md main-container p-4 sm:p-6">
-        <!-- Loading State -->
+    <div id="app" class="w-full max-w-md mx-auto main-container">
         <div id="loading" class="fixed inset-0 z-50 bg-[#0f0c1d] flex flex-col items-center justify-center space-y-4">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             <p class="text-purple-300 animate-pulse font-medium">Consultando tasas actualizadas...</p>
         </div>
 
-        <!-- Error State -->
-        <div id="error" class="hidden flex-1 flex flex-col items-center justify-center space-y-4">
-            <div class="glass rounded-3xl p-6 text-center space-y-4 w-full">
+        <div id="error" class="hidden fixed inset-0 z-50 bg-[#0f0c1d] flex flex-col items-center justify-center space-y-4">
+            <div class="glass rounded-3xl p-6 text-center space-y-4 w-11/12 max-w-sm">
                 <i data-lucide="alert-circle" class="mx-auto h-10 w-10 text-red-400"></i>
                 <h2 class="text-xl font-semibold text-purple-100">Error de conexión</h2>
                 <button onclick="location.reload()" class="w-full py-3 bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 rounded-xl transition-all border border-purple-500/30">Reintentar</button>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div id="content" class="hidden contents">
-            <!-- Header -->
-            <header class="relative pt-2 pb-1 shrink-0">
-                <div class="flex items-center justify-between mb-1">
-                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+        <div id="content" class="hidden flex flex-col h-full">
+            <header class="shrink-0">
+                <div class="flex items-center justify-between mb-0.5">
+                    <h1 class="text-2xl font-extrabold">
                         Tasa<span class="purple-glow text-purple-400">Ves</span>
                     </h1>
-                    <button onclick="manualRefresh()" id="refresh-btn" class="p-2 bg-purple-500/10 hover:bg-purple-500/20 rounded-xl transition-all group border border-purple-500/20">
-                        <i data-lucide="refresh-cw" class="w-5 h-5 text-purple-400 group-active:rotate-180 transition-transform duration-500"></i>
+                    <button onclick="manualRefresh()" id="refresh-btn" class="p-1.5 bg-purple-500/10 hover:bg-purple-500/20 rounded-xl transition-all border border-purple-500/20">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-400"></i>
                     </button>
                 </div>
-                
-                <div id="update-info" class="flex flex-col items-start space-y-0.5 border-l-2 border-purple-500/30 pl-3 py-1">
-                    <p id="last-date" class="text-[10px] text-purple-300/60 uppercase tracking-[0.2em] font-bold">
-                        Cargando fecha...
-                    </p>
-                    <p id="last-time" class="text-[14px] text-purple-300 uppercase tracking-widest font-black flex items-center gap-1.5">
+                <div id="update-info" class="flex items-center gap-2 border-l-2 border-purple-500/30 pl-2 py-0.5 mb-1">
+                    <p id="last-date" class="text-[9px] text-purple-300/60 uppercase tracking-[0.2em] font-bold">Cargando...</p>
+                    <span class="text-purple-500/40">|</span>
+                    <p id="last-time" class="text-[11px] text-purple-300 uppercase tracking-widest font-black flex items-center gap-1">
                         <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
-                        --:-- --
+                        --:--
                     </p>
                 </div>
-                
-                <button id="install-btn" class="hidden absolute left-1/2 -top-2 -translate-x-1/2 px-4 py-1 bg-purple-500 text-purple-950 text-[10px] font-black rounded-full shadow-lg shadow-purple-500/20">
+                <button id="install-btn" class="hidden absolute left-1/2 top-1 -translate-x-1/2 px-4 py-0.5 bg-purple-500 text-purple-950 text-[9px] font-black rounded-full shadow-lg shadow-purple-500/20">
                     INSTALAR APP
                 </button>
             </header>
 
-            <!-- Rates Grid -->
-            <div class="rates-grid grid grid-cols-2 gap-2 sm:gap-3 shrink-0">
-                <div class="glass rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center">
-                    <span class="text-[8px] uppercase tracking-widest text-purple-300/50 font-bold mb-0.5">BCV Oficial</span>
-                    <span class="text-lg sm:text-xl font-bold text-white leading-tight" id="rate-bcv">--.--</span>
-                    <span class="text-[7px] text-purple-400/60 font-medium uppercase">Bs. por USD</span>
+            <div class="grid grid-cols-2 gap-1.5 shrink-0 mb-1">
+                <div class="glass rounded-2xl p-2 flex flex-col items-center justify-center">
+                    <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">BCV Oficial</span>
+                    <span class="text-base font-bold text-white leading-tight" id="rate-bcv">--.--</span>
+                    <span class="text-[6px] text-purple-400/60 font-medium">Bs/USD</span>
                 </div>
-                <div class="glass rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center">
-                    <span class="text-[8px] uppercase tracking-widest text-purple-300/50 font-bold mb-0.5">Binance P2P</span>
-                    <span class="text-lg sm:text-xl font-bold text-white leading-tight" id="rate-binance">--.--</span>
-                    <span class="text-[7px] text-purple-400/60 font-medium uppercase">Bs. por USDT</span>
-                </div>
-            </div>
-
-            <!-- Calculator Card -->
-            <div class="main-card glass rounded-3xl p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-                <div class="flex bg-black/40 p-1 rounded-xl">
-                    <button id="btn-bcv" onclick="setSource('bcv')" class="flex-1 py-1.5 text-[9px] font-black rounded-lg transition-all bg-purple-400 text-purple-950">
-                        BCV
-                    </button>
-                    <button id="btn-binance" onclick="setSource('binance')" class="flex-1 py-1.5 text-[9px] font-black rounded-lg transition-all text-purple-300">
-                        BINANCE
-                    </button>
-                    <button id="btn-custom" onclick="setSource('custom')" class="flex-1 py-1.5 text-[9px] font-black rounded-lg transition-all text-purple-300">
-                        PROPIA
-                    </button>
-                </div>
-
-                <div class="flex flex-col space-y-3">
-                    <div class="relative w-full">
-                        <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 mb-1 block font-bold">Dólares (USD)</label>
-                        <div class="relative flex items-center">
-                            <span class="absolute left-4 text-purple-400 font-bold text-base">$</span>
-                            <input type="text" id="input-usd" placeholder="0.00 o 9+2+4+3..." inputmode="decimal"
-                                class="w-full bg-black/40 border border-purple-500/10 rounded-xl py-3 pl-10 pr-4 text-xl font-bold text-white focus:outline-none input-focus transition-all placeholder:text-purple-900/30">
-                        </div>
-                    </div>
-
-                    <div class="flex justify-center -my-3 relative z-10">
-                        <div class="bg-purple-950/80 p-1 rounded-full border border-purple-500/30 backdrop-blur-sm">
-                            <i data-lucide="arrow-down-up" class="w-3 h-3 text-purple-300"></i>
-                        </div>
-                    </div>
-
-                    <div class="relative w-full">
-                        <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 mb-1 block font-bold">Bolívares (VES)</label>
-                        <div class="relative flex items-center">
-                            <span class="absolute left-4 text-purple-400 font-bold text-xs">Bs</span>
-                            <input type="text" id="input-ves" placeholder="0.00 o 100+200..." inputmode="decimal"
-                                class="w-full bg-black/40 border border-purple-500/10 rounded-xl py-3 pl-12 pr-4 text-xl font-bold text-white focus:outline-none input-focus transition-all placeholder:text-purple-900/30">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Custom Rate Input (Conditional) -->
-                <div id="custom-rate-container" class="hidden pt-2 border-t border-purple-500/10">
-                    <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 mb-1 block font-bold">Tu Tasa Personalizada</label>
-                    <div class="relative flex items-center">
-                        <span class="absolute left-4 text-purple-400 font-bold text-[10px]">Bs/$</span>
-                        <input type="number" id="input-custom-rate" placeholder="Introduce tu tasa" step="0.01"
-                            class="w-full bg-purple-500/5 border border-purple-500/20 rounded-xl py-2 pl-14 pr-4 text-sm font-bold text-purple-100 focus:outline-none input-focus transition-all">
-                    </div>
-                </div>
-
-                <div class="pt-1 border-t border-purple-500/10">
-                    <p class="text-[7px] text-center text-purple-400/40 font-bold uppercase tracking-[0.2em]">
-                        Calculando con <span id="current-label" class="text-purple-300">Tasa BCV</span>
-                    </p>
+                <div class="glass rounded-2xl p-2 flex flex-col items-center justify-center">
+                    <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">Binance P2P</span>
+                    <span class="text-base font-bold text-white leading-tight" id="rate-binance">--.--</span>
+                    <span class="text-[6px] text-purple-400/60 font-medium">Bs/USDT</span>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <footer class="text-center py-1 shrink-0">
-                <p class="text-[7px] uppercase tracking-[0.4em] opacity-20 font-bold">TasaVes &bull; 2026</p>
-            </footer>
+            <div class="glass rounded-3xl p-3 flex flex-col gap-2 shrink-0">
+                <div class="flex bg-black/40 p-0.5 rounded-xl">
+                    <button id="btn-bcv" onclick="setSource('bcv')" class="flex-1 py-1 text-[8px] font-black rounded-lg bg-purple-400 text-purple-950">BCV</button>
+                    <button id="btn-binance" onclick="setSource('binance')" class="flex-1 py-1 text-[8px] font-black rounded-lg text-purple-300">BINANCE</button>
+                    <button id="btn-custom" onclick="setSource('custom')" class="flex-1 py-1 text-[8px] font-black rounded-lg text-purple-300">PROPIA</button>
+                </div>
+
+                <div class="space-y-2">
+                    <div>
+                        <label class="text-[7px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 font-bold">Dólares (USD)</label>
+                        <input type="text" id="input-usd" readonly
+                            class="w-full bg-black/40 border border-purple-500/10 rounded-xl py-2.5 px-3 text-lg font-bold text-white outline-none transition-all placeholder:text-purple-900/30 cursor-default">
+                    </div>
+                    <div class="flex justify-center -my-2 relative z-10">
+                        <div class="bg-purple-950/80 p-0.5 rounded-full border border-purple-500/30 backdrop-blur-sm">
+                            <i data-lucide="arrow-down-up" class="w-2.5 h-2.5 text-purple-300"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[7px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 font-bold">Bolívares (VES)</label>
+                        <input type="text" id="input-ves" readonly
+                            class="w-full bg-black/40 border border-purple-500/10 rounded-xl py-2.5 px-3 text-lg font-bold text-white outline-none transition-all placeholder:text-purple-900/30 cursor-default">
+                    </div>
+                </div>
+
+                <div id="custom-rate-container" class="hidden pt-1 border-t border-purple-500/10">
+                    <label class="text-[7px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 font-bold">Tu Tasa</label>
+                    <input type="text" id="input-custom-rate" readonly
+                        class="w-full bg-purple-500/5 border border-purple-500/20 rounded-xl py-1.5 px-3 text-sm font-bold text-purple-100 outline-none transition-all cursor-default">
+                </div>
+            </div>
+
+            <div id="keypad" class="flex-1 grid grid-cols-4 gap-1.5 mt-1 pb-1 min-h-0" style="grid-template-rows: 1fr 1fr 1fr 1fr;">
+                <button class="keypad-btn" data-key="7">7</button>
+                <button class="keypad-btn" data-key="8">8</button>
+                <button class="keypad-btn" data-key="9">9</button>
+                <button class="keypad-btn keypad-btn-op" data-key="backspace"><i data-lucide="delete" class="w-5 h-5"></i></button>
+
+                <button class="keypad-btn" data-key="4">4</button>
+                <button class="keypad-btn" data-key="5">5</button>
+                <button class="keypad-btn" data-key="6">6</button>
+                <button class="keypad-btn keypad-btn-op" data-key="+">+</button>
+
+                <button class="keypad-btn" data-key="1">1</button>
+                <button class="keypad-btn" data-key="2">2</button>
+                <button class="keypad-btn" data-key="3">3</button>
+                <button class="keypad-btn keypad-btn-op" data-key="clear">C</button>
+
+                <button class="keypad-btn" data-key="0">0</button>
+                <button class="keypad-btn" data-key=".">.</button>
+                <button class="keypad-btn keypad-btn-op" data-key="clear-all">AC</button>
+                <button class="keypad-btn keypad-btn-op" data-key="swap">⇄</button>
+            </div>
         </div>
     </div>
 
@@ -190,6 +188,7 @@
         let rates = { bcv: 0, binance: 0, custom: 0 };
         let currentSource = 'bcv';
         let lastEdited = 'usd';
+        let activeInput = 'usd';
         let deferredPrompt;
 
         const loadingEl = document.getElementById('loading');
@@ -203,29 +202,68 @@
         const inputVes = document.getElementById('input-ves');
         const inputCustomRate = document.getElementById('input-custom-rate');
         const customRateContainer = document.getElementById('custom-rate-container');
-        
+
         const btnBcv = document.getElementById('btn-bcv');
         const btnBinance = document.getElementById('btn-binance');
         const btnCustom = document.getElementById('btn-custom');
-        
+
         const currentLabel = document.getElementById('current-label');
         const installBtn = document.getElementById('install-btn');
-        const refreshBtnIcon = document.querySelector('#refresh-btn i');
+
+        const inputs = [inputUsd, inputVes, inputCustomRate];
 
         lucide.createIcons();
 
-        // Manual Refresh with animation
+        function focusInput(name) {
+            activeInput = name;
+            inputs.forEach(el => el.classList.remove('input-highlight'));
+            if (name === 'usd') inputUsd.classList.add('input-highlight');
+            else if (name === 'ves') inputVes.classList.add('input-highlight');
+            else inputCustomRate.classList.add('input-highlight');
+        }
+
+        inputUsd.addEventListener('focus', () => { lastEdited = 'usd'; focusInput('usd'); });
+        inputVes.addEventListener('focus', () => { lastEdited = 'ves'; focusInput('ves'); });
+        inputCustomRate.addEventListener('focus', () => { focusInput('custom'); calculate(lastEdited); });
+
+        document.querySelectorAll('.keypad-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.dataset.key;
+                const el = activeInput === 'custom' ? inputCustomRate
+                          : activeInput === 'ves' ? inputVes : inputUsd;
+
+                if (key === 'backspace') {
+                    el.value = el.value.slice(0, -1);
+                } else if (key === 'clear') {
+                    el.value = '';
+                } else if (key === 'clear-all') {
+                    el.value = '';
+                    if (activeInput === 'custom') calculate(lastEdited);
+                    else triggerCalc();
+                } else if (key === 'swap') {
+                    if (activeInput === 'usd') { focusInput('ves'); lastEdited = 'ves'; triggerCalc(); }
+                    else if (activeInput === 'ves') { focusInput('usd'); lastEdited = 'usd'; triggerCalc(); }
+                } else {
+                    el.value += key;
+                }
+
+                if (activeInput === 'custom') calculate(lastEdited);
+                else triggerCalc();
+            });
+        });
+
+        function triggerCalc() {
+            calculate(lastEdited);
+            if (lastEdited === 'usd') focusInput('usd');
+            else focusInput('ves');
+        }
+
         async function manualRefresh() {
-            if (refreshBtnIcon) refreshBtnIcon.classList.add('animate-spin');
             lastDateEl.textContent = 'Actualizando...';
             lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> --:--';
             await fetchRates();
-            setTimeout(() => {
-                if (refreshBtnIcon) refreshBtnIcon.classList.remove('animate-spin');
-            }, 500);
         }
 
-        // PWA Install Logic
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -236,9 +274,7 @@
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    installBtn.classList.add('hidden');
-                }
+                if (outcome === 'accepted') installBtn.classList.add('hidden');
                 deferredPrompt = null;
             }
         });
@@ -248,10 +284,8 @@
                 const response = await fetch('/rates.json');
                 if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
-                
                 if (data.USD) rates.bcv = data.USD;
                 if (data.EUR) rates.binance = rates.bcv * 1.05;
-
                 updateUI(data);
             } catch (error) {
                 console.error('Fetch error:', error);
@@ -263,39 +297,33 @@
         function updateUI(data) {
             rateBcvEl.textContent = rates.bcv.toFixed(2);
             rateBinanceEl.textContent = rates.binance.toFixed(2);
-            
             if (data.effective_date) {
                 lastDateEl.textContent = 'Tasa vigente';
                 lastTimeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ${data.effective_date}`;
             }
-
             loadingEl.classList.add('hidden');
             contentEl.classList.remove('hidden');
+            focusInput('usd');
         }
 
         function setSource(source) {
             currentSource = source;
-            
-            // Reset buttons
             [btnBcv, btnBinance, btnCustom].forEach(btn => {
-                btn.className = 'flex-1 py-1.5 text-[9px] font-black rounded-lg transition-all text-purple-300';
+                btn.className = 'flex-1 py-1 text-[8px] font-black rounded-lg transition-all text-purple-300';
             });
-
             customRateContainer.classList.add('hidden');
-
             if (source === 'bcv') {
-                btnBcv.className = 'flex-1 py-1.5 text-[9px] font-black rounded-lg transition-all bg-purple-400 text-purple-950';
-                currentLabel.textContent = 'Tasa BCV';
+                btnBcv.className = 'flex-1 py-1 text-[8px] font-black rounded-lg bg-purple-400 text-purple-950';
             } else if (source === 'binance') {
-                btnBinance.className = 'flex-1 py-1.5 text-[9px] font-black rounded-lg transition-all bg-purple-400 text-purple-950';
-                currentLabel.textContent = 'Binance P2P';
+                btnBinance.className = 'flex-1 py-1 text-[8px] font-black rounded-lg bg-purple-400 text-purple-950';
             } else if (source === 'custom') {
-                btnCustom.className = 'flex-1 py-1.5 text-[9px] font-black rounded-lg transition-all bg-purple-400 text-purple-950';
-                currentLabel.textContent = 'Tasa Propia';
+                btnCustom.className = 'flex-1 py-1 text-[8px] font-black rounded-lg bg-purple-400 text-purple-950';
                 customRateContainer.classList.remove('hidden');
+                focusInput('custom');
             }
-            
-            calculate(lastEdited);
+            if (source === 'custom') focusInput('custom');
+            else focusInput(lastEdited);
+            calculate(source === 'custom' ? 'custom' : lastEdited);
         }
 
         function parseSum(str) {
@@ -312,14 +340,12 @@
 
         function calculate(triggerField) {
             let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
-            
             if (!rate || isNaN(rate) || rate === 0) {
-                if (triggerField === 'usd') inputVes.value = '';
+                if (triggerField === 'usd' || triggerField === 'custom') inputVes.value = '';
                 else inputUsd.value = '';
                 return;
             }
-
-            if (triggerField === 'usd') {
+            if (triggerField === 'usd' || triggerField === 'custom') {
                 const val = parseSum(inputUsd.value);
                 inputVes.value = !isNaN(val) ? (val * rate).toFixed(2) : '';
             } else {
@@ -328,16 +354,9 @@
             }
         }
 
-        inputUsd.addEventListener('input', () => { lastEdited = 'usd'; calculate('usd'); });
-        inputVes.addEventListener('input', () => { lastEdited = 'ves'; calculate('ves'); });
-        inputCustomRate.addEventListener('input', () => { calculate(lastEdited); });
-
-        // Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('SW registered'))
-                    .catch(err => console.log('SW error', err));
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
             });
         }
 
