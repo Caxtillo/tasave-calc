@@ -112,7 +112,7 @@
                 </button>
             </header>
 
-            <div class="grid grid-cols-2 gap-1.5 shrink-0 mb-1">
+            <div class="grid grid-cols-3 gap-1.5 shrink-0 mb-1">
                 <div class="glass rounded-2xl p-2 flex flex-col items-center justify-center">
                     <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">BCV Oficial</span>
                     <span class="text-base font-bold text-white leading-tight" id="rate-bcv">--.--</span>
@@ -122,6 +122,11 @@
                     <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">Binance P2P</span>
                     <span class="text-base font-bold text-white leading-tight" id="rate-binance">--.--</span>
                     <span class="text-[6px] text-purple-400/60 font-medium">Bs/USDT</span>
+                </div>
+                <div class="glass rounded-2xl p-2 flex flex-col items-center justify-center">
+                    <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">Tasa Propia</span>
+                    <span class="text-base font-bold text-white leading-tight" id="rate-propia">--.--</span>
+                    <span class="text-[6px] text-purple-400/60 font-medium">Bs/USD</span>
                 </div>
             </div>
 
@@ -199,6 +204,7 @@
         const inputVes = document.getElementById('input-ves');
         const inputCustomRate = document.getElementById('input-custom-rate');
         const customRateContainer = document.getElementById('custom-rate-container');
+        const ratePropiaEl = document.getElementById('rate-propia');
 
         const btnBcv = document.getElementById('btn-bcv');
         const btnBinance = document.getElementById('btn-binance');
@@ -281,19 +287,30 @@
                 if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
                 if (data.USD) rates.bcv = data.USD;
-                if (data.EUR) rates.binance = rates.bcv * 1.05;
                 updateUI(data);
             } catch (error) {
                 console.error('Fetch error:', error);
                 loadingEl.classList.add('hidden');
                 errorEl.classList.remove('hidden');
             }
+
+            try {
+                const res = await fetch('https://ve.dolarapi.com/v1/dolares');
+                if (res.ok) {
+                    const list = await res.json();
+                    const p2p = list.find(item => item.fuente === 'paralelo');
+                    if (p2p) rates.binance = p2p.promedio || p2p.venta;
+                }
+            } catch (_) {}
+
+            updateUI(null);
         }
 
         function updateUI(data) {
-            rateBcvEl.textContent = rates.bcv.toFixed(2);
-            rateBinanceEl.textContent = rates.binance.toFixed(2);
-            if (data.effective_date) {
+            rateBcvEl.textContent = rates.bcv > 0 ? rates.bcv.toFixed(2) : '--.--';
+            rateBinanceEl.textContent = rates.binance > 0 ? rates.binance.toFixed(2) : '--.--';
+            ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
+            if (data && data.effective_date) {
                 lastDateEl.textContent = 'Tasa vigente';
                 lastTimeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ${data.effective_date}`;
             }
@@ -336,6 +353,8 @@
 
         function calculate(triggerField) {
             let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
+            rates.custom = parseFloat(inputCustomRate.value) || 0;
+            ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
             if (!rate || isNaN(rate) || rate === 0) {
                 if (triggerField === 'usd' || triggerField === 'custom') inputVes.value = '';
                 else inputUsd.value = '';
