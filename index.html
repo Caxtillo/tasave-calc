@@ -114,17 +114,17 @@
 
             <div class="flex-1 flex flex-col gap-2 min-h-0 py-1">
                 <div class="grid grid-cols-3 gap-1.5 shrink-0">
-                <div class="glass rounded-2xl p-2 flex flex-col items-center justify-center">
+                <div onclick="setSource('bcv')" id="card-bcv" class="glass rounded-2xl p-2 flex flex-col items-center justify-center transition-all duration-200 border-2 border-purple-500/40">
                     <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">BCV Oficial</span>
                     <span class="text-base font-bold text-white leading-tight" id="rate-bcv">--.--</span>
                     <span class="text-[6px] text-purple-400/60 font-medium">Bs/USD</span>
                 </div>
-                <div class="glass rounded-2xl p-2 flex flex-col items-center justify-center">
+                <div onclick="setSource('binance')" id="card-binance" class="glass rounded-2xl p-2 flex flex-col items-center justify-center transition-all duration-200 border-2 border-transparent">
                     <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">Binance P2P</span>
                     <span class="text-base font-bold text-white leading-tight" id="rate-binance">--.--</span>
                     <span class="text-[6px] text-purple-400/60 font-medium">Bs/USDT</span>
                 </div>
-                <div class="glass rounded-2xl p-2 flex flex-col items-center justify-center">
+                <div onclick="setSource('custom')" id="card-custom" class="glass rounded-2xl p-2 flex flex-col items-center justify-center transition-all duration-200 border-2 border-transparent">
                     <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">Tasa Propia</span>
                     <span class="text-base font-bold text-white leading-tight" id="rate-propia">--.--</span>
                     <span class="text-[6px] text-purple-400/60 font-medium">Bs/USD</span>
@@ -132,12 +132,6 @@
             </div>
 
             <div class="glass rounded-3xl p-3 flex flex-col gap-2 shrink-0">
-                <div class="flex bg-black/40 p-0.5 rounded-xl">
-                    <button id="btn-bcv" onclick="setSource('bcv')" class="flex-1 py-1 text-[8px] font-black rounded-lg bg-purple-400 text-purple-950">BCV</button>
-                    <button id="btn-binance" onclick="setSource('binance')" class="flex-1 py-1 text-[8px] font-black rounded-lg text-purple-300">BINANCE</button>
-                    <button id="btn-custom" onclick="setSource('custom')" class="flex-1 py-1 text-[8px] font-black rounded-lg text-purple-300">PROPIA</button>
-                </div>
-
                 <div class="space-y-2">
                     <div>
                         <label class="text-[7px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 font-bold">Dólares (USD)</label>
@@ -208,9 +202,9 @@
         const customRateContainer = document.getElementById('custom-rate-container');
         const ratePropiaEl = document.getElementById('rate-propia');
 
-        const btnBcv = document.getElementById('btn-bcv');
-        const btnBinance = document.getElementById('btn-binance');
-        const btnCustom = document.getElementById('btn-custom');
+        const btnBcv = document.getElementById('card-bcv');
+        const btnBinance = document.getElementById('card-binance');
+        const btnCustom = document.getElementById('card-custom');
 
         const installBtn = document.getElementById('install-btn');
 
@@ -323,16 +317,16 @@
 
         function setSource(source) {
             currentSource = source;
-            [btnBcv, btnBinance, btnCustom].forEach(btn => {
-                btn.className = 'flex-1 py-1 text-[8px] font-black rounded-lg transition-all text-purple-300';
+            [btnBcv, btnBinance, btnCustom].forEach(el => {
+                el.className = 'glass rounded-2xl p-2 flex flex-col items-center justify-center transition-all duration-200 border-2 border-transparent';
             });
             customRateContainer.classList.add('hidden');
             if (source === 'bcv') {
-                btnBcv.className = 'flex-1 py-1 text-[8px] font-black rounded-lg bg-purple-400 text-purple-950';
+                btnBcv.className = 'glass rounded-2xl p-2 flex flex-col items-center justify-center transition-all duration-200 border-2 border-purple-500/40';
             } else if (source === 'binance') {
-                btnBinance.className = 'flex-1 py-1 text-[8px] font-black rounded-lg bg-purple-400 text-purple-950';
+                btnBinance.className = 'glass rounded-2xl p-2 flex flex-col items-center justify-center transition-all duration-200 border-2 border-purple-500/40';
             } else if (source === 'custom') {
-                btnCustom.className = 'flex-1 py-1 text-[8px] font-black rounded-lg bg-purple-400 text-purple-950';
+                btnCustom.className = 'glass rounded-2xl p-2 flex flex-col items-center justify-center transition-all duration-200 border-2 border-purple-500/40';
                 customRateContainer.classList.remove('hidden');
                 focusInput('custom');
             }
