@@ -132,7 +132,7 @@
 
         <div id="content" class="hidden flex flex-col h-full">
 
-            <div class="flex-1 flex flex-col justify-between py-2">
+            <div class="flex-1 flex flex-col py-2 min-h-0">
                 <header class="flex items-center justify-between shrink-0">
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-extrabold">Tasa<span class="text-purple-400">Ves</span></h1>
@@ -148,34 +148,32 @@
                     </div>
                 </header>
 
-                <div class="flex flex-col gap-2">
-                    <div class="flex gap-1.5">
-                        <div onclick="setSource('bcv')" id="card-bcv" class="rate-card flex-1 rate-card-selected">
-                            <span class="text-[10px] font-bold text-purple-300/70">BCV</span>
-                            <span class="text-base font-black text-white" id="rate-bcv">--.--</span>
-                        </div>
-                        <div onclick="setSource('binance')" id="card-binance" class="rate-card flex-1">
-                            <span class="text-[10px] font-bold text-purple-300/70">Binance</span>
-                            <span class="text-base font-black text-white" id="rate-binance">--.--</span>
-                        </div>
-                        <div onclick="setSource('custom')" id="card-custom" class="rate-card flex-1">
-                            <span class="text-[10px] font-bold text-purple-300/70">Propia</span>
-                            <span class="text-base font-black text-white" id="rate-propia">--.--</span>
-                        </div>
+                <div class="flex gap-1.5 shrink-0 mt-2">
+                    <div onclick="setSource('bcv')" id="card-bcv" class="rate-card flex-1 rate-card-selected">
+                        <span class="text-[10px] font-bold text-purple-300/70">BCV</span>
+                        <span class="text-base font-black text-white" id="rate-bcv">--.--</span>
                     </div>
-
-                    <div id="custom-rate-row" class="hidden">
-                        <div class="flex items-center gap-2 glass rounded-xl px-3 py-1.5">
-                            <span class="text-[9px] font-bold text-purple-300/50 uppercase tracking-wider">Tu tasa:</span>
-                            <input type="text" id="input-custom-rate" readonly
-                                class="flex-1 bg-transparent text-sm font-bold text-purple-100 outline-none cursor-default"
-                                placeholder="0.00">
-                            <span class="text-[8px] text-purple-400/40 font-bold">Bs/USD</span>
-                        </div>
+                    <div onclick="setSource('binance')" id="card-binance" class="rate-card flex-1">
+                        <span class="text-[10px] font-bold text-purple-300/70">Binance</span>
+                        <span class="text-base font-black text-white" id="rate-binance">--.--</span>
+                    </div>
+                    <div onclick="setSource('custom')" id="card-custom" class="rate-card flex-1">
+                        <span class="text-[10px] font-bold text-purple-300/70">Propia</span>
+                        <span class="text-base font-black text-white" id="rate-propia">--.--</span>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2 px-1">
+                <div id="custom-rate-row" class="hidden shrink-0 mt-2">
+                    <div class="flex items-center gap-2 glass rounded-xl px-3 py-1.5">
+                        <span class="text-[9px] font-bold text-purple-300/50 uppercase tracking-wider">Tu tasa:</span>
+                        <input type="text" id="input-custom-rate" readonly
+                            class="flex-1 bg-transparent text-sm font-bold text-purple-100 outline-none cursor-default"
+                            placeholder="0.00">
+                        <span class="text-[8px] text-purple-400/40 font-bold">Bs/USD</span>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex flex-col justify-center gap-2 px-1 min-h-0">
                     <div>
                         <label class="text-[10px] uppercase tracking-[0.2em] text-purple-300/50 font-bold ml-1 mb-1 block">Dólares (USD)</label>
                         <input type="text" id="input-usd" readonly class="input-box input-highlight" placeholder="0.00">
