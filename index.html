@@ -35,9 +35,9 @@
         .input-box {
             background: rgba(20, 12, 40, 0.8);
             border: 2px solid rgba(167, 139, 250, 0.25);
-            border-radius: 1rem;
-            padding: 0.5rem 1rem;
-            font-size: 1.5rem;
+            border-radius: 0.75rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 1.35rem;
             font-weight: 800;
             color: white;
             width: 100%;
@@ -74,8 +74,8 @@
             color: #a78bfa;
         }
         .swap-btn {
-            width: 2.5rem;
-            height: 2.5rem;
+            width: 2rem;
+            height: 2rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -83,7 +83,7 @@
             background: rgba(167, 139, 250, 0.15);
             border: 2px solid rgba(167, 139, 250, 0.3);
             color: #a78bfa;
-            font-size: 1.2rem;
+            font-size: 1rem;
             transition: all 100ms;
             user-select: none;
             -webkit-user-select: none;
@@ -93,8 +93,8 @@
             transform: scale(0.92);
         }
         .rate-card {
-            border-radius: 1rem;
-            padding: 0.5rem 0.75rem;
+            border-radius: 0.75rem;
+            padding: 0.35rem 0.6rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -116,7 +116,7 @@
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
 
-    <div id="app" class="w-full max-w-md mx-auto flex flex-col h-dvh p-3 gap-2">
+    <div id="app" class="w-full max-w-md mx-auto flex flex-col h-dvh p-3 pb-1">
         <div id="loading" class="fixed inset-0 z-50 bg-[#0f0c1d] flex flex-col items-center justify-center gap-4">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             <p class="text-purple-300 animate-pulse font-medium">Consultando tasas...</p>
@@ -130,14 +130,14 @@
             </div>
         </div>
 
-        <div id="content" class="hidden flex flex-col h-full gap-2">
+        <div id="content" class="hidden flex flex-col h-full gap-1.5">
 
             <header class="flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-2">
-                    <h1 class="text-xl font-extrabold">Tasa<span class="text-purple-400">Ves</span></h1>
+                <div class="flex items-center gap-1.5">
+                    <h1 class="text-lg font-extrabold">Tasa<span class="text-purple-400">Ves</span></h1>
                     <span class="text-[8px] text-purple-400/50 font-bold uppercase tracking-widest" id="last-date">Cargando...</span>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5">
                     <span class="text-[10px] text-purple-300/70 font-bold flex items-center gap-1" id="last-time">
                         <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> --:--
                     </span>
@@ -172,25 +172,25 @@
                 </div>
             </div>
 
-            <div class="flex-1 flex flex-col justify-center min-h-0 gap-2 px-1">
+            <div class="flex flex-col gap-1 px-1 shrink-0">
                 <div>
-                    <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/40 font-bold ml-1 mb-1 block">Dólares (USD)</label>
+                    <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/40 font-bold ml-1 mb-0.5 block">Dólares (USD)</label>
                     <input type="text" id="input-usd" readonly class="input-box input-highlight" placeholder="0.00">
                 </div>
 
-                <div class="flex justify-center -my-1 relative z-10">
+                <div class="flex justify-center -my-0.5 relative z-10">
                     <div class="swap-btn">
                         <i data-lucide="arrow-down-up" class="w-4 h-4"></i>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/40 font-bold ml-1 mb-1 block">Bolívares (VES)</label>
+                    <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/40 font-bold ml-1 mb-0.5 block">Bolívares (VES)</label>
                     <input type="text" id="input-ves" readonly class="input-box" placeholder="0.00">
                 </div>
             </div>
 
-            <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5 pb-0.5" style="height:36dvh;grid-template-rows:1fr 1fr 1fr 1fr;">
+            <div id="keypad" class="flex-1 grid grid-cols-4 gap-1.5 min-h-0" style="grid-template-rows:repeat(4,1fr);">
                 <button class="keypad-btn" data-key="7">7</button>
                 <button class="keypad-btn" data-key="8">8</button>
                 <button class="keypad-btn" data-key="9">9</button>
