@@ -52,22 +52,38 @@
             border: 2px solid rgba(167, 139, 250, 0.25);
             border-radius: 0.85rem;
             padding: var(--input-py) var(--input-px);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: border 150ms;
+        }
+        .input-currency {
+            font-size: calc(var(--input-fs) * 0.6);
+            font-weight: 700;
+            color: rgba(167, 139, 250, 0.5);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .input-inner {
+            background: transparent;
+            border: none;
+            outline: none;
             font-size: var(--input-fs);
             font-weight: 800;
             color: white;
             width: 100%;
-            outline: none;
+            min-width: 0;
             cursor: default;
-            transition: border 150ms;
+            text-align: right;
         }
-        .input-box:focus, .input-highlight {
+        .input-box.input-selected {
+            border-color: #a78bfa !important;
+            box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.35) !important;
+            background: rgba(167, 139, 250, 0.08) !important;
+        }
+        .input-box:focus-within {
             border-color: #a78bfa;
             box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
-        }
-        .input-selected {
-            border-color: #a78bfa !important;
-            box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.35), inset 0 0 0 1px rgba(167, 139, 250, 0.1) !important;
-            background: rgba(167, 139, 250, 0.08) !important;
         }
         .keypad-btn {
             display: flex;
@@ -222,15 +238,15 @@
                 <div class="flex gap-1.5 shrink-0 mt-2">
                     <div onclick="setSource('bcv')" id="card-bcv" class="rate-card flex-1 rate-card-selected">
                         <span class="rate-label">BCV</span>
-                        <span class="rate-value" id="rate-bcv">Bs --.--</span>
+                        <span class="rate-value" id="rate-bcv">--.--</span>
                     </div>
                     <div onclick="setSource('binance')" id="card-binance" class="rate-card flex-1">
                         <span class="rate-label">Binance</span>
-                        <span class="rate-value" id="rate-binance">Bs --.--</span>
+                        <span class="rate-value" id="rate-binance">--.--</span>
                     </div>
                     <div onclick="setSource('custom')" id="card-custom" class="rate-card flex-1">
                         <span class="rate-label">Propia</span>
-                        <span class="rate-value" id="rate-propia">Bs --.--</span>
+                        <span class="rate-value" id="rate-propia">--.--</span>
                     </div>
                 </div>
 
@@ -244,10 +260,13 @@
                     </div>
                 </div>
 
-                <div class="flex-1 flex flex-col justify-center px-1 min-h-0" style="gap:var(--input-gap)">
+                <div class="flex-1 flex flex-col justify-center px-0 min-h-0" style="gap:var(--input-gap)">
                     <div>
                         <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Dólares (USD)</label>
-                        <input type="text" id="input-usd" readonly class="input-box input-selected" placeholder="0.00" onclick="focusInput('usd')">
+                        <div id="wrap-usd" class="input-box input-selected" onclick="focusInput('usd')">
+                            <span class="input-currency">$</span>
+                            <input type="text" id="input-usd" readonly class="input-inner" placeholder="0.00">
+                        </div>
                     </div>
 
                     <div class="flex justify-center relative z-10" style="margin-top:calc(var(--input-gap)/-2);margin-bottom:calc(var(--input-gap)/-2)">
@@ -258,7 +277,10 @@
 
                     <div>
                         <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Bolívares (VES)</label>
-                        <input type="text" id="input-ves" readonly class="input-box" placeholder="0.00" onclick="focusInput('ves')">
+                        <div id="wrap-ves" class="input-box" onclick="focusInput('ves')">
+                            <span class="input-currency">Bs</span>
+                            <input type="text" id="input-ves" readonly class="input-inner" placeholder="0.00">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -318,9 +340,10 @@
 
         function focusInput(name) {
             activeInput = name;
-            [inputUsd, inputVes, inputCustomRate].forEach(el => el.classList.remove('input-highlight', 'input-selected'));
-            const target = name === 'usd' ? inputUsd : name === 'ves' ? inputVes : inputCustomRate;
-            target.classList.add('input-selected');
+            document.querySelectorAll('.input-box').forEach(el => el.classList.remove('input-selected'));
+            if (name === 'usd') inputUsd.parentElement.classList.add('input-selected');
+            else if (name === 'ves') inputVes.parentElement.classList.add('input-selected');
+            else inputCustomRate.parentElement.classList.add('input-selected');
         }
 
         document.querySelectorAll('.keypad-btn').forEach(btn => {
@@ -337,9 +360,11 @@
                     el.value = '';
                     if (activeInput === 'custom') calculate(lastEdited);
                     else triggerCalc();
+                    return;
                 } else if (key === 'swap') {
                     if (activeInput === 'usd') { focusInput('ves'); lastEdited = 'ves'; triggerCalc(); }
                     else if (activeInput === 'ves') { focusInput('usd'); lastEdited = 'usd'; triggerCalc(); }
+                    return;
                 } else {
                     el.value += key;
                 }
@@ -352,6 +377,9 @@
         function triggerCalc() {
             calculate(lastEdited);
             focusInput(lastEdited);
+            const base = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--input-fs'));
+            autoSize(inputUsd, base);
+            autoSize(inputVes, base);
         }
 
         function manualRefresh() {
@@ -395,9 +423,13 @@
         }
 
         function updateUI(data) {
-            rateBcvEl.textContent = rates.bcv > 0 ? 'Bs ' + rates.bcv.toFixed(2) : 'Bs --.--';
-            rateBinanceEl.textContent = rates.binance > 0 ? 'Bs ' + rates.binance.toFixed(2) : 'Bs --.--';
-            ratePropiaEl.textContent = rates.custom > 0 ? 'Bs ' + rates.custom.toFixed(2) : 'Bs --.--';
+            rateBcvEl.textContent = rates.bcv > 0 ? rates.bcv.toFixed(2) : '--.--';
+            rateBinanceEl.textContent = rates.binance > 0 ? rates.binance.toFixed(2) : '--.--';
+            ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
+            const rBase = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rate-value'));
+            autoSizeRate(rateBcvEl, rBase);
+            autoSizeRate(rateBinanceEl, rBase);
+            autoSizeRate(ratePropiaEl, rBase);
             if (data && data.effective_date) {
                 lastDateEl.textContent = data.effective_date;
                 lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Vigente';
@@ -431,6 +463,23 @@
             calculate(source === 'custom' ? 'custom' : lastEdited);
         }
 
+        function autoSize(el, base) {
+            const len = el.value.length;
+            let scale = 1;
+            if (len > 12) scale = 0.55;
+            else if (len > 10) scale = 0.7;
+            else if (len > 8) scale = 0.85;
+            el.style.fontSize = (base * scale) + 'px';
+        }
+
+        function autoSizeRate(el, base) {
+            const len = el.textContent.length;
+            let scale = 1;
+            if (len > 9) scale = 0.6;
+            else if (len > 7) scale = 0.75;
+            el.style.fontSize = (base * scale) + 'px';
+        }
+
         function parseSum(str) {
             if (!str || str.trim() === '') return NaN;
             let total = 0;
@@ -445,7 +494,9 @@
         function calculate(triggerField) {
             let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
             rates.custom = parseFloat(inputCustomRate.value) || 0;
-            ratePropiaEl.textContent = rates.custom > 0 ? 'Bs ' + rates.custom.toFixed(2) : 'Bs --.--';
+            ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
+            const rBase = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rate-value'));
+            autoSizeRate(ratePropiaEl, rBase);
 
             if (!rate || isNaN(rate) || rate === 0) {
                 if (triggerField === 'usd' || triggerField === 'custom') inputVes.value = '';
@@ -453,12 +504,15 @@
                 return;
             }
 
+            const iBase = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--input-fs'));
             if (triggerField === 'usd' || triggerField === 'custom') {
                 const val = parseSum(inputUsd.value);
                 inputVes.value = !isNaN(val) ? (val * rate).toFixed(2) : '';
+                autoSize(inputVes, iBase);
             } else {
                 const val = parseSum(inputVes.value);
                 inputUsd.value = !isNaN(val) ? (val / rate).toFixed(2) : '';
+                autoSize(inputUsd, iBase);
             }
         }
 
