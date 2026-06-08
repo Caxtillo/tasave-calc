@@ -141,7 +141,7 @@
                         <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 mb-1 block font-bold">Dólares (USD)</label>
                         <div class="relative flex items-center">
                             <span class="absolute left-4 text-purple-400 font-bold text-base">$</span>
-                            <input type="number" id="input-usd" placeholder="0.00" step="0.01"
+                            <input type="text" id="input-usd" placeholder="0.00 o 9+2+4+3..." inputmode="decimal"
                                 class="w-full bg-black/40 border border-purple-500/10 rounded-xl py-3 pl-10 pr-4 text-xl font-bold text-white focus:outline-none input-focus transition-all placeholder:text-purple-900/30">
                         </div>
                     </div>
@@ -156,7 +156,7 @@
                         <label class="text-[8px] uppercase tracking-[0.2em] text-purple-300/50 ml-1 mb-1 block font-bold">Bolívares (VES)</label>
                         <div class="relative flex items-center">
                             <span class="absolute left-4 text-purple-400 font-bold text-xs">Bs</span>
-                            <input type="number" id="input-ves" placeholder="0.00" step="0.01"
+                            <input type="text" id="input-ves" placeholder="0.00 o 100+200..." inputmode="decimal"
                                 class="w-full bg-black/40 border border-purple-500/10 rounded-xl py-3 pl-12 pr-4 text-xl font-bold text-white focus:outline-none input-focus transition-all placeholder:text-purple-900/30">
                         </div>
                     </div>
@@ -298,6 +298,18 @@
             calculate(lastEdited);
         }
 
+        function parseSum(str) {
+            if (!str || str.trim() === '') return NaN;
+            const parts = str.split('+');
+            let total = 0;
+            for (const p of parts) {
+                const val = parseFloat(p.trim());
+                if (isNaN(val)) return NaN;
+                total += val;
+            }
+            return total;
+        }
+
         function calculate(triggerField) {
             let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
             
@@ -308,10 +320,10 @@
             }
 
             if (triggerField === 'usd') {
-                const val = parseFloat(inputUsd.value);
+                const val = parseSum(inputUsd.value);
                 inputVes.value = !isNaN(val) ? (val * rate).toFixed(2) : '';
             } else {
-                const val = parseFloat(inputVes.value);
+                const val = parseSum(inputVes.value);
                 inputUsd.value = !isNaN(val) ? (val / rate).toFixed(2) : '';
             }
         }
