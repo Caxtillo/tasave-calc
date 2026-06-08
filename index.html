@@ -64,6 +64,11 @@
             border-color: #a78bfa;
             box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
         }
+        .input-selected {
+            border-color: #a78bfa !important;
+            box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.35), inset 0 0 0 1px rgba(167, 139, 250, 0.1) !important;
+            background: rgba(167, 139, 250, 0.08) !important;
+        }
         .keypad-btn {
             display: flex;
             align-items: center;
@@ -111,8 +116,10 @@
             border-radius: 0.85rem;
             padding: var(--rate-py) var(--rate-px);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 0.15rem;
             background: rgba(30, 20, 50, 0.5);
             border: 2px solid transparent;
             transition: all 200ms;
@@ -215,15 +222,15 @@
                 <div class="flex gap-1.5 shrink-0 mt-2">
                     <div onclick="setSource('bcv')" id="card-bcv" class="rate-card flex-1 rate-card-selected">
                         <span class="rate-label">BCV</span>
-                        <span class="rate-value" id="rate-bcv">--.--</span>
+                        <span class="rate-value" id="rate-bcv">Bs --.--</span>
                     </div>
                     <div onclick="setSource('binance')" id="card-binance" class="rate-card flex-1">
                         <span class="rate-label">Binance</span>
-                        <span class="rate-value" id="rate-binance">--.--</span>
+                        <span class="rate-value" id="rate-binance">Bs --.--</span>
                     </div>
                     <div onclick="setSource('custom')" id="card-custom" class="rate-card flex-1">
                         <span class="rate-label">Propia</span>
-                        <span class="rate-value" id="rate-propia">--.--</span>
+                        <span class="rate-value" id="rate-propia">Bs --.--</span>
                     </div>
                 </div>
 
@@ -240,7 +247,7 @@
                 <div class="flex-1 flex flex-col justify-center px-1 min-h-0" style="gap:var(--input-gap)">
                     <div>
                         <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Dólares (USD)</label>
-                        <input type="text" id="input-usd" readonly class="input-box input-highlight" placeholder="0.00">
+                        <input type="text" id="input-usd" readonly class="input-box input-selected" placeholder="0.00" onclick="focusInput('usd')">
                     </div>
 
                     <div class="flex justify-center relative z-10" style="margin-top:calc(var(--input-gap)/-2);margin-bottom:calc(var(--input-gap)/-2)">
@@ -251,7 +258,7 @@
 
                     <div>
                         <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Bolívares (VES)</label>
-                        <input type="text" id="input-ves" readonly class="input-box" placeholder="0.00">
+                        <input type="text" id="input-ves" readonly class="input-box" placeholder="0.00" onclick="focusInput('ves')">
                     </div>
                 </div>
             </div>
@@ -311,10 +318,9 @@
 
         function focusInput(name) {
             activeInput = name;
-            [inputUsd, inputVes, inputCustomRate].forEach(el => el.classList.remove('input-highlight'));
-            if (name === 'usd') inputUsd.classList.add('input-highlight');
-            else if (name === 'ves') inputVes.classList.add('input-highlight');
-            else inputCustomRate.classList.add('input-highlight');
+            [inputUsd, inputVes, inputCustomRate].forEach(el => el.classList.remove('input-highlight', 'input-selected'));
+            const target = name === 'usd' ? inputUsd : name === 'ves' ? inputVes : inputCustomRate;
+            target.classList.add('input-selected');
         }
 
         document.querySelectorAll('.keypad-btn').forEach(btn => {
@@ -389,9 +395,9 @@
         }
 
         function updateUI(data) {
-            rateBcvEl.textContent = rates.bcv > 0 ? rates.bcv.toFixed(2) : '--.--';
-            rateBinanceEl.textContent = rates.binance > 0 ? rates.binance.toFixed(2) : '--.--';
-            ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
+            rateBcvEl.textContent = rates.bcv > 0 ? 'Bs ' + rates.bcv.toFixed(2) : 'Bs --.--';
+            rateBinanceEl.textContent = rates.binance > 0 ? 'Bs ' + rates.binance.toFixed(2) : 'Bs --.--';
+            ratePropiaEl.textContent = rates.custom > 0 ? 'Bs ' + rates.custom.toFixed(2) : 'Bs --.--';
             if (data && data.effective_date) {
                 lastDateEl.textContent = data.effective_date;
                 lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Vigente';
@@ -439,7 +445,7 @@
         function calculate(triggerField) {
             let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
             rates.custom = parseFloat(inputCustomRate.value) || 0;
-            ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
+            ratePropiaEl.textContent = rates.custom > 0 ? 'Bs ' + rates.custom.toFixed(2) : 'Bs --.--';
 
             if (!rate || isNaN(rate) || rate === 0) {
                 if (triggerField === 'usd' || triggerField === 'custom') inputVes.value = '';
