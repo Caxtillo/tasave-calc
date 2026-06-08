@@ -109,25 +109,6 @@
             border-color: rgba(167, 139, 250, 0.3);
             color: #a78bfa;
         }
-        .swap-btn {
-            width: 2.25rem;
-            height: 2.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(167, 139, 250, 0.15);
-            border: 2px solid rgba(167, 139, 250, 0.3);
-            color: #a78bfa;
-            font-size: 1.1rem;
-            transition: all 100ms;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        .swap-btn:active {
-            background: rgba(167, 139, 250, 0.3);
-            transform: scale(0.92);
-        }
         .rate-card {
             border-radius: 0.85rem;
             padding: var(--rate-py) var(--rate-px);
@@ -266,12 +247,6 @@
                         <div id="wrap-usd" class="input-box input-selected" onclick="focusInput('usd')">
                             <span class="input-currency">$</span>
                             <input type="text" id="input-usd" readonly class="input-inner" placeholder="0.00">
-                        </div>
-                    </div>
-
-                    <div class="flex justify-center relative z-10" style="margin-top:calc(var(--input-gap)/-2);margin-bottom:calc(var(--input-gap)/-2)">
-                        <div class="swap-btn">
-                            <i data-lucide="arrow-down-up" class="w-4 h-4"></i>
                         </div>
                     </div>
 
