@@ -47,9 +47,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 0.75rem;
-            font-weight: 800;
-            font-size: 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.9rem;
             background: rgba(30, 20, 50, 0.5);
             border: 1px solid rgba(167, 139, 250, 0.15);
             color: #f3f0ff;
@@ -66,9 +66,6 @@
             background: rgba(167, 139, 250, 0.15);
             border-color: rgba(167, 139, 250, 0.3);
             color: #a78bfa;
-        }
-        .keypad-btn-large {
-            grid-column: span 2;
         }
         .input-highlight {
             border-color: rgba(167, 139, 250, 0.5);
@@ -160,7 +157,7 @@
                 </div>
             </div>
 
-            <div id="keypad" class="flex-1 grid grid-cols-4 gap-1.5 mt-1 pb-1 min-h-0" style="grid-template-rows: 1fr 1fr 1fr 1fr;">
+            <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5 min-h-0" style="height:11rem;grid-template-rows:1fr 1fr 1fr 1fr;">
                 <button class="keypad-btn" data-key="7">7</button>
                 <button class="keypad-btn" data-key="8">8</button>
                 <button class="keypad-btn" data-key="9">9</button>
@@ -207,7 +204,6 @@
         const btnBinance = document.getElementById('btn-binance');
         const btnCustom = document.getElementById('btn-custom');
 
-        const currentLabel = document.getElementById('current-label');
         const installBtn = document.getElementById('install-btn');
 
         const inputs = [inputUsd, inputVes, inputCustomRate];
