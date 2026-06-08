@@ -15,6 +15,21 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --rate-py: 1.375rem;
+            --rate-px: 0.875rem;
+            --rate-label-fs: 18px;
+            --rate-value-fs: 1.5rem;
+            --input-py: 1.75rem;
+            --input-px: 1rem;
+            --input-fs: 1.75rem;
+            --label-fs: 15px;
+            --input-gap: 1.313rem;
+            --title-fs: 1.875rem;
+            --header-mb: 0rem;
+            --keypad-h: 41dvh;
+            --top-py: 1.188rem;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0f0c1d;
@@ -36,8 +51,8 @@
             background: rgba(20, 12, 40, 0.8);
             border: 2px solid rgba(167, 139, 250, 0.25);
             border-radius: 0.85rem;
-            padding: 1.75rem 1rem;
-            font-size: 1.75rem;
+            padding: var(--input-py) var(--input-px);
+            font-size: var(--input-fs);
             font-weight: 800;
             color: white;
             width: 100%;
@@ -94,7 +109,7 @@
         }
         .rate-card {
             border-radius: 0.85rem;
-            padding: 1.375rem 0.875rem;
+            padding: var(--rate-py) var(--rate-px);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -111,6 +126,55 @@
         .rate-card-selected {
             border-color: rgba(167, 139, 250, 0.5);
             background: rgba(167, 139, 250, 0.1);
+        }
+        .rate-label { font-size: var(--rate-label-fs); font-weight: 700; color: rgba(167, 139, 250, 0.7); }
+        .rate-value { font-size: var(--rate-value-fs); font-weight: 900; color: white; }
+        .input-label { font-size: var(--label-fs); }
+
+        /* Panel tool - solo en desktop */
+        @media (min-width: 1024px) {
+            #layout-btn {
+                position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+                z-index: 9999; width: 36px; height: 36px;
+                display: flex; align-items: center; justify-content: center;
+                background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
+                border-radius: 8px 0 0 8px; color: #a78bfa;
+                font-size: 1.1rem; cursor: pointer; transition: all 150ms;
+                border-right: none;
+            }
+            #layout-btn:hover { background: rgba(167,139,250,0.25); }
+            #layout-btn.active { right: 280px; }
+
+            #layout-panel {
+                position: fixed; top: 0; right: -300px; width: 280px; height: 100vh;
+                z-index: 9998; background: rgba(15,12,29,0.97);
+                border-left: 1px solid rgba(167,139,250,0.15);
+                padding: 1rem; overflow-y: auto; transition: right 200ms;
+                font-family: 'Inter', sans-serif;
+            }
+            #layout-panel.open { right: 0; }
+
+            #layout-panel::-webkit-scrollbar { width: 4px; }
+            #layout-panel::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.3); border-radius: 2px; }
+
+            .lp-hdr { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(167,139,250,0.5); margin: 10px 0 4px; }
+            .lp-group { background: rgba(30,20,50,0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; border: 1px solid rgba(167,139,250,0.08); }
+            .lp-group label { display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 600; color: rgba(243,240,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+            .lp-group label span { color: #a78bfa; font-family: monospace; font-size: 10px; }
+            .lp-group input[type="range"] { width: 100%; accent-color: #a78bfa; height: 3px; cursor: pointer; }
+            .lp-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #a78bfa; cursor: pointer; }
+
+            .lp-copy {
+                display: block; width: 100%; margin-top: 8px; padding: 6px;
+                background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
+                border-radius: 6px; color: #a78bfa; font-size: 10px; font-weight: 600;
+                text-align: center; cursor: pointer; transition: all 100ms;
+            }
+            .lp-copy:active { background: rgba(167,139,250,0.3); }
+            .lp-output { font-family: monospace; font-size: 10px; background: rgba(0,0,0,0.4); border-radius: 4px; padding: 8px; white-space: pre-wrap; color: #a78bfa; border: 1px solid rgba(167,139,250,0.1); margin-top: 4px; max-height: 200px; overflow-y: auto; }
+        }
+        @media (max-width: 1023px) {
+            #layout-btn, #layout-panel { display: none !important; }
         }
     </style>
 </head>
@@ -132,10 +196,10 @@
 
         <div id="content" class="hidden flex flex-col h-full">
 
-            <div class="flex-1 flex flex-col min-h-0" style="padding-top:1.188rem;padding-bottom:1.188rem">
-                <header class="flex items-center justify-between shrink-0 mb-0">
+            <div class="flex-1 flex flex-col min-h-0" style="padding-top:var(--top-py);padding-bottom:var(--top-py)">
+                <header class="flex items-center justify-between shrink-0" style="margin-bottom:var(--header-mb)">
                     <div class="flex items-center gap-2">
-                        <h1 class="font-extrabold" style="font-size:1.875rem">Tasa<span class="text-purple-400">Ves</span></h1>
+                        <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
                         <span class="text-[9px] text-purple-400/50 font-bold uppercase tracking-widest" id="last-date">Cargando...</span>
                     </div>
                     <div class="flex items-center gap-2">
@@ -150,16 +214,16 @@
 
                 <div class="flex gap-1.5 shrink-0 mt-2">
                     <div onclick="setSource('bcv')" id="card-bcv" class="rate-card flex-1 rate-card-selected">
-                        <span style="font-size:18px;font-weight:700;color:rgba(167,139,250,0.7)" class="text-purple-300/70">BCV</span>
-                        <span style="font-size:1.5rem;font-weight:900" class="text-white" id="rate-bcv">--.--</span>
+                        <span class="rate-label">BCV</span>
+                        <span class="rate-value" id="rate-bcv">--.--</span>
                     </div>
                     <div onclick="setSource('binance')" id="card-binance" class="rate-card flex-1">
-                        <span style="font-size:18px;font-weight:700;color:rgba(167,139,250,0.7)" class="text-purple-300/70">Binance</span>
-                        <span style="font-size:1.5rem;font-weight:900" class="text-white" id="rate-binance">--.--</span>
+                        <span class="rate-label">Binance</span>
+                        <span class="rate-value" id="rate-binance">--.--</span>
                     </div>
                     <div onclick="setSource('custom')" id="card-custom" class="rate-card flex-1">
-                        <span style="font-size:18px;font-weight:700;color:rgba(167,139,250,0.7)" class="text-purple-300/70">Propia</span>
-                        <span style="font-size:1.5rem;font-weight:900" class="text-white" id="rate-propia">--.--</span>
+                        <span class="rate-label">Propia</span>
+                        <span class="rate-value" id="rate-propia">--.--</span>
                     </div>
                 </div>
 
@@ -173,26 +237,26 @@
                     </div>
                 </div>
 
-                <div class="flex-1 flex flex-col justify-center px-1 min-h-0" style="gap:1.313rem">
+                <div class="flex-1 flex flex-col justify-center px-1 min-h-0" style="gap:var(--input-gap)">
                     <div>
-                        <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block" style="font-size:15px">Dólares (USD)</label>
+                        <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Dólares (USD)</label>
                         <input type="text" id="input-usd" readonly class="input-box input-highlight" placeholder="0.00">
                     </div>
 
-                    <div class="flex justify-center relative z-10" style="margin-top:-0.656rem;margin-bottom:-0.656rem">
+                    <div class="flex justify-center relative z-10" style="margin-top:calc(var(--input-gap)/-2);margin-bottom:calc(var(--input-gap)/-2)">
                         <div class="swap-btn">
                             <i data-lucide="arrow-down-up" class="w-4 h-4"></i>
                         </div>
                     </div>
 
                     <div>
-                        <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block" style="font-size:15px">Bolívares (VES)</label>
+                        <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Bolívares (VES)</label>
                         <input type="text" id="input-ves" readonly class="input-box" placeholder="0.00">
                     </div>
                 </div>
             </div>
 
-            <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5" style="height:41dvh;grid-template-rows:repeat(4,1fr);">
+            <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5" style="height:var(--keypad-h);grid-template-rows:repeat(4,1fr);">
                 <button class="keypad-btn" data-key="7">7</button>
                 <button class="keypad-btn" data-key="8">8</button>
                 <button class="keypad-btn" data-key="9">9</button>
@@ -401,6 +465,133 @@
         }
 
         fetchRates();
+    </script>
+
+    <button id="layout-btn" onclick="togglePanel()">⚙</button>
+    <div id="layout-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:rgba(167,139,250,0.5)">Ajustes</span>
+            <span onclick="togglePanel()" style="color:rgba(167,139,250,0.5);cursor:pointer;font-size:14px">✕</span>
+        </div>
+
+        <div class="lp-hdr">▸ Tasas</div>
+        <div class="lp-group"><label>Padding V <span id="v-rate-py">1.375rem</span></label><input type="range" id="s-rate-py" min="4" max="40" value="22" step="1"></div>
+        <div class="lp-group"><label>Padding H <span id="v-rate-px">0.875rem</span></label><input type="range" id="s-rate-px" min="4" max="24" value="14" step="1"></div>
+        <div class="lp-group"><label>Label Font <span id="v-rate-label">18px</span></label><input type="range" id="s-rate-label" min="8" max="24" value="18" step="1"></div>
+        <div class="lp-group"><label>Valor Font <span id="v-rate-value">1.5rem</span></label><input type="range" id="s-rate-value" min="12" max="36" value="24" step="1"></div>
+
+        <div class="lp-hdr">▸ Inputs</div>
+        <div class="lp-group"><label>Padding V <span id="v-input-py">1.75rem</span></label><input type="range" id="s-input-py" min="4" max="32" value="28" step="1"></div>
+        <div class="lp-group"><label>Padding H <span id="v-input-px">1rem</span></label><input type="range" id="s-input-px" min="4" max="24" value="16" step="1"></div>
+        <div class="lp-group"><label>Font Size <span id="v-input-fs">1.75rem</span></label><input type="range" id="s-input-fs" min="16" max="48" value="28" step="1"></div>
+        <div class="lp-group"><label>Label Font <span id="v-label-fs">15px</span></label><input type="range" id="s-label-fs" min="8" max="20" value="15" step="1"></div>
+        <div class="lp-group"><label>Gap <span id="v-input-gap">1.313rem</span></label><input type="range" id="s-input-gap" min="0" max="28" value="21" step="1"></div>
+
+        <div class="lp-hdr">▸ Header</div>
+        <div class="lp-group"><label>Título Font <span id="v-title-fs">1.875rem</span></label><input type="range" id="s-title-fs" min="14" max="36" value="30" step="1"></div>
+        <div class="lp-group"><label>Margin Bottom <span id="v-header-mb">0rem</span></label><input type="range" id="s-header-mb" min="0" max="20" value="0" step="1"></div>
+
+        <div class="lp-hdr">▸ Teclado</div>
+        <div class="lp-group"><label>Altura <span id="v-keypad-h">41dvh</span></label><input type="range" id="s-keypad-h" min="25" max="55" value="41" step="1"></div>
+
+        <div class="lp-hdr">▸ General</div>
+        <div class="lp-group"><label>Top Padding Y <span id="v-top-py">1.188rem</span></label><input type="range" id="s-top-py" min="0" max="24" value="19" step="1"></div>
+
+        <div class="lp-hdr">▸ CSS Generado</div>
+        <div class="lp-output" id="lp-output"></div>
+        <button class="lp-copy" onclick="copyCSS()">📋 Copiar CSS</button>
+    </div>
+
+    <script>
+        function togglePanel() {
+            document.getElementById('layout-panel').classList.toggle('open');
+            document.getElementById('layout-btn').classList.toggle('active');
+        }
+
+        function px(v) { return v + 'px'; }
+        function rem(v) { return (v / 16).toFixed(3) + 'rem'; }
+
+        const cssVars = [
+            'rate-py', 'rate-px', 'rate-label-fs', 'rate-value-fs',
+            'input-py', 'input-px', 'input-fs', 'label-fs', 'input-gap',
+            'title-fs', 'header-mb', 'keypad-h', 'top-py'
+        ];
+
+        const sliderConfig = {
+            'rate-py': { val: 22, fn: (v) => rem(v) },
+            'rate-px': { val: 14, fn: (v) => rem(v) },
+            'rate-label': { val: 18, fn: (v) => px(v) },
+            'rate-value': { val: 24, fn: (v) => rem(v) },
+            'input-py': { val: 28, fn: (v) => rem(v) },
+            'input-px': { val: 16, fn: (v) => rem(v) },
+            'input-fs': { val: 28, fn: (v) => rem(v) },
+            'label-fs': { val: 15, fn: (v) => px(v) },
+            'input-gap': { val: 21, fn: (v) => rem(v) },
+            'title-fs': { val: 30, fn: (v) => rem(v) },
+            'header-mb': { val: 0, fn: (v) => rem(v) },
+            'keypad-h': { val: 41, fn: (v) => v + 'dvh' },
+            'top-py': { val: 19, fn: (v) => rem(v) },
+        };
+
+        function updateFromSliders() {
+            for (const [name, cfg] of Object.entries(sliderConfig)) {
+                const el = document.getElementById('s-' + name);
+                if (!el) continue;
+                const raw = +el.value;
+                const display = cfg.fn(raw);
+                document.documentElement.style.setProperty('--' + (name === 'rate-label' || name === 'rate-value' ? 'rate-' + name.split('-')[1] : name), display);
+                const vEl = document.getElementById('v-' + name);
+                if (vEl) vEl.textContent = display;
+            }
+            genOutput();
+        }
+
+        function genOutput() {
+            const vars = {};
+            for (const [name, cfg] of Object.entries(sliderConfig)) {
+                const el = document.getElementById('s-' + name);
+                if (el) vars[name] = cfg.fn(+el.value);
+            }
+            const code = `/* Rate Cards */\n`
+                + `.rate-card { padding: ${vars['rate-py']} ${vars['rate-px']}; }\n`
+                + `.rate-label { font-size: ${vars['rate-label']}; }\n`
+                + `.rate-value { font-size: ${vars['rate-value']}; }\n\n`
+                + `/* Inputs */\n`
+                + `.input-box { padding: ${vars['input-py']} ${vars['input-px']}; font-size: ${vars['input-fs']}; }\n`
+                + `.input-label { font-size: ${vars['label-fs']}; }\n`
+                + `.inputs-inner { gap: ${vars['input-gap']}; }\n\n`
+                + `/* Header */\n`
+                + `header h1 { font-size: ${vars['title-fs']}; }\n`
+                + `header { margin-bottom: ${vars['header-mb']}; }\n\n`
+                + `/* Keypad */\n`
+                + `#keypad { height: ${vars['keypad-h']}; }\n\n`
+                + `/* Top section */\n`
+                + `.top-section { padding: ${vars['top-py']} 0; }`;
+            document.getElementById('lp-output').textContent = code;
+        }
+
+        document.querySelectorAll('#layout-panel input[type="range"]').forEach(el => {
+            el.addEventListener('input', updateFromSliders);
+        });
+
+        function copyCSS() {
+            const text = document.getElementById('lp-output').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.lp-copy');
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => btn.textContent = '📋 Copiar CSS', 2000);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                const btn = document.querySelector('.lp-copy');
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => btn.textContent = '📋 Copiar CSS', 2000);
+            });
+        }
     </script>
 </body>
 </html>
