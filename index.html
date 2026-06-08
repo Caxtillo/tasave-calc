@@ -315,6 +315,7 @@
 
         function focusInput(name) {
             activeInput = name;
+            lastEdited = name;
             document.querySelectorAll('.input-box').forEach(el => el.classList.remove('input-selected'));
             if (name === 'usd') inputUsd.parentElement.classList.add('input-selected');
             else if (name === 'ves') inputVes.parentElement.classList.add('input-selected');
