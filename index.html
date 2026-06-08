@@ -112,7 +112,8 @@
                 </button>
             </header>
 
-            <div class="grid grid-cols-3 gap-1.5 shrink-0 mb-1">
+            <div class="flex-1 flex flex-col gap-2 min-h-0 py-1">
+                <div class="grid grid-cols-3 gap-1.5 shrink-0">
                 <div class="glass rounded-2xl p-2 flex flex-col items-center justify-center">
                     <span class="text-[7px] uppercase tracking-widest text-purple-300/50 font-bold">BCV Oficial</span>
                     <span class="text-base font-bold text-white leading-tight" id="rate-bcv">--.--</span>
@@ -161,8 +162,9 @@
                         class="w-full bg-purple-500/5 border border-purple-500/20 rounded-xl py-1.5 px-3 text-sm font-bold text-purple-100 outline-none transition-all cursor-default">
                 </div>
             </div>
+            </div>
 
-            <div id="keypad" class="flex-1 grid grid-cols-4 gap-1 mt-0.5 pb-0 min-h-0 max-h-[45%]" style="grid-template-rows:1fr 1fr 1fr 1fr;">
+            <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5 pb-0.5" style="height:38dvh;grid-template-rows:1fr 1fr 1fr 1fr;">
                 <button class="keypad-btn" data-key="7">7</button>
                 <button class="keypad-btn" data-key="8">8</button>
                 <button class="keypad-btn" data-key="9">9</button>
