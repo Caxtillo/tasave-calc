@@ -16,19 +16,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --rate-py: 1.375rem;
-            --rate-px: 0.875rem;
-            --rate-label-fs: 18px;
-            --rate-value-fs: 1.5rem;
-            --input-py: 1.75rem;
-            --input-px: 1rem;
-            --input-fs: 1.75rem;
-            --label-fs: 15px;
-            --input-gap: 1.313rem;
-            --title-fs: 1.875rem;
-            --header-mb: 0rem;
-            --keypad-h: 41dvh;
-            --top-py: 1.188rem;
+            --rate-py: 0.250rem;
+            --rate-px: 0.250rem;
+            --rate-label: 16px;
+            --rate-value: 1.563rem;
+            --input-py: 1.188rem;
+            --input-px: 1.063rem;
+            --input-fs: 2.250rem;
+            --label-fs: 13px;
+            --input-gap: 0.813rem;
+            --title-fs: 1.563rem;
+            --header-mb: 0.938rem;
+            --keypad-h: 38dvh;
+            --top-py: 1.125rem;
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -127,8 +127,8 @@
             border-color: rgba(167, 139, 250, 0.5);
             background: rgba(167, 139, 250, 0.1);
         }
-        .rate-label { font-size: var(--rate-label-fs); font-weight: 700; color: rgba(167, 139, 250, 0.7); }
-        .rate-value { font-size: var(--rate-value-fs); font-weight: 900; color: white; }
+        .rate-label { font-size: var(--rate-label); font-weight: 700; color: rgba(167, 139, 250, 0.7); }
+        .rate-value { font-size: var(--rate-value); font-weight: 900; color: white; }
         .input-label { font-size: var(--label-fs); }
 
         /* Panel tool - solo en desktop */
@@ -348,10 +348,8 @@
             focusInput(lastEdited);
         }
 
-        async function manualRefresh() {
-            lastDateEl.textContent = 'Actualizando...';
-            lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> --:--';
-            await fetchRates();
+        function manualRefresh() {
+            location.reload();
         }
 
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -475,27 +473,27 @@
         </div>
 
         <div class="lp-hdr">▸ Tasas</div>
-        <div class="lp-group"><label>Padding V <span id="v-rate-py">1.375rem</span></label><input type="range" id="s-rate-py" min="4" max="40" value="22" step="1"></div>
-        <div class="lp-group"><label>Padding H <span id="v-rate-px">0.875rem</span></label><input type="range" id="s-rate-px" min="4" max="24" value="14" step="1"></div>
-        <div class="lp-group"><label>Label Font <span id="v-rate-label">18px</span></label><input type="range" id="s-rate-label" min="8" max="24" value="18" step="1"></div>
-        <div class="lp-group"><label>Valor Font <span id="v-rate-value">1.5rem</span></label><input type="range" id="s-rate-value" min="12" max="36" value="24" step="1"></div>
+        <div class="lp-group"><label>Padding V <span id="v-rate-py">0.250rem</span></label><input type="range" id="s-rate-py" min="0" max="40" value="4" step="1"></div>
+        <div class="lp-group"><label>Padding H <span id="v-rate-px">0.250rem</span></label><input type="range" id="s-rate-px" min="0" max="24" value="4" step="1"></div>
+        <div class="lp-group"><label>Label Font <span id="v-rate-label">16px</span></label><input type="range" id="s-rate-label" min="8" max="24" value="16" step="1"></div>
+        <div class="lp-group"><label>Valor Font <span id="v-rate-value">1.563rem</span></label><input type="range" id="s-rate-value" min="12" max="36" value="25" step="1"></div>
 
         <div class="lp-hdr">▸ Inputs</div>
-        <div class="lp-group"><label>Padding V <span id="v-input-py">1.75rem</span></label><input type="range" id="s-input-py" min="4" max="32" value="28" step="1"></div>
-        <div class="lp-group"><label>Padding H <span id="v-input-px">1rem</span></label><input type="range" id="s-input-px" min="4" max="24" value="16" step="1"></div>
-        <div class="lp-group"><label>Font Size <span id="v-input-fs">1.75rem</span></label><input type="range" id="s-input-fs" min="16" max="48" value="28" step="1"></div>
-        <div class="lp-group"><label>Label Font <span id="v-label-fs">15px</span></label><input type="range" id="s-label-fs" min="8" max="20" value="15" step="1"></div>
-        <div class="lp-group"><label>Gap <span id="v-input-gap">1.313rem</span></label><input type="range" id="s-input-gap" min="0" max="28" value="21" step="1"></div>
+        <div class="lp-group"><label>Padding V <span id="v-input-py">1.188rem</span></label><input type="range" id="s-input-py" min="0" max="40" value="19" step="1"></div>
+        <div class="lp-group"><label>Padding H <span id="v-input-px">1.063rem</span></label><input type="range" id="s-input-px" min="0" max="24" value="17" step="1"></div>
+        <div class="lp-group"><label>Font Size <span id="v-input-fs">2.250rem</span></label><input type="range" id="s-input-fs" min="16" max="48" value="36" step="1"></div>
+        <div class="lp-group"><label>Label Font <span id="v-label-fs">13px</span></label><input type="range" id="s-label-fs" min="8" max="20" value="13" step="1"></div>
+        <div class="lp-group"><label>Gap <span id="v-input-gap">0.813rem</span></label><input type="range" id="s-input-gap" min="0" max="28" value="13" step="1"></div>
 
         <div class="lp-hdr">▸ Header</div>
-        <div class="lp-group"><label>Título Font <span id="v-title-fs">1.875rem</span></label><input type="range" id="s-title-fs" min="14" max="36" value="30" step="1"></div>
-        <div class="lp-group"><label>Margin Bottom <span id="v-header-mb">0rem</span></label><input type="range" id="s-header-mb" min="0" max="20" value="0" step="1"></div>
+        <div class="lp-group"><label>Título Font <span id="v-title-fs">1.563rem</span></label><input type="range" id="s-title-fs" min="14" max="36" value="25" step="1"></div>
+        <div class="lp-group"><label>Margin Bottom <span id="v-header-mb">0.938rem</span></label><input type="range" id="s-header-mb" min="0" max="24" value="15" step="1"></div>
 
         <div class="lp-hdr">▸ Teclado</div>
-        <div class="lp-group"><label>Altura <span id="v-keypad-h">41dvh</span></label><input type="range" id="s-keypad-h" min="25" max="55" value="41" step="1"></div>
+        <div class="lp-group"><label>Altura <span id="v-keypad-h">38dvh</span></label><input type="range" id="s-keypad-h" min="25" max="55" value="38" step="1"></div>
 
         <div class="lp-hdr">▸ General</div>
-        <div class="lp-group"><label>Top Padding Y <span id="v-top-py">1.188rem</span></label><input type="range" id="s-top-py" min="0" max="24" value="19" step="1"></div>
+        <div class="lp-group"><label>Top Padding Y <span id="v-top-py">1.125rem</span></label><input type="range" id="s-top-py" min="0" max="28" value="18" step="1"></div>
 
         <div class="lp-hdr">▸ CSS Generado</div>
         <div class="lp-output" id="lp-output"></div>
@@ -518,19 +516,19 @@
         ];
 
         const sliderConfig = {
-            'rate-py': { val: 22, fn: (v) => rem(v) },
-            'rate-px': { val: 14, fn: (v) => rem(v) },
-            'rate-label': { val: 18, fn: (v) => px(v) },
-            'rate-value': { val: 24, fn: (v) => rem(v) },
-            'input-py': { val: 28, fn: (v) => rem(v) },
-            'input-px': { val: 16, fn: (v) => rem(v) },
-            'input-fs': { val: 28, fn: (v) => rem(v) },
-            'label-fs': { val: 15, fn: (v) => px(v) },
-            'input-gap': { val: 21, fn: (v) => rem(v) },
-            'title-fs': { val: 30, fn: (v) => rem(v) },
-            'header-mb': { val: 0, fn: (v) => rem(v) },
-            'keypad-h': { val: 41, fn: (v) => v + 'dvh' },
-            'top-py': { val: 19, fn: (v) => rem(v) },
+            'rate-py': { val: 4, fn: (v) => rem(v) },
+            'rate-px': { val: 4, fn: (v) => rem(v) },
+            'rate-label': { val: 16, fn: (v) => px(v) },
+            'rate-value': { val: 25, fn: (v) => rem(v) },
+            'input-py': { val: 19, fn: (v) => rem(v) },
+            'input-px': { val: 17, fn: (v) => rem(v) },
+            'input-fs': { val: 36, fn: (v) => rem(v) },
+            'label-fs': { val: 13, fn: (v) => px(v) },
+            'input-gap': { val: 13, fn: (v) => rem(v) },
+            'title-fs': { val: 25, fn: (v) => rem(v) },
+            'header-mb': { val: 15, fn: (v) => rem(v) },
+            'keypad-h': { val: 38, fn: (v) => v + 'dvh' },
+            'top-py': { val: 18, fn: (v) => rem(v) },
         };
 
         function updateFromSliders() {
@@ -539,7 +537,7 @@
                 if (!el) continue;
                 const raw = +el.value;
                 const display = cfg.fn(raw);
-                document.documentElement.style.setProperty('--' + (name === 'rate-label' || name === 'rate-value' ? 'rate-' + name.split('-')[1] : name), display);
+                document.documentElement.style.setProperty('--' + name, display);
                 const vEl = document.getElementById('v-' + name);
                 if (vEl) vEl.textContent = display;
             }
