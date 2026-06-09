@@ -839,14 +839,9 @@
             const saldo = parseFloat(document.getElementById('compra-saldo').value) || 0;
 
             let html = `
-                <div class="glass rounded-lg px-3 py-2">
-                    <div class="flex items-center justify-between text-[10px] font-bold text-purple-300/60">
-                        <span>Inicial: <span class="text-purple-100">${formatNum(saldo)} Bs</span></span>
-                    </div>
-                    <div class="flex items-center justify-between mt-1.5 text-xs font-bold">
-                        <span>Gastado: <span class="text-red-400/90">${formatNum(totalBs)} Bs</span></span>
-                        <span>Restan: <span class="text-green-400/90">${formatNum(saldo - totalBs)} Bs</span></span>
-                    </div>
+                <div class="flex items-center justify-between glass rounded-lg px-3 py-2 text-xs font-bold">
+                    <span>Gastado: <span class="text-red-400/90">${formatNum(totalBs)} Bs</span></span>
+                    <span>Restan: <span class="text-green-400/90">${formatNum(saldo - totalBs)} Bs</span></span>
                 </div>`;
 
             html += compraItems.map((item, i) =>
