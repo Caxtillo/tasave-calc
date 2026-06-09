@@ -274,9 +274,9 @@
                 <div class="flex flex-col gap-2 px-1 h-full">
                     <div class="glass rounded-xl px-3 py-2">
                         <label class="text-[9px] uppercase tracking-[0.2em] text-purple-300/40 font-bold">Saldo Disponible</label>
-                        <div class="input-box mt-1" onclick="focusInput('compra-saldo')">
-                            <span class="input-currency">Bs</span>
-                            <input type="text" id="compra-saldo" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false" class="input-inner" placeholder="0.00">
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-purple-400/60 font-bold text-sm">Bs</span>
+                            <input type="text" id="compra-saldo" inputmode="decimal" autocomplete="off" class="flex-1 bg-transparent border-b border-purple-500/30 text-xl font-bold text-purple-100 outline-none py-1.5" placeholder="0.00">
                         </div>
                     </div>
 
@@ -284,8 +284,8 @@
                         <div class="text-center text-purple-400/30 text-[10px] font-bold uppercase tracking-wider py-4">Sin items</div>
                     </div>
 
-                    <div class="glass rounded-xl px-3 py-2 shrink-0">
-                        <div class="flex items-center gap-2 mb-1">
+                    <div class="glass rounded-xl px-3 py-3 shrink-0">
+                        <div class="flex items-center gap-2 mb-2">
                             <span class="text-purple-400/60 font-bold text-sm">Bs</span>
                             <select id="compra-moneda" class="bg-transparent text-purple-100 text-xs font-bold outline-none border border-purple-500/20 rounded-md px-2 py-0.5">
                                 <option value="Bs" class="bg-[#0f0c1d]">Bs</option>
@@ -294,15 +294,15 @@
                             <span class="text-[9px] uppercase tracking-[0.2em] text-purple-300/40 font-bold ml-auto">Precio</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <input type="text" id="compra-precio" inputmode="none" autocomplete="off" class="flex-1 bg-transparent border-b border-purple-500/30 text-lg font-bold text-purple-100 outline-none py-0.5" placeholder="0.00" style="max-width:100px">
-                            <div class="flex items-center gap-1">
-                                <button class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-lg" onclick="compraCant(-1)">−</button>
+                            <input type="text" id="compra-precio" inputmode="decimal" autocomplete="off" class="flex-1 bg-transparent border-b border-purple-500/30 text-lg font-bold text-purple-100 outline-none py-1.5" placeholder="0.00">
+                            <div class="flex items-center gap-1 ml-auto">
+                                <button class="flex items-center justify-center w-8 h-8 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-lg" onclick="compraCant(-1)">−</button>
                                 <span id="compra-cant" class="text-purple-100 font-bold text-base w-6 text-center">1</span>
-                                <button class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-lg" onclick="compraCant(1)">+</button>
+                                <button class="flex items-center justify-center w-8 h-8 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-lg" onclick="compraCant(1)">+</button>
                             </div>
                         </div>
-                        <input type="text" id="compra-concepto" inputmode="text" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1 mt-1" placeholder="Concepto...">
-                        <button onclick="compraAgregar()" class="w-full mt-2 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
+                        <input type="text" id="compra-concepto" inputmode="text" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mt-2" placeholder="Concepto...">
+                        <button onclick="compraAgregar()" id="compra-btn" class="w-full mt-2 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
                     </div>
                 </div>
             </div>
@@ -386,7 +386,6 @@
             if (name === 'usd') inputUsd.parentElement.classList.add('input-selected');
             else if (name === 'ves') inputVes.parentElement.classList.add('input-selected');
             else if (name === 'custom') inputCustomRate.parentElement.classList.add('input-selected');
-            else if (name === 'compra-saldo') document.getElementById('compra-saldo').parentElement.classList.add('input-selected');
         }
 
         document.querySelectorAll('.keypad-btn').forEach(btn => {
@@ -608,12 +607,13 @@
 
         let compraItems = [];
         let compraCantVal = 1;
-        let compraActiveInput = null;
+        let compraEditIndex = null;
 
         function showPage(page) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
             document.getElementById('page-inicio').classList.toggle('hidden', page !== 'inicio');
             document.getElementById('page-compra').classList.toggle('hidden', page !== 'compra');
+            document.getElementById('keypad').classList.toggle('hidden', page !== 'inicio');
             const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
             if (navItem) navItem.classList.add('nav-active');
             lucide.createIcons();
@@ -634,8 +634,19 @@
             if (isNaN(precio) || precio <= 0) return alert('Precio invalido');
             if (!conceptoEl.value.trim()) return alert('Escribe un concepto');
 
-            const item = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim() };
-            compraItems.push(item);
+            if (compraEditIndex !== null) {
+                const old = compraItems[compraEditIndex];
+                if (old.moneda === 'Bs') {
+                    const saldo = parseFloat(saldoEl.value) || 0;
+                    saldoEl.value = (saldo + old.precio * old.cantidad).toFixed(2);
+                }
+                compraItems[compraEditIndex] = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim() };
+                compraEditIndex = null;
+                document.getElementById('compra-btn').textContent = '+ Agregar';
+            } else {
+                const item = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim() };
+                compraItems.push(item);
+            }
 
             if (moneda === 'Bs') {
                 const saldo = parseFloat(saldoEl.value) || 0;
@@ -657,52 +668,41 @@
             }
             lista.innerHTML = compraItems.map((item, i) =>
                 `<div class="flex items-center justify-between glass rounded-lg px-3 py-2">
-                    <div class="flex flex-col">
-                        <span class="text-purple-100 text-sm font-semibold">${item.concepto}</span>
+                    <div class="flex flex-col min-w-0 flex-1">
+                        <span class="text-purple-100 text-sm font-semibold truncate">${item.concepto}</span>
                         <span class="text-[10px] text-purple-400/50">${item.cantidad}x ${item.precio.toFixed(2)} ${item.moneda}</span>
                     </div>
-                    <button onclick="compraEliminar(${i})" class="text-red-400/50 text-xs font-bold px-2">✕</button>
+                    <div class="flex items-center gap-1 shrink-0 ml-2">
+                        <button onclick="compraEditar(${i})" class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300/60 text-xs"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="compraEliminar(${i})" class="flex items-center justify-center w-7 h-7 rounded-md bg-red-500/10 border border-red-500/20 text-red-400/60 text-xs"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
                 </div>`
             ).join('');
+            lucide.createIcons();
         }
 
         function compraEliminar(i) {
+            if (!confirm('Eliminar este item?')) return;
             const item = compraItems[i];
             compraItems.splice(i, 1);
             if (item.moneda === 'Bs') {
                 const saldoEl = document.getElementById('compra-saldo');
                 saldoEl.value = (parseFloat(saldoEl.value) + item.precio * item.cantidad).toFixed(2);
             }
+            if (compraEditIndex === i) compraEditIndex = null;
             renderCompraLista();
         }
 
-        document.querySelectorAll('#page-compra input, #page-compra select').forEach(el => {
-            el.addEventListener('focus', () => {
-                compraActiveInput = el;
-                document.querySelectorAll('.input-box').forEach(b => b.classList.remove('input-selected'));
-                if (el.classList.contains('input-inner')) el.parentElement.classList.add('input-selected');
-            });
-        });
-
-        // Patch keypad to write to compra inputs when compra page is active
-        document.querySelectorAll('.keypad-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (document.getElementById('page-compra').classList.contains('hidden')) return;
-                if (!compraActiveInput) return;
-                if (compraActiveInput.inputMode === 'text') return;
-                const el = compraActiveInput;
-                const key = btn.dataset.key;
-                if (key === 'backspace') {
-                    el.value = el.value.slice(0, -1);
-                } else if (key === 'clear' || key === 'clear-all') {
-                    el.value = '';
-                } else if (key === 'swap' || key === '+') {
-                } else {
-                    el.value = el.value + key;
-                }
-                el.dispatchEvent(new Event('input'));
-            });
-        });
+        function compraEditar(i) {
+            const item = compraItems[i];
+            document.getElementById('compra-precio').value = item.precio;
+            document.getElementById('compra-concepto').value = item.concepto;
+            document.getElementById('compra-moneda').value = item.moneda;
+            compraCantVal = item.cantidad;
+            document.getElementById('compra-cant').textContent = item.cantidad;
+            compraEditIndex = i;
+            document.getElementById('compra-btn').textContent = '✓ Guardar';
+        }
 
         fetchRates();
     </script>
