@@ -194,7 +194,7 @@
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
 
-    <div id="app" class="w-full max-w-md mx-auto flex flex-col h-dvh p-3">
+    <div id="app" class="w-full max-w-md mx-auto flex flex-col h-dvh px-3">
         <div id="loading" class="fixed inset-0 z-50 bg-[#0f0c1d] flex flex-col items-center justify-center gap-4">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             <p class="text-purple-300 animate-pulse font-medium">Consultando tasas...</p>
@@ -210,8 +210,7 @@
 
         <div id="content" class="hidden flex flex-col h-full">
 
-            <div id="page-inicio">
-                <div class="flex-1 flex flex-col min-h-0" style="padding-top:var(--top-py);padding-bottom:var(--top-py)">
+            <div id="page-inicio" class="flex-1 flex flex-col min-h-0" style="padding-top:var(--top-py);padding-bottom:var(--top-py)">
                 <header class="flex items-center justify-between shrink-0" style="margin-bottom:var(--header-mb)">
                     <div class="flex items-center gap-2">
                         <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
@@ -268,7 +267,7 @@
                             <input type="text" id="input-ves" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false" class="input-inner" placeholder="0.00">
                         </div>
                     </div>
-                </div> <!-- fin inputs-section -->
+                </div>
             </div> <!-- fin page-inicio -->
 
             <div id="page-compra" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto" style="padding-top:var(--top-py);padding-bottom:var(--top-py)">
@@ -303,7 +302,7 @@
                             </div>
                         </div>
                         <input type="text" id="compra-concepto" inputmode="none" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1 mt-1" placeholder="Concepto...">
-                        <button onclick="compraAgregar()" class="w-full mt-2 py-2 bg-purple-500/20 text-purple-200 rounded-xl border border-purple-500/30 font-bold text-sm">Agregar</button>
+                        <button onclick="compraAgregar()" class="w-full mt-2 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
                     </div>
                 </div>
             </div>
