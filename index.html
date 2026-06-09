@@ -337,6 +337,7 @@
                         </div>
                         <div id="cal-grid" class="grid grid-cols-7 gap-0 mt-1"></div>
                     </div>
+                    <div id="cal-detalle" class="mt-2 px-0"></div>
                 </div>
             </div>
 
@@ -735,12 +736,12 @@
                     const saldo = parseFloat(saldoEl.value) || 0;
                     saldoEl.value = (saldo + oldTotal).toFixed(2);
                 }
-                compraItems[compraEditIndex] = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate };
+                compraItems[compraEditIndex] = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate, fecha: old.fecha };
                 compraEditIndex = null;
                 document.getElementById('compra-btn').textContent = '+ Agregar';
             } else {
                 const rateVal = moneda === '$' ? (compraRate === 'bcv' ? rates.bcv : rates.binance) : 0;
-                const item = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate };
+                const item = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate, fecha: new Date().toISOString().slice(0, 10) };
                 compraItems.push(item);
             }
 
@@ -841,26 +842,58 @@
             const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
             document.getElementById('cal-titulo').textContent = months[month] + ' ' + year;
 
-            const firstDow = new Date(year, month, 1).getDay(); // 0=Sun
+            const firstDow = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const today = new Date();
             const todayStr = today.toISOString().slice(0, 10);
 
+            const itemsByDate = {};
+            compraItems.forEach(item => {
+                const d = item.fecha;
+                if (!itemsByDate[d]) itemsByDate[d] = [];
+                itemsByDate[d].push(item);
+            });
+
             let html = '';
-            let dow = firstDow === 0 ? 6 : firstDow - 1; // convert to Mon=0
+            let dow = firstDow === 0 ? 6 : firstDow - 1;
             for (let i = 0; i < dow; i++) html += '<div></div>';
 
             for (let d = 1; d <= daysInMonth; d++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const isToday = dateStr === todayStr;
-                html += `<div class="text-center py-1.5 text-sm font-semibold rounded-lg ${isToday ? 'bg-purple-500/30 text-purple-100' : 'text-purple-300/60'}">${d}</div>`;
+                const hasItems = itemsByDate[dateStr]?.length > 0;
+                html += `<div class="relative text-center py-1.5 text-sm font-semibold rounded-lg cursor-pointer ${isToday ? 'bg-purple-500/30 text-purple-100' : 'hover:bg-purple-500/10 text-purple-300/60'}" onclick="calSelectDay('${dateStr}')">
+                    ${d}${hasItems ? '<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-purple-400"></span>' : ''}
+                </div>`;
             }
             document.getElementById('cal-grid').innerHTML = html;
+            calSelectDay(todayStr);
         }
 
         function calNav(delta) {
             calDate.setMonth(calDate.getMonth() + delta);
             renderCal();
+        }
+
+        let calSelectedDay = null;
+
+        function calSelectDay(dateStr) {
+            calSelectedDay = dateStr;
+            const el = document.getElementById('cal-detalle');
+            const items = compraItems.filter(item => item.fecha === dateStr);
+            if (items.length === 0) {
+                el.innerHTML = '<div class="text-center text-purple-400/30 text-[10px] font-bold uppercase tracking-wider py-3">Sin compras este día</div>';
+                return;
+            }
+            el.innerHTML = '<div class="text-[9px] uppercase tracking-[0.2em] text-purple-400/40 font-bold mb-1 px-1">Compras</div>' +
+                items.map((item, i) =>
+                    `<div class="flex items-center justify-between glass rounded-lg px-3 py-2 mb-1">
+                        <div class="flex flex-col min-w-0 flex-1">
+                            <span class="text-purple-100 text-sm font-semibold truncate">${item.concepto}</span>
+                            <span class="text-[10px] text-purple-400/50">${item.cantidad}x ${item.precio.toFixed(2)} ${item.moneda}</span>
+                        </div>
+                    </div>`
+                ).join('');
         }
 
         // Enter key submits or advances in compra form
