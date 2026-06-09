@@ -369,7 +369,7 @@
                     <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                     <span class="text-[8px] font-bold uppercase tracking-wider">Compra</span>
                 </div>
-                <div class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-purple-400/50" data-page="calendario">
+                <div class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-purple-400/50" data-page="calendario" onclick="showPage('calendario')">
                     <i data-lucide="calendar" class="w-5 h-5"></i>
                     <span class="text-[8px] font-bold uppercase tracking-wider">Calendario</span>
                 </div>
@@ -729,6 +729,8 @@
             if (isNaN(precio) || precio <= 0) return alert('Precio invalido');
             if (!conceptoEl.value.trim()) return alert('Escribe un concepto');
 
+            const rateVal = moneda === '$' ? (compraRate === 'bcv' ? rates.bcv : rates.binance) : 0;
+
             if (compraEditIndex !== null) {
                 const old = compraItems[compraEditIndex];
                 const oldTotal = old.moneda === 'Bs' ? old.precio * old.cantidad : old.precio * old.cantidad * (old.rateVal || 0);
@@ -740,7 +742,6 @@
                 compraEditIndex = null;
                 document.getElementById('compra-btn').textContent = '+ Agregar';
             } else {
-                const rateVal = moneda === '$' ? (compraRate === 'bcv' ? rates.bcv : rates.binance) : 0;
                 const item = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate, fecha: new Date().toISOString().slice(0, 10) };
                 compraItems.push(item);
             }
