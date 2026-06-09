@@ -315,7 +315,6 @@
                     </div>
                     <input type="text" id="compra-concepto" inputmode="text" enterkeyhint="go" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mt-2" placeholder="Concepto...">
                     <div class="flex gap-2 mt-2">
-                        <button onclick="compraFotoClick()" class="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300/60 shrink-0" title="Foto de factura"><i data-lucide="camera" class="w-5 h-5"></i></button>
                         <input type="file" id="compra-foto-input" accept="image/*" capture="environment" class="hidden" onchange="compraFotoSeleccionada(event)">
                         <button onclick="compraAgregar()" id="compra-btn" class="flex-1 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
                     </div>
@@ -323,6 +322,8 @@
                         <img id="compra-foto-img" class="w-full h-24 object-cover rounded-lg border border-purple-500/20">
                         <button onclick="compraFotoRemover()" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/50 text-white text-xs font-bold">✕</button>
                     </div>
+                    <div class="border-t border-purple-500/10 my-3"></div>
+                    <button onclick="compraFotoClick()" class="w-full py-2 bg-purple-500/10 text-purple-300/60 rounded-xl border border-purple-500/20 font-bold text-xs flex items-center justify-center gap-1.5"><i data-lucide="camera" class="w-3.5 h-3.5"></i> Foto de factura</button>
                     <button onclick="compraFinalizar()" class="w-full mt-2 py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar compra</button>
                 </div>
             </div>
@@ -897,7 +898,8 @@
         }
 
         function compraFinalizar() {
-            if (compraItems.length === 0) return alert('Agrega al menos un item');
+            if (compraItems.length === 0) return;
+            if (!confirm('¿Finalizar esta compra? Se guardará el resumen en el calendario.')) return;
             const saldo = document.getElementById('compra-saldo').value;
             const totalBs = compraItems.reduce((sum, item) => {
                 if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
@@ -919,7 +921,8 @@
             document.getElementById('compra-foto-preview').classList.add('hidden');
             document.getElementById('compra-foto-input').value = '';
             renderCompraLista();
-            alert('Compra finalizada ✓');
+            compraFotoRemover();
+            renderCal();
         }
 
         document.getElementById('compra-precio').addEventListener('input', compraConvPreview);
@@ -943,7 +946,12 @@
             compraItems.forEach(item => {
                 const d = item.fecha;
                 if (!itemsByDate[d]) itemsByDate[d] = [];
-                itemsByDate[d].push(item);
+                itemsByDate[d].push({ type: 'pendiente', ...item });
+            });
+            (JSON.parse(localStorage.getItem('compraHistorial') || '[]')).forEach(pc => {
+                const d = pc.fecha.slice(0, 10);
+                if (!itemsByDate[d]) itemsByDate[d] = [];
+                itemsByDate[d].push({ type: 'finalizada', ...pc });
             });
 
             let html = '';
@@ -953,9 +961,14 @@
             for (let d = 1; d <= daysInMonth; d++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const isToday = dateStr === todayStr;
-                const hasItems = itemsByDate[dateStr]?.length > 0;
+                const items = itemsByDate[dateStr] || [];
+                const hasPendiente = items.some(x => x.type === 'pendiente');
+                const hasFinalizada = items.some(x => x.type === 'finalizada');
+                const dot = hasPendiente && hasFinalizada ? '<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5"><span class="w-1 h-1 rounded-full bg-purple-400"></span><span class="w-1 h-1 rounded-full bg-emerald-400"></span></span>' :
+                    hasPendiente ? '<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-purple-400"></span>' :
+                    hasFinalizada ? '<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-400"></span>' : '';
                 html += `<div class="relative text-center py-1.5 text-sm font-semibold rounded-lg cursor-pointer ${isToday ? 'bg-purple-500/30 text-purple-100' : 'hover:bg-purple-500/10 text-purple-300/60'}" onclick="calSelectDay('${dateStr}')">
-                    ${d}${hasItems ? '<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-purple-400"></span>' : ''}
+                    ${d}${dot}
                 </div>`;
             }
             document.getElementById('cal-grid').innerHTML = html;
@@ -973,12 +986,15 @@
             calSelectedDay = dateStr;
             const el = document.getElementById('cal-detalle');
             const items = compraItems.filter(item => item.fecha === dateStr);
-            if (items.length === 0) {
+            const historial = (JSON.parse(localStorage.getItem('compraHistorial') || '[]')).filter(pc => pc.fecha.slice(0, 10) === dateStr);
+            if (items.length === 0 && historial.length === 0) {
                 el.innerHTML = '<div class="text-center text-purple-400/30 text-[10px] font-bold uppercase tracking-wider py-3">Sin compras este día</div>';
                 return;
             }
-            el.innerHTML = '<div class="text-[9px] uppercase tracking-[0.2em] text-purple-400/40 font-bold mb-1 px-1">Compras</div>' +
-                items.map((item, i) =>
+            let html = '';
+            if (items.length) {
+                html += '<div class="text-[9px] uppercase tracking-[0.2em] text-purple-400/40 font-bold mb-1 px-1">Pendientes</div>';
+                html += items.map(item =>
                     `<div class="flex items-center justify-between glass rounded-lg px-3 py-2 mb-1">
                         <div class="flex flex-col min-w-0 flex-1">
                             <span class="text-purple-100 text-sm font-semibold truncate">${item.concepto}</span>
@@ -986,6 +1002,28 @@
                         </div>
                     </div>`
                 ).join('');
+            }
+            historial.forEach(pc => {
+                const total = parseFloat(pc.total);
+                const fechaHr = new Date(pc.fecha).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+                html += '<div class="text-[9px] uppercase tracking-[0.2em] text-emerald-400/40 font-bold mt-2 mb-1 px-1">Finalizada ' + fechaHr + '</div>';
+                html += '<div class="glass rounded-lg px-3 py-2 mb-1 border border-emerald-500/20">';
+                html += pc.items.map(item =>
+                    `<div class="flex items-center justify-between py-0.5">
+                        <span class="text-emerald-100 text-xs font-semibold truncate">${item.concepto}</span>
+                        <span class="text-[10px] text-emerald-400/50 shrink-0 ml-2">${item.cantidad}x ${item.precio.toFixed(2)} ${item.moneda}</span>
+                    </div>`
+                ).join('');
+                html += '<div class="border-t border-emerald-500/10 mt-1 pt-1 flex items-center justify-between">';
+                html += '<span class="text-[10px] text-emerald-300/60 font-bold">Total</span>';
+                html += '<span class="text-sm text-emerald-200 font-bold">' + total.toFixed(2) + ' Bs</span>';
+                html += '</div>';
+                if (pc.foto) {
+                    html += '<img src="' + pc.foto + '" class="w-full h-20 object-cover rounded-lg mt-1.5 border border-emerald-500/20">';
+                }
+                html += '</div>';
+            });
+            el.innerHTML = html;
         }
 
         // Enter key submits or advances in compra form
