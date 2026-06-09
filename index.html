@@ -801,12 +801,16 @@
             renderCal();
         }
 
-        // Enter key submits compra item
+        // Enter key submits or advances in compra form
         document.getElementById('compra-precio').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') e.preventDefault();
         });
         document.getElementById('compra-precio').addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') compraAgregar();
+            if (e.key === 'Enter') {
+                const concepto = document.getElementById('compra-concepto');
+                if (concepto.value.trim()) compraAgregar();
+                else concepto.focus();
+            }
         });
         document.getElementById('compra-concepto').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') e.preventDefault();
