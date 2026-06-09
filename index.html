@@ -393,11 +393,8 @@
                                 </div>
                             </div>
                             <div id="config-setup-bd" class="hidden mb-2">
-                                <div class="text-[10px] text-red-400/60 font-bold mb-1">Falta configurar la base de datos</div>
-                                <input type="text" id="config-supabase-key" class="w-full bg-transparent border border-purple-500/30 text-[10px] text-purple-200 outline-none rounded-lg px-2 py-1.5 mb-1" placeholder="Pega service_role key aquí">
-                                <button onclick="setupBD()" class="w-full py-2 bg-amber-500/20 text-amber-300/80 rounded-xl border border-amber-500/30 font-bold text-xs flex items-center justify-center gap-1.5"><i data-lucide="database" class="w-3 h-3"></i> Crear tabla automáticamente</button>
-                                <button onclick="syncAhora()" class="w-full mt-1 py-1.5 bg-purple-500/10 text-purple-300/50 rounded-lg border border-purple-500/20 font-bold text-[10px]">Ya lo hice — verificar</button>
-                                <div class="text-[9px] text-purple-400/20 text-center mt-1">La service_role key está en Settings → API de Supabase</div>
+                                <div class="text-[10px] text-red-400/60 font-bold mb-1">Error de conexión</div>
+                                <button onclick="syncAhora()" class="w-full py-2 bg-amber-500/20 text-amber-300/80 rounded-xl border border-amber-500/30 font-bold text-xs">Reintentar sincronización</button>
                             </div>
                             <button onclick="syncAhora()" class="w-full mb-2 py-2 bg-purple-500/10 text-purple-300/60 rounded-xl border border-purple-500/20 font-bold text-xs flex items-center justify-center gap-1.5"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Sincronizar ahora</button>
                             <button onclick="authCerrar()" class="w-full mb-3 py-2 bg-red-500/10 text-red-400/60 rounded-xl border border-red-500/20 font-bold text-xs flex items-center justify-center gap-1.5"><i data-lucide="log-out" class="w-3 h-3"></i> Cerrar sesión</button>
@@ -1245,7 +1242,6 @@
         let _supabase = null;
         let _supabaseUser = null;
         let _syncTimer = null;
-        let _syncUnsub = null;
 
         function supabaseInit() {
             if (_supabase) return _supabase;
@@ -1299,7 +1295,6 @@
             document.getElementById('auth-overlay').style.display = 'none';
             actualizarConfigUI();
             await syncDesdeSupabase();
-            escucharSupabase();
         }
 
         function authMostrar() {
@@ -1312,7 +1307,6 @@
         async function authCerrar() {
             const sb = supabaseInit();
             if (!sb) return;
-            if (_syncUnsub) { _syncUnsub(); _syncUnsub = null; }
             await sb.auth.signOut();
             _supabaseUser = null;
             actualizarConfigUI();
@@ -1336,11 +1330,8 @@
             }
         }
 
-        async function syncASupabase() {
-            if (!_supabaseUser) return;
-            const sb = supabaseInit();
-            if (!sb) return;
-            const data = {
+        function getDatosCompletos() {
+            return {
                 compraItems,
                 compraSaldo: document.getElementById('compra-saldo')?.value || '',
                 compraMoneda,
@@ -1348,14 +1339,28 @@
                 'compra-lugar': document.getElementById('compra-lugar')?.value || '',
                 compraHistorial: JSON.parse(localStorage.getItem('compraHistorial') || '[]')
             };
-            const { error } = await sb.from('user_data').upsert(
-                { user_id: _supabaseUser.id, data, updated_at: new Date().toISOString() },
-                { onConflict: 'user_id' }
-            );
-            if (error && error.code === '42P01') {
-                document.getElementById('config-sync-status').textContent = 'BD no configurada';
-                document.getElementById('config-setup-bd').classList.remove('hidden');
-            } else if (error) {
+        }
+
+        function setDatosCompletos(d) {
+            if (d.compraItems) compraItems = d.compraItems;
+            if (d.compraSaldo !== undefined) document.getElementById('compra-saldo').value = d.compraSaldo;
+            if (d.compraMoneda) compraMoneda = d.compraMoneda;
+            if (d.compraRate) compraRate = d.compraRate;
+            if (d['compra-lugar'] !== undefined) document.getElementById('compra-lugar').value = d['compra-lugar'];
+            if (d.compraHistorial) localStorage.setItem('compraHistorial', JSON.stringify(d.compraHistorial));
+            saveCompraState();
+            renderCompraLista();
+        }
+
+        async function syncASupabase() {
+            if (!_supabaseUser) return;
+            const sb = supabaseInit();
+            if (!sb) return;
+            const data = getDatosCompletos();
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const path = _supabaseUser.id + '/data.json';
+            const { error } = await sb.storage.from('userdata').upload(path, blob, { upsert: true, contentType: 'application/json' });
+            if (error) {
                 document.getElementById('config-sync-status').textContent = 'Error: ' + error.message;
             } else {
                 document.getElementById('config-sync-status').textContent = 'Sincronizado';
@@ -1368,89 +1373,23 @@
             const sb = supabaseInit();
             if (!sb) return;
             document.getElementById('config-sync-status').textContent = 'Descargando...';
-            const { data, error } = await sb.from('user_data')
-                .select('data, updated_at')
-                .eq('user_id', _supabaseUser.id)
-                .single();
-            if (error && error.code === '42P01') {
-                document.getElementById('config-sync-status').textContent = 'BD no configurada';
-                document.getElementById('config-setup-bd').classList.remove('hidden');
-                return;
-            }
-            if (error || !data) {
+            const path = _supabaseUser.id + '/data.json';
+            const { data, error } = await sb.storage.from('userdata').download(path);
+            if (error) {
                 document.getElementById('config-sync-status').textContent = 'Sin datos en nube';
                 document.getElementById('config-setup-bd').classList.add('hidden');
                 return;
             }
-            const d = data.data;
-            if (d.compraItems) compraItems = d.compraItems;
-            if (d.compraSaldo !== undefined) document.getElementById('compra-saldo').value = d.compraSaldo;
-            if (d.compraMoneda) compraMoneda = d.compraMoneda;
-            if (d.compraRate) compraRate = d.compraRate;
-            if (d['compra-lugar'] !== undefined) document.getElementById('compra-lugar').value = d['compra-lugar'];
-            if (d.compraHistorial) localStorage.setItem('compraHistorial', JSON.stringify(d.compraHistorial));
-            saveCompraState();
-            renderCompraLista();
+            const d = JSON.parse(await data.text());
+            setDatosCompletos(d);
             document.getElementById('config-sync-status').textContent = 'Datos descargados';
-        }
-
-        function escucharSupabase() {
-            if (!_supabaseUser) return;
-            const sb = supabaseInit();
-            if (!sb) return;
-            if (_syncUnsub) _syncUnsub();
-            _syncUnsub = sb.channel('user_data_' + _supabaseUser.id)
-                .on('postgres_changes',
-                    { event: '*', schema: 'public', table: 'user_data', filter: 'user_id=eq.' + _supabaseUser.id },
-                    () => { syncDesdeSupabase(); }
-                )
-                .subscribe();
-        }
-
-        function syncNow() {
-            if (!_supabaseUser) { authMostrar(); return; }
-            syncASupabase();
+            document.getElementById('config-setup-bd').classList.add('hidden');
         }
 
         function encolarSync() {
             if (!_supabaseUser) return;
             clearTimeout(_syncTimer);
             _syncTimer = setTimeout(syncASupabase, 2000);
-        }
-
-        async function setupBD() {
-            const key = document.getElementById('config-supabase-key').value.trim();
-            if (!key) { alert('Pega la service_role key en el campo de arriba'); return; }
-            document.getElementById('config-sync-status').textContent = 'Creando tabla...';
-            const sql = `create table if not exists public.user_data (
-  id bigint generated by default as identity primary key,
-  user_id uuid references auth.users not null unique,
-  data jsonb not null default '{}',
-  updated_at timestamptz default now()
-);
-alter table public.user_data enable row level security;
-drop policy if exists "crud_own" on public.user_data;
-create policy "crud_own"
-  on public.user_data for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);`;
-            try {
-                const res = await fetch('https://api.supabase.com/v1/projects/nldvaxirrmkoxdtlfnut/database/query', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-                    body: JSON.stringify({ query: sql })
-                });
-                if (!res.ok) {
-                    const txt = await res.text();
-                    throw new Error(txt.slice(0, 200));
-                }
-                document.getElementById('config-sync-status').textContent = 'BD lista ✅';
-                document.getElementById('config-setup-bd').classList.add('hidden');
-                await syncASupabase();
-            } catch (e) {
-                document.getElementById('config-sync-status').textContent = 'Error: ' + e.message;
-                alert('Error: ' + e.message + '\n\nPrueba creando un PAT en:\nhttps://supabase.com/dashboard/account/tokens');
-            }
         }
 
         function syncAhora() {
