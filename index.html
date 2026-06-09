@@ -497,6 +497,11 @@
         const cardCustom = document.getElementById('card-custom');
         const installBtn = document.getElementById('install-btn');
 
+        // Hide loading immediately, fetch rates in background
+        loadingEl.classList.add('hidden');
+        contentEl.classList.remove('hidden');
+        fetchRates();
+
         lucide.createIcons();
 
         function focusInput(name) {
@@ -1471,8 +1476,6 @@
         document.getElementById('auth-pass').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); authModo === 'login' ? authIniciar() : authRegistrar(); }
         });
-
-        fetchRates();
     </script>
 
     <button id="layout-btn" onclick="togglePanel()">⚙</button>
