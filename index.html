@@ -279,6 +279,7 @@
             <div id="page-compra" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto px-1" style="padding-bottom:var(--top-py)">
                 <div class="flex flex-col gap-2 h-full">
                     <div class="glass rounded-xl px-3 py-2">
+                        <input type="text" id="compra-lugar" maxlength="40" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mb-2" placeholder="Lugar de la compra (ej: Mercado, Abasto)">
                         <label class="text-[9px] uppercase tracking-[0.2em] text-purple-300/40 font-bold">Saldo Disponible</label>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-purple-400/60 font-bold text-sm">Bs</span>
@@ -289,7 +290,6 @@
                     <div id="compra-lista" class="flex-1 overflow-y-auto flex flex-col gap-1 min-h-0">
                         <div class="text-center text-purple-400/30 text-[10px] font-bold uppercase tracking-wider py-4">Sin items</div>
                     </div>
-                    <button onclick="compraModalAbrir()" class="w-full mt-2 py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5" id="compra-finalizar-btn"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar compra</button>
                 </div>
             </div>
 
@@ -330,7 +330,6 @@
                         <span class="text-purple-100 font-bold text-sm">Finalizar compra</span>
                         <span id="modal-total" class="text-emerald-300 font-bold text-sm"></span>
                     </div>
-                    <input type="text" id="modal-lugar" maxlength="40" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mb-3" placeholder="Lugar (ej: Mercado, Abasto)">
                     <div id="modal-foto-area" class="mb-3">
                         <div id="modal-foto-empty" class="flex items-center gap-2">
                             <button onclick="compraFotoClick()" class="flex items-center gap-1.5 py-2 px-3 bg-purple-500/10 text-purple-300/60 rounded-xl border border-purple-500/20 font-bold text-xs"><i data-lucide="camera" class="w-3.5 h-3.5"></i> Tomar foto</button>
@@ -345,6 +344,12 @@
                     <button onclick="compraModalFinalizar()" class="w-full py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar</button>
                     <button onclick="compraModalCerrar()" class="w-full mt-2 py-2 text-[10px] text-purple-400/30 font-bold">Cancelar</button>
                 </div>
+            </div>
+
+            <!-- Factura fullscreen modal -->
+            <div id="ver-factura-overlay" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onclick="if (event.target===this) cerrarFactura()">
+                <img id="ver-factura-img" class="max-w-full max-h-full object-contain">
+                <button onclick="cerrarFactura()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 text-white text-lg font-bold flex items-center justify-center">✕</button>
             </div>
 
             <div id="page-calendario" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto" style="padding-bottom:var(--top-py)">
@@ -387,6 +392,10 @@
                 <button class="keypad-btn" data-key="0">0</button>
                 <button class="keypad-btn keypad-btn-op" data-key="clear-all">AC</button>
                 <button class="keypad-btn keypad-btn-op" data-key="swap">⇄</button>
+            </div>
+
+            <div id="compra-finalizar-row" class="hidden shrink-0 px-3 pb-1">
+                <button onclick="compraModalAbrir()" class="w-full py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar compra</button>
             </div>
 
             <div id="bottom-nav" class="shrink-0 flex items-center justify-around px-2 pt-3 pb-1 border-t border-purple-500/10" style="background:rgba(20,12,40,0.6)">
@@ -701,6 +710,7 @@
             localStorage.setItem('compraSaldo', document.getElementById('compra-saldo')?.value || '');
             localStorage.setItem('compraMoneda', compraMoneda);
             localStorage.setItem('compraRate', compraRate);
+            localStorage.setItem('compra-lugar', document.getElementById('compra-lugar')?.value || '');
         }
 
         function loadCompraState() {
@@ -724,6 +734,8 @@
                 const el = document.getElementById('compra-rate-' + r);
                 if (el) el.click();
             }
+            const lugar = localStorage.getItem('compra-lugar');
+            if (lugar !== null) document.getElementById('compra-lugar').value = lugar;
             renderCompraLista();
         }
 
@@ -734,6 +746,7 @@
             document.getElementById('compra-form').classList.toggle('hidden', page !== 'compra');
             document.getElementById('page-calendario').classList.toggle('hidden', page !== 'calendario');
             document.getElementById('keypad').classList.toggle('hidden', page !== 'inicio');
+            document.getElementById('compra-finalizar-row').classList.toggle('hidden', page !== 'compra');
             const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
             if (navItem) navItem.classList.add('nav-active');
             if (page === 'calendario') renderCal();
@@ -794,28 +807,12 @@
 
             if (compraEditIndex !== null) {
                 const old = compraItems[compraEditIndex];
-                const oldTotal = old.moneda === 'Bs' ? old.precio * old.cantidad : old.precio * old.cantidad * (old.rateVal || 0);
-                if (oldTotal > 0) {
-                    const saldo = parseFloat(saldoEl.value) || 0;
-                    saldoEl.value = (saldo + oldTotal).toFixed(2);
-                }
                 compraItems[compraEditIndex] = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate, fecha: old.fecha };
                 compraEditIndex = null;
                 document.getElementById('compra-btn').textContent = '+ Agregar';
             } else {
                 const item = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate, fecha: new Date().toISOString().slice(0, 10) };
                 compraItems.push(item);
-            }
-
-            if (moneda === 'Bs') {
-                const saldo = parseFloat(saldoEl.value) || 0;
-                saldoEl.value = Math.max(0, saldo - precio * compraCantVal).toFixed(2);
-            } else {
-                const rateSrc = compraRate === 'bcv' ? rates.bcv : rates.binance;
-                if (rateSrc > 0) {
-                    const saldo = parseFloat(saldoEl.value) || 0;
-                    saldoEl.value = Math.max(0, saldo - precio * compraCantVal * rateSrc).toFixed(2);
-                }
             }
 
             precioEl.value = '';
@@ -839,14 +836,17 @@
                 if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
                 return sum + item.precio * item.cantidad * (item.rateVal || 0);
             }, 0);
-            const saldoRestante = parseFloat(document.getElementById('compra-saldo').value) || 0;
-            const saldoInicial = saldoRestante + totalBs;
+            const saldo = parseFloat(document.getElementById('compra-saldo').value) || 0;
 
             let html = `
-                <div class="flex items-center justify-between glass rounded-lg px-3 py-2 text-[10px] font-bold text-purple-300/60">
-                    <span>Inicial: <span class="text-purple-100">${formatNum(saldoInicial)} Bs</span></span>
-                    <span>Gastado: <span class="text-red-400/80">${formatNum(totalBs)} Bs</span></span>
-                    <span>Restan: <span class="text-green-400/80">${formatNum(saldoRestante)} Bs</span></span>
+                <div class="glass rounded-lg px-3 py-2">
+                    <div class="flex items-center justify-between text-[10px] font-bold text-purple-300/60">
+                        <span>Inicial: <span class="text-purple-100">${formatNum(saldo)} Bs</span></span>
+                    </div>
+                    <div class="flex items-center justify-between mt-1.5 text-xs font-bold">
+                        <span>Gastado: <span class="text-red-400/90">${formatNum(totalBs)} Bs</span></span>
+                        <span>Restan: <span class="text-green-400/90">${formatNum(saldo - totalBs)} Bs</span></span>
+                    </div>
                 </div>`;
 
             html += compraItems.map((item, i) =>
@@ -870,11 +870,6 @@
             if (!confirm('Eliminar este item?')) return;
             const item = compraItems[i];
             compraItems.splice(i, 1);
-            const saldoEl = document.getElementById('compra-saldo');
-            const total = item.moneda === 'Bs' ? item.precio * item.cantidad : item.precio * item.cantidad * (item.rateVal || 0);
-            if (total > 0) {
-                saldoEl.value = (parseFloat(saldoEl.value) + total).toFixed(2);
-            }
             if (compraEditIndex === i) compraEditIndex = null;
             renderCompraLista();
         }
@@ -940,7 +935,7 @@
             compraFoto = null;
             document.getElementById('modal-overlay').classList.remove('hidden');
             lucide.createIcons();
-            setTimeout(() => document.getElementById('modal-lugar').focus(), 350);
+            setTimeout(() => document.getElementById('compra-foto-input'), 350);
         }
 
         function compraModalCerrar() {
@@ -953,7 +948,7 @@
                 if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
                 return sum + item.precio * item.cantidad * (item.rateVal || 0);
             }, 0);
-            const lugar = document.getElementById('modal-lugar').value.trim() || 'Sin lugar';
+            const lugar = document.getElementById('compra-lugar').value.trim() || 'Sin lugar';
             const tasas = JSON.parse(localStorage.getItem('tasas') || '{}');
             const compra = {
                 items: [...compraItems],
@@ -985,6 +980,15 @@
 
         function formatNum(n) {
             return Number(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function verFactura(src) {
+            document.getElementById('ver-factura-img').src = src;
+            document.getElementById('ver-factura-overlay').classList.remove('hidden');
+        }
+        function cerrarFactura() {
+            document.getElementById('ver-factura-overlay').classList.add('hidden');
+            document.getElementById('ver-factura-img').src = '';
         }
 
         document.getElementById('compra-precio').addEventListener('input', compraConvPreview);
@@ -1092,11 +1096,12 @@
                     html += '<div class="text-[9px] text-emerald-400/30 mt-1 pt-1 border-t border-emerald-500/10">Tasas: ' + tasaStr + '</div>';
                 }
                 if (pc.foto) {
-                    html += '<img src="' + pc.foto + '" class="w-full h-20 object-cover rounded-lg mt-1.5 border border-emerald-500/20">';
+                    html += '<button onclick="verFactura(\'' + pc.foto.replace(/'/g, "\\'") + '\')" class="mt-1.5 w-full py-1.5 bg-purple-500/10 text-purple-300/60 rounded-lg border border-purple-500/20 font-bold text-[10px] flex items-center justify-center gap-1"><i data-lucide="image" class="w-3 h-3"></i> Ver factura</button>';
                 }
                 html += '</div></div>';
             });
             el.innerHTML = html;
+            lucide.createIcons();
         }
 
         // Enter key submits or advances in compra form
@@ -1118,16 +1123,15 @@
         });
 
         document.getElementById('compra-saldo').addEventListener('input', saveCompraState);
-        document.getElementById('modal-lugar').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); compraModalFinalizar(); }
-        });
+        document.getElementById('compra-lugar').addEventListener('input', saveCompraState);
         loadCompraState();
 
         // Float compra-form above keyboard
         function positionCompraForm(kh) {
             const form = document.getElementById('compra-form');
             const nav = document.getElementById('bottom-nav');
-            if (!form || form.classList.contains('hidden')) { if (nav) nav.style.display = ''; return; }
+            const finalRow = document.getElementById('compra-finalizar-row');
+            if (!form || form.classList.contains('hidden')) { if (nav) nav.style.display = ''; if (finalRow) finalRow.style.display = ''; return; }
             const app = document.getElementById('app');
             if (kh > 0) {
                 const rect = app.getBoundingClientRect();
@@ -1136,12 +1140,14 @@
                 form.style.left = rect.left + 'px';
                 form.style.width = rect.width + 'px';
                 if (nav) nav.style.display = 'none';
+                if (finalRow) finalRow.style.display = 'none';
             } else {
                 form.style.position = 'static';
                 form.style.bottom = 'auto';
                 form.style.left = 'auto';
                 form.style.width = 'auto';
                 if (nav) nav.style.display = '';
+                if (finalRow) finalRow.style.display = '';
             }
         }
 
