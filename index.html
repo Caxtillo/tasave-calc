@@ -303,9 +303,9 @@
                     <div class="flex items-center gap-1.5">
                         <input type="text" id="compra-precio" inputmode="decimal" enterkeyhint="done" autocomplete="off" class="flex-1 min-w-0 bg-transparent border-b border-purple-500/30 text-lg font-bold text-purple-100 outline-none py-1.5" placeholder="0.00">
                         <div class="flex items-center gap-0.5 shrink-0">
-                            <button class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-base" ontouchstart="event.preventDefault()" onclick="compraCant(-1)">−</button>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-base" ontouchstart="compraCant(-1);event.preventDefault()" onmousedown="compraCant(-1);event.preventDefault()">−</button>
                             <span id="compra-cant" class="text-purple-100 font-bold text-sm w-5 text-center">1</span>
-                            <button class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-base" ontouchstart="event.preventDefault()" onclick="compraCant(1)">+</button>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-base" ontouchstart="compraCant(1);event.preventDefault()" onmousedown="compraCant(1);event.preventDefault()">+</button>
                         </div>
                     </div>
                     <input type="text" id="compra-concepto" inputmode="text" enterkeyhint="go" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mt-2" placeholder="Concepto...">
