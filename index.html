@@ -314,7 +314,16 @@
                         <span id="compra-conv" class="text-[9px] text-purple-400/40 font-bold ml-auto"></span>
                     </div>
                     <input type="text" id="compra-concepto" inputmode="text" enterkeyhint="go" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mt-2" placeholder="Concepto...">
-                    <button onclick="compraAgregar()" id="compra-btn" class="w-full mt-2 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="compraFotoClick()" class="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300/60 shrink-0" title="Foto de factura"><i data-lucide="camera" class="w-5 h-5"></i></button>
+                        <input type="file" id="compra-foto-input" accept="image/*" capture="environment" class="hidden" onchange="compraFotoSeleccionada(event)">
+                        <button onclick="compraAgregar()" id="compra-btn" class="flex-1 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
+                    </div>
+                    <div id="compra-foto-preview" class="hidden mt-2 relative">
+                        <img id="compra-foto-img" class="w-full h-24 object-cover rounded-lg border border-purple-500/20">
+                        <button onclick="compraFotoRemover()" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/50 text-white text-xs font-bold">✕</button>
+                    </div>
+                    <button onclick="compraFinalizar()" class="w-full mt-2 py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar compra</button>
                 </div>
             </div>
 
@@ -665,6 +674,38 @@
         let compraEditIndex = null;
         let compraMoneda = '$';
         let compraRate = 'bcv';
+        let compraFoto = null;
+
+        function saveCompraState() {
+            localStorage.setItem('compraItems', JSON.stringify(compraItems));
+            localStorage.setItem('compraSaldo', document.getElementById('compra-saldo')?.value || '');
+            localStorage.setItem('compraMoneda', compraMoneda);
+            localStorage.setItem('compraRate', compraRate);
+        }
+
+        function loadCompraState() {
+            const items = localStorage.getItem('compraItems');
+            if (items) compraItems = JSON.parse(items);
+            const saldo = localStorage.getItem('compraSaldo');
+            if (saldo !== null) document.getElementById('compra-saldo').value = saldo;
+            const m = localStorage.getItem('compraMoneda');
+            if (m) {
+                compraMoneda = m;
+                document.getElementById('compra-moneda').querySelectorAll('span').forEach(s => {
+                    const act = s.dataset.m === m;
+                    s.classList.toggle('bg-purple-500/20', act);
+                    s.classList.toggle('text-purple-100', act);
+                    s.classList.toggle('text-purple-400/50', !act);
+                });
+            }
+            const r = localStorage.getItem('compraRate');
+            if (r) {
+                compraRate = r;
+                const el = document.getElementById('compra-rate-' + r);
+                if (el) el.click();
+            }
+            renderCompraLista();
+        }
 
         function showPage(page) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
@@ -799,6 +840,7 @@
             ).join('');
             lista.innerHTML = html;
             lucide.createIcons();
+            saveCompraState();
         }
 
         function compraEliminar(i) {
@@ -829,6 +871,55 @@
             compraEditIndex = i;
             document.getElementById('compra-btn').textContent = '✓ Guardar';
             compraConvPreview();
+        }
+
+        function compraFotoClick() {
+            document.getElementById('compra-foto-input').click();
+        }
+
+        function compraFotoSeleccionada(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                compraFoto = ev.target.result;
+                const preview = document.getElementById('compra-foto-preview');
+                preview.classList.remove('hidden');
+                document.getElementById('compra-foto-img').src = compraFoto;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function compraFotoRemover() {
+            compraFoto = null;
+            document.getElementById('compra-foto-preview').classList.add('hidden');
+            document.getElementById('compra-foto-input').value = '';
+        }
+
+        function compraFinalizar() {
+            if (compraItems.length === 0) return alert('Agrega al menos un item');
+            const saldo = document.getElementById('compra-saldo').value;
+            const totalBs = compraItems.reduce((sum, item) => {
+                if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
+                return sum + item.precio * item.cantidad * (item.rateVal || 0);
+            }, 0);
+            const compra = { items: [...compraItems], saldo, total: totalBs.toFixed(2), foto: compraFoto, fecha: new Date().toISOString() };
+            const historial = JSON.parse(localStorage.getItem('compraHistorial') || '[]');
+            historial.push(compra);
+            localStorage.setItem('compraHistorial', JSON.stringify(historial));
+            compraItems = [];
+            compraEditIndex = null;
+            compraFoto = null;
+            document.getElementById('compra-btn').textContent = '+ Agregar';
+            document.getElementById('compra-saldo').value = '';
+            document.getElementById('compra-precio').value = '';
+            document.getElementById('compra-concepto').value = '';
+            compraCantVal = 1;
+            document.getElementById('compra-cant').textContent = '1';
+            document.getElementById('compra-foto-preview').classList.add('hidden');
+            document.getElementById('compra-foto-input').value = '';
+            renderCompraLista();
+            alert('Compra finalizada ✓');
         }
 
         document.getElementById('compra-precio').addEventListener('input', compraConvPreview);
@@ -914,6 +1005,9 @@
         document.getElementById('compra-concepto').addEventListener('keyup', (e) => {
             if (e.key === 'Enter') compraAgregar();
         });
+
+        document.getElementById('compra-saldo').addEventListener('input', saveCompraState);
+        loadCompraState();
 
         // Float compra-form above keyboard
         function positionCompraForm(kh) {
