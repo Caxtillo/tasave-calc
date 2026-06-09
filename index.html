@@ -386,21 +386,15 @@
             if (name === 'usd') inputUsd.parentElement.classList.add('input-selected');
             else if (name === 'ves') inputVes.parentElement.classList.add('input-selected');
             else if (name === 'custom') inputCustomRate.parentElement.classList.add('input-selected');
-            else if (name === 'compra-saldo') {
-                document.getElementById('compra-saldo').parentElement.classList.add('input-selected');
-                document.getElementById('compra-saldo').focus();
-            }
+            else if (name === 'compra-saldo') document.getElementById('compra-saldo').parentElement.classList.add('input-selected');
         }
 
         document.querySelectorAll('.keypad-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const compraHidden = document.getElementById('page-compra').classList.contains('hidden');
-                if (!compraHidden && activeInput !== 'compra-saldo') return;
+                if (!document.getElementById('page-compra').classList.contains('hidden')) return;
                 const key = btn.dataset.key;
                 const el = activeInput === 'custom' ? inputCustomRate
-                          : activeInput === 'ves' ? inputVes
-                          : activeInput === 'compra-saldo' ? document.getElementById('compra-saldo')
-                          : inputUsd;
+                          : activeInput === 'ves' ? inputVes : inputUsd;
                 const pos = el.selectionStart ?? el.value.length;
 
                 if (key === 'backspace') {
@@ -411,15 +405,11 @@
                 } else if (key === 'clear') {
                     el.value = '';
                 } else if (key === 'clear-all') {
-                    if (activeInput === 'compra-saldo') {
-                        document.getElementById('compra-saldo').value = '';
-                    } else {
-                        inputUsd.value = '';
-                        inputVes.value = '';
-                        inputCustomRate.value = '';
-                        if (currentSource !== 'bcv') setSource('bcv');
-                        focusInput('usd');
-                    }
+                    inputUsd.value = '';
+                    inputVes.value = '';
+                    inputCustomRate.value = '';
+                    if (currentSource !== 'bcv') setSource('bcv');
+                    focusInput('usd');
                     return;
                 } else if (key === 'swap') {
                     if (activeInput === 'usd') { focusInput('ves'); lastEdited = 'ves'; triggerCalc(); }
@@ -438,7 +428,7 @@
                 scrollInputEnd(inputVes);
                 scrollInputEnd(inputCustomRate);
                 if (activeInput === 'custom') calculate(lastEdited);
-                else if (activeInput !== 'compra-saldo') triggerCalc();
+                else triggerCalc();
             });
         });
 
@@ -688,9 +678,9 @@
 
         document.querySelectorAll('#page-compra input, #page-compra select').forEach(el => {
             el.addEventListener('focus', () => {
-                if (el.id === 'compra-saldo') return;
                 compraActiveInput = el;
                 document.querySelectorAll('.input-box').forEach(b => b.classList.remove('input-selected'));
+                if (el.classList.contains('input-inner')) el.parentElement.classList.add('input-selected');
             });
         });
 
@@ -699,7 +689,6 @@
             btn.addEventListener('click', () => {
                 if (document.getElementById('page-compra').classList.contains('hidden')) return;
                 if (!compraActiveInput) return;
-                if (activeInput === 'compra-saldo') return;
                 if (compraActiveInput.inputMode === 'text') return;
                 const el = compraActiveInput;
                 const key = btn.dataset.key;
