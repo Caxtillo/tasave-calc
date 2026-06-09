@@ -595,8 +595,11 @@
                 return false;
             };
 
+            const ac1 = new AbortController();
+            const t1 = setTimeout(() => ac1.abort(), 5000);
             try {
-                const response = await fetch('/rates.json');
+                const response = await fetch('/rates.json', { signal: ac1.signal });
+                clearTimeout(t1);
                 if (response.ok) {
                     const data = await response.json();
                     if (data.USD) rates.bcv = data.USD;
@@ -606,21 +609,25 @@
                     if (!loadCached()) throw new Error();
                 }
             } catch (_) {
+                clearTimeout(t1);
                 if (!loadCached()) {
                     loadingEl.classList.add('hidden');
                     contentEl.classList.remove('hidden');
                 }
             }
 
+            const ac2 = new AbortController();
+            const t2 = setTimeout(() => ac2.abort(), 5000);
             try {
-                const res = await fetch('https://ve.dolarapi.com/v1/dolares');
+                const res = await fetch('https://ve.dolarapi.com/v1/dolares', { signal: ac2.signal });
+                clearTimeout(t2);
                 if (res.ok) {
                     const list = await res.json();
                     const p2p = list.find(item => item.fuente === 'paralelo');
                     if (p2p) rates.binance = p2p.promedio || p2p.venta;
                     localStorage.setItem('tasas', JSON.stringify({ bcv: rates.bcv, binance: rates.binance, ts: Date.now() }));
                 }
-            } catch (_) {}
+            } catch (_) { clearTimeout(t2); }
 
             updateUI(null);
         }
