@@ -1270,12 +1270,12 @@
             const errEl = document.getElementById('auth-error');
             errEl.classList.add('hidden');
             if (!email || !pass) { errEl.textContent = 'Completa todos los campos'; errEl.classList.remove('hidden'); return; }
-            if (pass.length < 6) { errEl.textContent = 'Contraseña mínimo 6 caracteres'; errEl.classList.remove('hidden'); return; }
+            if (pass.length < 4) { errEl.textContent = 'Mínimo 4 caracteres'; errEl.classList.remove('hidden'); return; }
             const sb = supabaseInit();
             if (!sb) { errEl.textContent = 'Error de conexión'; errEl.classList.remove('hidden'); return; }
-            const { data, error } = await sb.auth.signUp({ email, pass });
+            const { data, error } = await sb.auth.signUp({ email, password: pass });
             if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); return; }
-            errEl.textContent = 'Revisa tu correo para confirmar la cuenta';
+            errEl.textContent = '✅ Revisa tu correo para confirmar la cuenta';
             errEl.className = 'text-emerald-400 text-[11px] font-bold text-center mb-2';
         }
 
@@ -1288,7 +1288,7 @@
             if (!email || !pass) { errEl.textContent = 'Completa todos los campos'; errEl.classList.remove('hidden'); return; }
             const sb = supabaseInit();
             if (!sb) { errEl.textContent = 'Error de conexión'; errEl.classList.remove('hidden'); return; }
-            const { data, error } = await sb.auth.signInWithPassword({ email, pass });
+            const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
             if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); return; }
             await supabaseOnLogin(data.session);
         }
