@@ -375,6 +375,13 @@
                 </div>
             </div>
 
+            <div id="page-config" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto px-4 pt-4" style="padding-bottom:var(--top-py)">
+                <div class="glass rounded-xl px-4 py-4">
+                    <div class="text-purple-100 font-bold text-sm mb-4">Configuración</div>
+                    <button onclick="if(confirm('¿Restablecer todos los datos? Se perderán items, historial y configuración.')){localStorage.clear();location.reload()}" class="w-full py-2.5 bg-red-500/20 text-red-300 rounded-xl border border-red-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i> Restablecer datos</button>
+                </div>
+            </div>
+
             <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5" style="height:var(--keypad-h);grid-template-rows:repeat(4,1fr);">
                 <button class="keypad-btn" data-key="7">7</button>
                 <button class="keypad-btn" data-key="8">8</button>
@@ -745,6 +752,7 @@
             document.getElementById('page-compra').classList.toggle('hidden', page !== 'compra');
             document.getElementById('compra-form').classList.toggle('hidden', page !== 'compra');
             document.getElementById('page-calendario').classList.toggle('hidden', page !== 'calendario');
+            document.getElementById('page-config').classList.toggle('hidden', page !== 'config');
             document.getElementById('keypad').classList.toggle('hidden', page !== 'inicio');
             document.getElementById('compra-finalizar-row').classList.toggle('hidden', page !== 'compra');
             const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
