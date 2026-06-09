@@ -91,7 +91,7 @@
             justify-content: center;
             border-radius: 0.5rem;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.35rem;
             background: rgba(30, 20, 50, 0.5);
             border: 1px solid rgba(167, 139, 250, 0.15);
             color: #f3f0ff;
@@ -355,6 +355,8 @@
                     inputUsd.value = '';
                     inputVes.value = '';
                     inputCustomRate.value = '';
+                    if (currentSource !== 'bcv') setSource('bcv');
+                    focusInput('usd');
                     return;
                 } else if (key === 'swap') {
                     if (activeInput === 'usd') { focusInput('ves'); lastEdited = 'ves'; triggerCalc(); }
