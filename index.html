@@ -485,7 +485,9 @@
             if (!str || str.trim() === '') return NaN;
             let total = 0;
             for (const p of str.split('+')) {
-                const val = parseFloat(p.trim());
+                const t = p.trim();
+                if (t === '') continue;
+                const val = parseFloat(t);
                 if (isNaN(val)) return NaN;
                 total += val;
             }
