@@ -77,7 +77,7 @@
             color: white;
             width: 100%;
             min-width: 0;
-            cursor: text;
+            pointer-events: none;
             text-align: right;
             overflow-x: auto;
             overflow-y: hidden;
@@ -252,7 +252,7 @@
                         <span class="text-[9px] font-bold text-purple-300/50 uppercase tracking-wider">Tu tasa:</span>
                         <input type="text" id="input-custom-rate" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false"
                             class="flex-1 bg-transparent text-sm font-bold text-purple-100 outline-none"
-                            placeholder="0.00" onclick="focusInput('custom')">
+                            style="pointer-events:none" placeholder="0.00">
                         <span class="text-[8px] text-purple-400/40 font-bold">Bs/USD</span>
                     </div>
                 </div>
@@ -262,7 +262,7 @@
                         <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Dólares (USD)</label>
                         <div id="wrap-usd" class="input-box input-selected" onclick="focusInput('usd')">
                             <span class="input-currency">$</span>
-                            <input type="text" id="input-usd" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false" class="input-inner" placeholder="0.00" onclick="focusInput('usd')">
+                            <input type="text" id="input-usd" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false" class="input-inner" placeholder="0.00">
                         </div>
                     </div>
 
@@ -270,7 +270,7 @@
                         <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Bolívares (VES)</label>
                         <div id="wrap-ves" class="input-box" onclick="focusInput('ves')">
                             <span class="input-currency">Bs</span>
-                            <input type="text" id="input-ves" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false" class="input-inner" placeholder="0.00" onclick="focusInput('ves')">
+                            <input type="text" id="input-ves" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false" class="input-inner" placeholder="0.00">
                         </div>
                     </div>
                 </div>
