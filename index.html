@@ -194,7 +194,7 @@
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
 
-    <div id="app" class="w-full max-w-md mx-auto flex flex-col h-screen overflow-hidden px-3">
+    <div id="app" class="w-full max-w-md mx-auto flex flex-col px-3" style="position:fixed;top:0;left:0;right:0;height:100%;overflow:hidden">
         <div id="loading" class="fixed inset-0 z-50 bg-[#0f0c1d] flex flex-col items-center justify-center gap-4">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             <p class="text-purple-300 animate-pulse font-medium">Consultando tasas...</p>
@@ -286,7 +286,7 @@
                 </div>
             </div>
 
-            <div id="compra-form" class="hidden shrink-0 px-1 pb-1 sticky bottom-0 z-10" style="background:linear-gradient(to top, rgba(15,12,29,1) 60%, transparent)">
+            <div id="compra-form" class="hidden shrink-0 px-3 pb-1 z-10" style="background:linear-gradient(to top, rgba(15,12,29,1) 60%, transparent)">
                 <div class="glass rounded-xl px-3 py-3">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="text-purple-400/60 font-bold text-sm">Bs</span>
@@ -804,6 +804,28 @@
         document.getElementById('compra-concepto').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); compraAgregar(); }
         });
+
+        // Float compra-form above keyboard
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const form = document.getElementById('compra-form');
+                if (!form || form.classList.contains('hidden')) return;
+                const app = document.getElementById('app');
+                const kh = window.innerHeight - window.visualViewport.height;
+                if (kh > 0) {
+                    const rect = app.getBoundingClientRect();
+                    form.style.position = 'fixed';
+                    form.style.bottom = kh + 'px';
+                    form.style.left = rect.left + 'px';
+                    form.style.width = rect.width + 'px';
+                } else {
+                    form.style.position = 'static';
+                    form.style.bottom = 'auto';
+                    form.style.left = 'auto';
+                    form.style.width = 'auto';
+                }
+            });
+        }
 
         fetchRates();
     </script>
