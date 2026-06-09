@@ -194,6 +194,8 @@
         .nav-item { transition: all 150ms; }
         .nav-active { background: rgba(167,139,250,0.12); color: #a78bfa !important; }
         #page-compra input, #page-compra select { caret-color: rgba(167,139,250,0.8); cursor: text; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp .3s ease-out; }
     </style>
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
@@ -287,6 +289,7 @@
                     <div id="compra-lista" class="flex-1 overflow-y-auto flex flex-col gap-1 min-h-0">
                         <div class="text-center text-purple-400/30 text-[10px] font-bold uppercase tracking-wider py-4">Sin items</div>
                     </div>
+                    <button onclick="compraModalAbrir()" class="w-full mt-2 py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5" id="compra-finalizar-btn"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar compra</button>
                 </div>
             </div>
 
@@ -315,16 +318,32 @@
                     </div>
                     <input type="text" id="compra-concepto" inputmode="text" enterkeyhint="go" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mt-2" placeholder="Concepto...">
                     <div class="flex gap-2 mt-2">
-                        <input type="file" id="compra-foto-input" accept="image/*" capture="environment" class="hidden" onchange="compraFotoSeleccionada(event)">
                         <button onclick="compraAgregar()" id="compra-btn" class="flex-1 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
                     </div>
-                    <div id="compra-foto-preview" class="hidden mt-2 relative">
-                        <img id="compra-foto-img" class="w-full h-24 object-cover rounded-lg border border-purple-500/20">
-                        <button onclick="compraFotoRemover()" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/50 text-white text-xs font-bold">✕</button>
+                </div>
+            </div>
+
+            <!-- Finalizar modal -->
+            <div id="modal-overlay" class="hidden fixed inset-0 z-50 flex items-end justify-center" onclick="if (event.target===this) compraModalCerrar()">
+                <div class="w-full max-w-md mx-auto glass rounded-t-2xl px-5 pt-5 pb-8 animate-slide-up border-t border-purple-500/20">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-purple-100 font-bold text-sm">Finalizar compra</span>
+                        <span id="modal-total" class="text-emerald-300 font-bold text-sm"></span>
                     </div>
-                    <div class="border-t border-purple-500/10 my-3"></div>
-                    <button onclick="compraFotoClick()" class="w-full py-2 bg-purple-500/10 text-purple-300/60 rounded-xl border border-purple-500/20 font-bold text-xs flex items-center justify-center gap-1.5"><i data-lucide="camera" class="w-3.5 h-3.5"></i> Foto de factura</button>
-                    <button onclick="compraFinalizar()" class="w-full mt-2 py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar compra</button>
+                    <input type="text" id="modal-lugar" maxlength="40" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mb-3" placeholder="Lugar (ej: Mercado, Abasto)">
+                    <div id="modal-foto-area" class="mb-3">
+                        <div id="modal-foto-empty" class="flex items-center gap-2">
+                            <button onclick="compraFotoClick()" class="flex items-center gap-1.5 py-2 px-3 bg-purple-500/10 text-purple-300/60 rounded-xl border border-purple-500/20 font-bold text-xs"><i data-lucide="camera" class="w-3.5 h-3.5"></i> Tomar foto</button>
+                            <button onclick="compraFotoSkip()" class="text-[10px] text-purple-400/30 font-bold">No, gracias</button>
+                            <input type="file" id="compra-foto-input" accept="image/*" capture="environment" class="hidden" onchange="compraFotoSeleccionada(event)">
+                        </div>
+                        <div id="modal-foto-preview" class="hidden relative">
+                            <img id="compra-foto-img" class="w-full h-28 object-cover rounded-lg border border-purple-500/20">
+                            <button onclick="compraFotoRemover()" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/50 text-white text-xs font-bold">✕</button>
+                        </div>
+                    </div>
+                    <button onclick="compraModalFinalizar()" class="w-full py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar</button>
+                    <button onclick="compraModalCerrar()" class="w-full mt-2 py-2 text-[10px] text-purple-400/30 font-bold">Cancelar</button>
                 </div>
             </div>
 
@@ -808,30 +827,33 @@
 
         function renderCompraLista() {
             const lista = document.getElementById('compra-lista');
+            const btnFinal = document.getElementById('compra-finalizar-btn');
             if (compraItems.length === 0) {
                 lista.innerHTML = '<div class="text-center text-purple-400/30 text-[10px] font-bold uppercase tracking-wider py-4">Sin items</div>';
+                if (btnFinal) btnFinal.style.display = 'none';
                 return;
             }
+            if (btnFinal) btnFinal.style.display = 'flex';
 
             const totalBs = compraItems.reduce((sum, item) => {
                 if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
                 return sum + item.precio * item.cantidad * (item.rateVal || 0);
             }, 0);
             const saldoRestante = parseFloat(document.getElementById('compra-saldo').value) || 0;
-            const saldoInicial = (saldoRestante + totalBs).toFixed(2);
+            const saldoInicial = saldoRestante + totalBs;
 
             let html = `
                 <div class="flex items-center justify-between glass rounded-lg px-3 py-2 text-[10px] font-bold text-purple-300/60">
-                    <span>Inicial: <span class="text-purple-100">${saldoInicial} Bs</span></span>
-                    <span>Gastado: <span class="text-red-400/80">${totalBs.toFixed(2)} Bs</span></span>
-                    <span>Restan: <span class="text-green-400/80">${saldoRestante.toFixed(2)} Bs</span></span>
+                    <span>Inicial: <span class="text-purple-100">${formatNum(saldoInicial)} Bs</span></span>
+                    <span>Gastado: <span class="text-red-400/80">${formatNum(totalBs)} Bs</span></span>
+                    <span>Restan: <span class="text-green-400/80">${formatNum(saldoRestante)} Bs</span></span>
                 </div>`;
 
             html += compraItems.map((item, i) =>
                 `<div class="flex items-center justify-between glass rounded-lg px-3 py-2">
                     <div class="flex flex-col min-w-0 flex-1">
                         <span class="text-purple-100 text-sm font-semibold truncate">${item.concepto}</span>
-                        <span class="text-[10px] text-purple-400/50">${item.cantidad}x ${item.precio.toFixed(2)} ${item.moneda}</span>
+                        <span class="text-[10px] text-purple-400/50">${item.cantidad}x ${formatNum(item.precio)} ${item.moneda}</span>
                     </div>
                     <div class="flex items-center gap-1 shrink-0 ml-2">
                         <button onclick="compraEditar(${i})" class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300/60 text-xs"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
@@ -884,8 +906,8 @@
             const reader = new FileReader();
             reader.onload = (ev) => {
                 compraFoto = ev.target.result;
-                const preview = document.getElementById('compra-foto-preview');
-                preview.classList.remove('hidden');
+                document.getElementById('modal-foto-empty').classList.add('hidden');
+                document.getElementById('modal-foto-preview').classList.remove('hidden');
                 document.getElementById('compra-foto-img').src = compraFoto;
             };
             reader.readAsDataURL(file);
@@ -893,19 +915,56 @@
 
         function compraFotoRemover() {
             compraFoto = null;
-            document.getElementById('compra-foto-preview').classList.add('hidden');
+            document.getElementById('modal-foto-preview').classList.add('hidden');
+            document.getElementById('modal-foto-empty').classList.remove('hidden');
             document.getElementById('compra-foto-input').value = '';
         }
 
-        function compraFinalizar() {
+        function compraFotoSkip() {
+            compraFoto = null;
+            document.getElementById('modal-foto-empty').classList.add('hidden');
+            document.getElementById('compra-foto-input').value = '';
+        }
+
+        function compraModalAbrir() {
             if (compraItems.length === 0) return;
-            if (!confirm('¿Finalizar esta compra? Se guardará el resumen en el calendario.')) return;
+            const totalBs = compraItems.reduce((sum, item) => {
+                if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
+                return sum + item.precio * item.cantidad * (item.rateVal || 0);
+            }, 0);
+            document.getElementById('modal-total').textContent = formatNum(totalBs) + ' Bs';
+            document.getElementById('modal-lugar').value = '';
+            document.getElementById('modal-foto-empty').classList.remove('hidden');
+            document.getElementById('modal-foto-preview').classList.add('hidden');
+            document.getElementById('compra-foto-input').value = '';
+            compraFoto = null;
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            lucide.createIcons();
+            setTimeout(() => document.getElementById('modal-lugar').focus(), 350);
+        }
+
+        function compraModalCerrar() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+        }
+
+        function compraModalFinalizar() {
             const saldo = document.getElementById('compra-saldo').value;
             const totalBs = compraItems.reduce((sum, item) => {
                 if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
                 return sum + item.precio * item.cantidad * (item.rateVal || 0);
             }, 0);
-            const compra = { items: [...compraItems], saldo, total: totalBs.toFixed(2), foto: compraFoto, fecha: new Date().toISOString() };
+            const lugar = document.getElementById('modal-lugar').value.trim() || 'Sin lugar';
+            const tasas = JSON.parse(localStorage.getItem('tasas') || '{}');
+            const compra = {
+                items: [...compraItems],
+                saldo,
+                total: totalBs.toFixed(2),
+                foto: compraFoto,
+                lugar,
+                fecha: new Date().toISOString(),
+                tasaBcv: tasas.bcv || null,
+                tasaBinance: tasas.binance || null
+            };
             const historial = JSON.parse(localStorage.getItem('compraHistorial') || '[]');
             historial.push(compra);
             localStorage.setItem('compraHistorial', JSON.stringify(historial));
@@ -918,11 +977,14 @@
             document.getElementById('compra-concepto').value = '';
             compraCantVal = 1;
             document.getElementById('compra-cant').textContent = '1';
-            document.getElementById('compra-foto-preview').classList.add('hidden');
-            document.getElementById('compra-foto-input').value = '';
+            compraModalCerrar();
+            saveCompraState();
             renderCompraLista();
-            compraFotoRemover();
             renderCal();
+        }
+
+        function formatNum(n) {
+            return Number(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         document.getElementById('compra-precio').addEventListener('input', compraConvPreview);
@@ -998,7 +1060,7 @@
                     `<div class="flex items-center justify-between glass rounded-lg px-3 py-2 mb-1">
                         <div class="flex flex-col min-w-0 flex-1">
                             <span class="text-purple-100 text-sm font-semibold truncate">${item.concepto}</span>
-                            <span class="text-[10px] text-purple-400/50">${item.cantidad}x ${item.precio.toFixed(2)} ${item.moneda}</span>
+                            <span class="text-[10px] text-purple-400/50">${item.cantidad}x ${formatNum(item.precio)} ${item.moneda}</span>
                         </div>
                     </div>`
                 ).join('');
@@ -1006,22 +1068,33 @@
             historial.forEach(pc => {
                 const total = parseFloat(pc.total);
                 const fechaHr = new Date(pc.fecha).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
-                html += '<div class="text-[9px] uppercase tracking-[0.2em] text-emerald-400/40 font-bold mt-2 mb-1 px-1">Finalizada ' + fechaHr + '</div>';
-                html += '<div class="glass rounded-lg px-3 py-2 mb-1 border border-emerald-500/20">';
+                const id = 'cal-exp-' + Math.random().toString(36).slice(2, 6);
+                const tasaStr = pc.tasaBcv ? 'BCV: ' + formatNum(pc.tasaBcv) + (pc.tasaBinance ? ' / Binance: ' + formatNum(pc.tasaBinance) : '') : '';
+                html += '<div class="glass rounded-lg px-3 py-2 mb-2 border border-emerald-500/20">';
+                html += '<div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById(\'' + id + '\').classList.toggle(\'hidden\')">';
+                html += '<div class="flex flex-col min-w-0 flex-1">';
+                html += '<span class="text-emerald-200 text-sm font-bold truncate">' + (pc.lugar || 'Sin lugar') + '</span>';
+                html += '<span class="text-[10px] text-emerald-400/50">' + fechaHr + '</span>';
+                html += '</div>';
+                html += '<div class="flex items-center gap-2">';
+                html += '<span class="text-emerald-200 font-bold text-sm">' + formatNum(total) + ' Bs</span>';
+                html += '<span class="text-emerald-400/40 text-xs">▼</span>';
+                html += '</div>';
+                html += '</div>';
+                html += '<div id="' + id + '" class="hidden mt-2 pt-2 border-t border-emerald-500/10">';
                 html += pc.items.map(item =>
                     `<div class="flex items-center justify-between py-0.5">
                         <span class="text-emerald-100 text-xs font-semibold truncate">${item.concepto}</span>
-                        <span class="text-[10px] text-emerald-400/50 shrink-0 ml-2">${item.cantidad}x ${item.precio.toFixed(2)} ${item.moneda}</span>
+                        <span class="text-[10px] text-emerald-400/50 shrink-0 ml-2">${item.cantidad}x ${formatNum(item.precio)} ${item.moneda}</span>
                     </div>`
                 ).join('');
-                html += '<div class="border-t border-emerald-500/10 mt-1 pt-1 flex items-center justify-between">';
-                html += '<span class="text-[10px] text-emerald-300/60 font-bold">Total</span>';
-                html += '<span class="text-sm text-emerald-200 font-bold">' + total.toFixed(2) + ' Bs</span>';
-                html += '</div>';
+                if (tasaStr) {
+                    html += '<div class="text-[9px] text-emerald-400/30 mt-1 pt-1 border-t border-emerald-500/10">Tasas: ' + tasaStr + '</div>';
+                }
                 if (pc.foto) {
                     html += '<img src="' + pc.foto + '" class="w-full h-20 object-cover rounded-lg mt-1.5 border border-emerald-500/20">';
                 }
-                html += '</div>';
+                html += '</div></div>';
             });
             el.innerHTML = html;
         }
@@ -1045,6 +1118,9 @@
         });
 
         document.getElementById('compra-saldo').addEventListener('input', saveCompraState);
+        document.getElementById('modal-lugar').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); compraModalFinalizar(); }
+        });
         loadCompraState();
 
         // Float compra-form above keyboard
