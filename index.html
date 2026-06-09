@@ -30,12 +30,16 @@
             --keypad-h: 38dvh;
             --top-py: 1.125rem;
         }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0f0c1d;
             color: #f3f0ff;
-            overflow: hidden;
-            height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -806,24 +810,47 @@
         });
 
         // Float compra-form above keyboard
+        function positionCompraForm(kh) {
+            const form = document.getElementById('compra-form');
+            const nav = document.getElementById('bottom-nav');
+            if (!form || form.classList.contains('hidden')) { if (nav) nav.style.display = ''; return; }
+            const app = document.getElementById('app');
+            if (kh > 0) {
+                const rect = app.getBoundingClientRect();
+                form.style.position = 'fixed';
+                form.style.bottom = kh + 'px';
+                form.style.left = rect.left + 'px';
+                form.style.width = rect.width + 'px';
+                if (nav) nav.style.display = 'none';
+            } else {
+                form.style.position = 'static';
+                form.style.bottom = 'auto';
+                form.style.left = 'auto';
+                form.style.width = 'auto';
+                if (nav) nav.style.display = '';
+            }
+        }
+
+        document.querySelectorAll('#compra-precio, #compra-concepto, #compra-saldo').forEach(el => {
+            el.addEventListener('focus', () => {
+                if (window.visualViewport) {
+                    const kh = window.innerHeight - window.visualViewport.height;
+                    if (kh <= 0) setTimeout(() => {
+                        positionCompraForm(window.innerHeight - window.visualViewport.height);
+                    }, 100);
+                    else positionCompraForm(kh);
+                }
+            });
+            el.addEventListener('blur', () => setTimeout(() => {
+                if (window.visualViewport) {
+                    positionCompraForm(window.innerHeight - window.visualViewport.height);
+                }
+            }, 200));
+        });
+
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
-                const form = document.getElementById('compra-form');
-                if (!form || form.classList.contains('hidden')) return;
-                const app = document.getElementById('app');
-                const kh = window.innerHeight - window.visualViewport.height;
-                if (kh > 0) {
-                    const rect = app.getBoundingClientRect();
-                    form.style.position = 'fixed';
-                    form.style.bottom = kh + 'px';
-                    form.style.left = rect.left + 'px';
-                    form.style.width = rect.width + 'px';
-                } else {
-                    form.style.position = 'static';
-                    form.style.bottom = 'auto';
-                    form.style.left = 'auto';
-                    form.style.width = 'auto';
-                }
+                positionCompraForm(window.innerHeight - window.visualViewport.height);
             });
         }
 
