@@ -13,6 +13,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -378,6 +379,28 @@
             <div id="page-config" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto px-4 pt-4" style="padding-bottom:var(--top-py)">
                 <div class="glass rounded-xl px-4 py-4">
                     <div class="text-purple-100 font-bold text-sm mb-4">Configuración</div>
+                    <div id="config-auth-section">
+                        <div id="config-logged-out">
+                            <button onclick="authMostrar()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="log-in" class="w-4 h-4"></i> Iniciar sesión</button>
+                            <div class="text-[9px] text-purple-400/20 text-center mb-4">Sincroniza tus datos en la nube</div>
+                        </div>
+                        <div id="config-logged-in" class="hidden">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300 font-bold text-xs" id="config-avatar">?</div>
+                                <div class="flex flex-col">
+                                    <span class="text-purple-100 text-sm font-semibold" id="config-email">—</span>
+                                    <span class="text-[9px] text-emerald-400/50 font-bold" id="config-sync-status">Sin conexión</span>
+                                </div>
+                            </div>
+                            <button onclick="syncAhora()" class="w-full mb-2 py-2 bg-purple-500/10 text-purple-300/60 rounded-xl border border-purple-500/20 font-bold text-xs flex items-center justify-center gap-1.5"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Sincronizar ahora</button>
+                            <button onclick="authCerrar()" class="w-full mb-3 py-2 bg-red-500/10 text-red-400/60 rounded-xl border border-red-500/20 font-bold text-xs flex items-center justify-center gap-1.5"><i data-lucide="log-out" class="w-3 h-3"></i> Cerrar sesión</button>
+                        </div>
+                    </div>
+                    <div class="border-t border-purple-500/10 my-3"></div>
+                    <button onclick="exportarDatos()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Exportar datos</button>
+                    <button onclick="document.getElementById('import-file-input').click()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="upload" class="w-4 h-4"></i> Importar datos</button>
+                    <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importarDatos(event)">
+                    <div class="border-t border-red-500/20 my-4"></div>
                     <button onclick="if(confirm('¿Restablecer todos los datos? Se perderán items, historial y configuración.')){localStorage.clear();location.reload()}" class="w-full py-2.5 bg-red-500/20 text-red-300 rounded-xl border border-red-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i> Restablecer datos</button>
                 </div>
             </div>
@@ -403,6 +426,20 @@
 
             <div id="compra-finalizar-row" class="hidden shrink-0 px-3 pb-1">
                 <button onclick="compraModalAbrir()" class="w-full py-2.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Finalizar compra</button>
+            </div>
+
+            <!-- Auth overlay -->
+            <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70" style="display:none">
+                <div class="w-full max-w-sm mx-4 glass rounded-2xl px-5 py-6">
+                    <div class="text-purple-100 font-bold text-lg text-center mb-1">TasaVes</div>
+                    <div class="text-purple-400/40 text-[10px] font-bold uppercase tracking-wider text-center mb-5">Inicia sesión para sincronizar</div>
+                    <div id="auth-error" class="text-red-400 text-[11px] font-bold text-center mb-2 hidden"></div>
+                    <input type="email" id="auth-email" autocomplete="email" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-2 mb-3" placeholder="Correo electrónico">
+                    <input type="password" id="auth-pass" autocomplete="current-password" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-2 mb-4" placeholder="Contraseña">
+                    <button onclick="authRegistrar()" id="auth-btn-reg" class="w-full py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm mb-2">Registrarse</button>
+                    <button onclick="authIniciar()" id="auth-btn-login" class="w-full py-2 text-[10px] text-purple-400/50 font-bold">Ya tengo cuenta — Iniciar sesión</button>
+                    <button onclick="authSaltar()" class="w-full mt-3 py-2 text-[10px] text-purple-400/20 font-bold">Saltar por ahora</button>
+                </div>
             </div>
 
             <div id="bottom-nav" class="shrink-0 flex items-center justify-around px-2 pt-3 pb-1 border-t border-purple-500/10" style="background:rgba(20,12,40,0.6)">
@@ -718,6 +755,7 @@
             localStorage.setItem('compraMoneda', compraMoneda);
             localStorage.setItem('compraRate', compraRate);
             localStorage.setItem('compra-lugar', document.getElementById('compra-lugar')?.value || '');
+            encolarSync();
         }
 
         function loadCompraState() {
@@ -1194,6 +1232,247 @@
                 positionCompraForm(window.innerHeight - window.visualViewport.height);
             });
         }
+
+        const supabaseUrl = 'https://nldvaxirrmkoxdtlfnut.supabase.co';
+        const supabaseKey = 'sb_publishable_iKZs1uhYziRQsQgZKVpI4g_2i52VMrC';
+        let _supabase = null;
+        let _supabaseUser = null;
+        let _syncTimer = null;
+        let _syncUnsub = null;
+
+        function supabaseInit() {
+            if (_supabase) return _supabase;
+            try {
+                _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+                return _supabase;
+            } catch (e) {
+                console.warn('Supabase init failed:', e);
+                return null;
+            }
+        }
+
+        async function supabaseGetSession() {
+            const sb = supabaseInit();
+            if (!sb) return null;
+            const { data: { session } } = await sb.auth.getSession();
+            return session;
+        }
+
+        async function authRegistrar() {
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-pass').value;
+            const errEl = document.getElementById('auth-error');
+            errEl.classList.add('hidden');
+            if (!email || !pass) { errEl.textContent = 'Completa todos los campos'; errEl.classList.remove('hidden'); return; }
+            if (pass.length < 6) { errEl.textContent = 'Contraseña mínimo 6 caracteres'; errEl.classList.remove('hidden'); return; }
+            const sb = supabaseInit();
+            if (!sb) { errEl.textContent = 'Error de conexión'; errEl.classList.remove('hidden'); return; }
+            const { data, error } = await sb.auth.signUp({ email, pass });
+            if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); return; }
+            errEl.textContent = 'Revisa tu correo para confirmar la cuenta';
+            errEl.className = 'text-emerald-400 text-[11px] font-bold text-center mb-2';
+        }
+
+        async function authIniciar() {
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-pass').value;
+            const errEl = document.getElementById('auth-error');
+            errEl.classList.add('hidden');
+            errEl.className = 'text-red-400 text-[11px] font-bold text-center mb-2 hidden';
+            if (!email || !pass) { errEl.textContent = 'Completa todos los campos'; errEl.classList.remove('hidden'); return; }
+            const sb = supabaseInit();
+            if (!sb) { errEl.textContent = 'Error de conexión'; errEl.classList.remove('hidden'); return; }
+            const { data, error } = await sb.auth.signInWithPassword({ email, pass });
+            if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); return; }
+            await supabaseOnLogin(data.session);
+        }
+
+        async function supabaseOnLogin(session) {
+            _supabaseUser = session.user;
+            document.getElementById('auth-overlay').style.display = 'none';
+            actualizarConfigUI();
+            await syncDesdeSupabase();
+            escucharSupabase();
+        }
+
+        function authMostrar() {
+            document.getElementById('auth-error').className = 'text-red-400 text-[11px] font-bold text-center mb-2 hidden';
+            document.getElementById('auth-email').value = '';
+            document.getElementById('auth-pass').value = '';
+            document.getElementById('auth-overlay').style.display = '';
+        }
+
+        async function authCerrar() {
+            const sb = supabaseInit();
+            if (!sb) return;
+            if (_syncUnsub) { _syncUnsub(); _syncUnsub = null; }
+            await sb.auth.signOut();
+            _supabaseUser = null;
+            actualizarConfigUI();
+        }
+
+        function authSaltar() {
+            document.getElementById('auth-overlay').style.display = 'none';
+        }
+
+        function actualizarConfigUI() {
+            const loggedOut = document.getElementById('config-logged-out');
+            const loggedIn = document.getElementById('config-logged-in');
+            if (_supabaseUser) {
+                loggedOut.classList.add('hidden');
+                loggedIn.classList.remove('hidden');
+                document.getElementById('config-email').textContent = _supabaseUser.email;
+                document.getElementById('config-avatar').textContent = (_supabaseUser.email || '?')[0].toUpperCase();
+            } else {
+                loggedOut.classList.remove('hidden');
+                loggedIn.classList.add('hidden');
+            }
+        }
+
+        async function syncASupabase() {
+            if (!_supabaseUser) return;
+            const sb = supabaseInit();
+            if (!sb) return;
+            const data = {
+                compraItems,
+                compraSaldo: document.getElementById('compra-saldo')?.value || '',
+                compraMoneda,
+                compraRate,
+                'compra-lugar': document.getElementById('compra-lugar')?.value || '',
+                compraHistorial: JSON.parse(localStorage.getItem('compraHistorial') || '[]')
+            };
+            const { error } = await sb.from('user_data').upsert(
+                { user_id: _supabaseUser.id, data, updated_at: new Date().toISOString() },
+                { onConflict: 'user_id' }
+            );
+            if (error && error.code === '42P01') {
+                document.getElementById('config-sync-status').textContent = 'BD no configurada';
+            } else if (error) {
+                document.getElementById('config-sync-status').textContent = 'Error: ' + error.message;
+            } else {
+                document.getElementById('config-sync-status').textContent = 'Sincronizado';
+            }
+        }
+
+        async function syncDesdeSupabase() {
+            if (!_supabaseUser) return;
+            const sb = supabaseInit();
+            if (!sb) return;
+            document.getElementById('config-sync-status').textContent = 'Descargando...';
+            const { data, error } = await sb.from('user_data')
+                .select('data, updated_at')
+                .eq('user_id', _supabaseUser.id)
+                .single();
+            if (error && error.code === '42P01') {
+                document.getElementById('config-sync-status').textContent = 'BD no configurada';
+                return;
+            }
+            if (error || !data) {
+                document.getElementById('config-sync-status').textContent = 'Sin datos en nube';
+                return;
+            }
+            const d = data.data;
+            if (d.compraItems) compraItems = d.compraItems;
+            if (d.compraSaldo !== undefined) document.getElementById('compra-saldo').value = d.compraSaldo;
+            if (d.compraMoneda) compraMoneda = d.compraMoneda;
+            if (d.compraRate) compraRate = d.compraRate;
+            if (d['compra-lugar'] !== undefined) document.getElementById('compra-lugar').value = d['compra-lugar'];
+            if (d.compraHistorial) localStorage.setItem('compraHistorial', JSON.stringify(d.compraHistorial));
+            saveCompraState();
+            renderCompraLista();
+            document.getElementById('config-sync-status').textContent = 'Datos descargados';
+        }
+
+        function escucharSupabase() {
+            if (!_supabaseUser) return;
+            const sb = supabaseInit();
+            if (!sb) return;
+            if (_syncUnsub) _syncUnsub();
+            _syncUnsub = sb.channel('user_data_' + _supabaseUser.id)
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'user_data', filter: 'user_id=eq.' + _supabaseUser.id },
+                    () => { syncDesdeSupabase(); }
+                )
+                .subscribe();
+        }
+
+        function syncNow() {
+            if (!_supabaseUser) { authMostrar(); return; }
+            syncASupabase();
+        }
+
+        function encolarSync() {
+            if (!_supabaseUser) return;
+            clearTimeout(_syncTimer);
+            _syncTimer = setTimeout(syncASupabase, 2000);
+        }
+
+        function syncAhora() {
+            if (!_supabaseUser) return;
+            document.getElementById('config-sync-status').textContent = 'Sincronizando...';
+            syncASupabase();
+        }
+
+        function exportarDatos() {
+            const data = {
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                compraItems,
+                compraSaldo: document.getElementById('compra-saldo')?.value || '',
+                compraMoneda,
+                compraRate,
+                'compra-lugar': document.getElementById('compra-lugar')?.value || '',
+                compraHistorial: JSON.parse(localStorage.getItem('compraHistorial') || '[]')
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'tasaves-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function importarDatos(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (!data.compraItems) return alert('Archivo inválido');
+                    compraItems = data.compraItems || [];
+                    if (data.compraSaldo !== undefined) document.getElementById('compra-saldo').value = data.compraSaldo;
+                    if (data.compraMoneda) { compraMoneda = data.compraMoneda; document.querySelectorAll('#compra-moneda span').forEach(s => { s.classList.toggle('bg-purple-500/20', s.dataset.m === compraMoneda); s.classList.toggle('text-purple-100', s.dataset.m === compraMoneda); s.classList.toggle('text-purple-400/50', s.dataset.m !== compraMoneda); }); }
+                    if (data.compraRate) { compraRate = data.compraRate; const el = document.getElementById('compra-rate-' + data.compraRate); if (el) el.click(); }
+                    if (data['compra-lugar'] !== undefined) document.getElementById('compra-lugar').value = data['compra-lugar'];
+                    if (data.compraHistorial) localStorage.setItem('compraHistorial', JSON.stringify(data.compraHistorial));
+                    saveCompraState();
+                    renderCompraLista();
+                    alert('Datos importados correctamente');
+                } catch (err) {
+                    alert('Error al importar: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        // Init auth and sync
+        (async () => {
+            const session = await supabaseGetSession();
+            if (session) {
+                await supabaseOnLogin(session);
+            } else {
+                setTimeout(authMostrar, 500);
+            }
+        })();
+
+        document.getElementById('auth-email').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('auth-pass').focus(); }
+        });
+        document.getElementById('auth-pass').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); authIniciar(); }
+        });
 
         fetchRates();
     </script>
