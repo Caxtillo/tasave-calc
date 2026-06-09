@@ -991,7 +991,6 @@
                 return sum + item.precio * item.cantidad * (item.rateVal || 0);
             }, 0);
             document.getElementById('modal-total').textContent = formatNum(totalBs) + ' Bs';
-            document.getElementById('modal-lugar').value = '';
             document.getElementById('modal-foto-empty').classList.remove('hidden');
             document.getElementById('modal-foto-preview').classList.add('hidden');
             document.getElementById('compra-foto-input').value = '';
