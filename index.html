@@ -294,8 +294,8 @@
                 <div class="glass rounded-xl px-3 py-3">
                     <div class="flex items-center gap-2 mb-2">
                         <div id="compra-moneda" class="flex rounded-md border border-purple-500/20 overflow-hidden">
-                            <span class="px-2.5 py-0.5 text-xs font-bold cursor-pointer bg-purple-500/20 text-purple-100" data-m="Bs" onclick="toggleMoneda(this)">Bs</span>
-                            <span class="px-2.5 py-0.5 text-xs font-bold cursor-pointer text-purple-400/50" data-m="$" onclick="toggleMoneda(this)">$</span>
+                            <span class="px-2.5 py-0.5 text-xs font-bold cursor-pointer text-purple-400/50" data-m="Bs" onclick="toggleMoneda(this)">Bs</span>
+                            <span class="px-2.5 py-0.5 text-xs font-bold cursor-pointer bg-purple-500/20 text-purple-100" data-m="$" onclick="toggleMoneda(this)">$</span>
                         </div>
                         <span class="text-[9px] uppercase tracking-[0.2em] text-purple-300/40 font-bold ml-auto">Precio</span>
                     </div>
@@ -306,6 +306,12 @@
                             <span id="compra-cant" class="text-purple-100 font-bold text-lg w-7 text-center">1</span>
                             <button class="flex items-center justify-center w-10 h-10 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-lg" ontouchstart="compraCant(1);event.preventDefault()" onmousedown="compraCant(1);event.preventDefault()">+</button>
                         </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 mt-1 min-h-5" id="compra-rate-row">
+                        <span class="text-[8px] uppercase tracking-[0.2em] text-purple-400/30 font-bold">Tasa</span>
+                        <span class="text-[10px] font-bold cursor-pointer rounded px-1.5 py-0.5 text-purple-300 bg-purple-500/20" onclick="selectCompraRate('bcv')" id="compra-rate-bcv">BCV</span>
+                        <span class="text-[10px] font-bold cursor-pointer rounded px-1.5 py-0.5 text-purple-400/40" onclick="selectCompraRate('binance')" id="compra-rate-binance">Binance</span>
+                        <span id="compra-conv" class="text-[9px] text-purple-400/40 font-bold ml-auto"></span>
                     </div>
                     <input type="text" id="compra-concepto" inputmode="text" enterkeyhint="go" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mt-2" placeholder="Concepto...">
                     <button onclick="compraAgregar()" id="compra-btn" class="w-full mt-2 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
@@ -657,6 +663,7 @@
         let compraCantVal = 1;
         let compraEditIndex = null;
         let compraMoneda = '$';
+        let compraRate = 'bcv';
 
         function showPage(page) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
@@ -678,11 +685,37 @@
                 s.classList.toggle('text-purple-400/50', s !== el);
             });
             compraMoneda = el.dataset.m;
+            compraConvPreview();
+        }
+
+        function selectCompraRate(src) {
+            compraRate = src;
+            document.querySelectorAll('#compra-rate-row span[id^="compra-rate-"]').forEach(s => {
+                s.classList.toggle('bg-purple-500/20', s.id === 'compra-rate-' + src);
+                s.classList.toggle('text-purple-300', s.id === 'compra-rate-' + src);
+                s.classList.toggle('text-purple-400/40', s.id !== 'compra-rate-' + src);
+            });
+            compraConvPreview();
+        }
+
+        function compraConvPreview() {
+            const el = document.getElementById('compra-conv');
+            const precio = parseFloat(document.getElementById('compra-precio').value);
+            if (compraMoneda === '$' && precio > 0) {
+                const rateSrc = compraRate === 'bcv' ? rates.bcv : rates.binance;
+                if (rateSrc > 0) {
+                    const total = (precio * compraCantVal * rateSrc).toFixed(2);
+                    el.textContent = '≈ ' + total + ' Bs';
+                    return;
+                }
+            }
+            el.textContent = '';
         }
 
         function compraCant(delta) {
             compraCantVal = Math.max(1, compraCantVal + delta);
             document.getElementById('compra-cant').textContent = compraCantVal;
+            compraConvPreview();
         }
 
         function compraAgregar() {
@@ -697,21 +730,29 @@
 
             if (compraEditIndex !== null) {
                 const old = compraItems[compraEditIndex];
-                if (old.moneda === 'Bs') {
+                const oldTotal = old.moneda === 'Bs' ? old.precio * old.cantidad : old.precio * old.cantidad * (old.rateVal || 0);
+                if (oldTotal > 0) {
                     const saldo = parseFloat(saldoEl.value) || 0;
-                    saldoEl.value = (saldo + old.precio * old.cantidad).toFixed(2);
+                    saldoEl.value = (saldo + oldTotal).toFixed(2);
                 }
-                compraItems[compraEditIndex] = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim() };
+                compraItems[compraEditIndex] = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate };
                 compraEditIndex = null;
                 document.getElementById('compra-btn').textContent = '+ Agregar';
             } else {
-                const item = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim() };
+                const rateVal = moneda === '$' ? (compraRate === 'bcv' ? rates.bcv : rates.binance) : 0;
+                const item = { precio, moneda, cantidad: compraCantVal, concepto: conceptoEl.value.trim(), rateVal, rateSrc: compraRate };
                 compraItems.push(item);
             }
 
             if (moneda === 'Bs') {
                 const saldo = parseFloat(saldoEl.value) || 0;
                 saldoEl.value = Math.max(0, saldo - precio * compraCantVal).toFixed(2);
+            } else {
+                const rateSrc = compraRate === 'bcv' ? rates.bcv : rates.binance;
+                if (rateSrc > 0) {
+                    const saldo = parseFloat(saldoEl.value) || 0;
+                    saldoEl.value = Math.max(0, saldo - precio * compraCantVal * rateSrc).toFixed(2);
+                }
             }
 
             precioEl.value = '';
@@ -728,7 +769,10 @@
                 return;
             }
 
-            const totalBs = compraItems.reduce((sum, item) => item.moneda === 'Bs' ? sum + item.precio * item.cantidad : sum, 0);
+            const totalBs = compraItems.reduce((sum, item) => {
+                if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
+                return sum + item.precio * item.cantidad * (item.rateVal || 0);
+            }, 0);
             const saldoRestante = parseFloat(document.getElementById('compra-saldo').value) || 0;
             const saldoInicial = (saldoRestante + totalBs).toFixed(2);
 
@@ -759,9 +803,10 @@
             if (!confirm('Eliminar este item?')) return;
             const item = compraItems[i];
             compraItems.splice(i, 1);
-            if (item.moneda === 'Bs') {
-                const saldoEl = document.getElementById('compra-saldo');
-                saldoEl.value = (parseFloat(saldoEl.value) + item.precio * item.cantidad).toFixed(2);
+            const saldoEl = document.getElementById('compra-saldo');
+            const total = item.moneda === 'Bs' ? item.precio * item.cantidad : item.precio * item.cantidad * (item.rateVal || 0);
+            if (total > 0) {
+                saldoEl.value = (parseFloat(saldoEl.value) + total).toFixed(2);
             }
             if (compraEditIndex === i) compraEditIndex = null;
             renderCompraLista();
@@ -781,7 +826,10 @@
             document.getElementById('compra-cant').textContent = item.cantidad;
             compraEditIndex = i;
             document.getElementById('compra-btn').textContent = '✓ Guardar';
+            compraConvPreview();
         }
+
+        document.getElementById('compra-precio').addEventListener('input', compraConvPreview);
 
         // Calendar
         let calDate = new Date();
