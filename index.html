@@ -307,6 +307,28 @@
                 </div>
             </div>
 
+            <div id="page-calendario" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto" style="padding-bottom:var(--top-py)">
+                <div class="px-4 pt-2">
+                    <div class="glass rounded-xl px-4 py-3">
+                        <div class="flex items-center justify-between">
+                            <button onclick="calNav(-1)" class="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-lg">‹</button>
+                            <span id="cal-titulo" class="text-purple-100 font-bold text-sm"></span>
+                            <button onclick="calNav(1)" class="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-lg">›</button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-0 mt-3">
+                            <span class="text-center text-[9px] font-bold text-purple-400/40 uppercase py-1">L</span>
+                            <span class="text-center text-[9px] font-bold text-purple-400/40 uppercase py-1">M</span>
+                            <span class="text-center text-[9px] font-bold text-purple-400/40 uppercase py-1">M</span>
+                            <span class="text-center text-[9px] font-bold text-purple-400/40 uppercase py-1">J</span>
+                            <span class="text-center text-[9px] font-bold text-purple-400/40 uppercase py-1">V</span>
+                            <span class="text-center text-[9px] font-bold text-purple-400/40 uppercase py-1">S</span>
+                            <span class="text-center text-[9px] font-bold text-purple-400/40 uppercase py-1">D</span>
+                        </div>
+                        <div id="cal-grid" class="grid grid-cols-7 gap-0 mt-1"></div>
+                    </div>
+                </div>
+            </div>
+
             <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5" style="height:var(--keypad-h);grid-template-rows:repeat(4,1fr);">
                 <button class="keypad-btn" data-key="7">7</button>
                 <button class="keypad-btn" data-key="8">8</button>
@@ -444,10 +466,6 @@
             location.reload();
         }
 
-        function manualRefresh() {
-            location.reload();
-        }
-
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -463,14 +481,38 @@
         });
 
         async function fetchRates() {
+            let loadedFromCache = false;
+
+            const loadCached = () => {
+                const cached = localStorage.getItem('tasas');
+                if (cached) {
+                    const { bcv, binance, ts } = JSON.parse(cached);
+                    rates.bcv = bcv;
+                    rates.binance = binance;
+                    const d = new Date(ts);
+                    lastDateEl.textContent = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' });
+                    lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> Sin conexión';
+                    return true;
+                }
+                return false;
+            };
+
             try {
                 const response = await fetch('/rates.json');
                 if (response.ok) {
                     const data = await response.json();
                     if (data.USD) rates.bcv = data.USD;
                     updateUI(data);
+                    localStorage.setItem('tasas', JSON.stringify({ bcv: rates.bcv, binance: rates.binance, ts: Date.now() }));
+                } else {
+                    if (!loadCached()) throw new Error();
                 }
-            } catch (_) {}
+            } catch (_) {
+                if (!loadCached()) {
+                    loadingEl.classList.add('hidden');
+                    contentEl.classList.remove('hidden');
+                }
+            }
 
             try {
                 const res = await fetch('https://ve.dolarapi.com/v1/dolares');
@@ -478,6 +520,7 @@
                     const list = await res.json();
                     const p2p = list.find(item => item.fuente === 'paralelo');
                     if (p2p) rates.binance = p2p.promedio || p2p.venta;
+                    localStorage.setItem('tasas', JSON.stringify({ bcv: rates.bcv, binance: rates.binance, ts: Date.now() }));
                 }
             } catch (_) {}
 
@@ -613,9 +656,11 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
             document.getElementById('page-inicio').classList.toggle('hidden', page !== 'inicio');
             document.getElementById('page-compra').classList.toggle('hidden', page !== 'compra');
+            document.getElementById('page-calendario').classList.toggle('hidden', page !== 'calendario');
             document.getElementById('keypad').classList.toggle('hidden', page !== 'inicio');
             const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
             if (navItem) navItem.classList.add('nav-active');
+            if (page === 'calendario') renderCal();
             lucide.createIcons();
         }
 
@@ -666,7 +711,19 @@
                 lista.innerHTML = '<div class="text-center text-purple-400/30 text-[10px] font-bold uppercase tracking-wider py-4">Sin items</div>';
                 return;
             }
-            lista.innerHTML = compraItems.map((item, i) =>
+
+            const totalBs = compraItems.reduce((sum, item) => item.moneda === 'Bs' ? sum + item.precio * item.cantidad : sum, 0);
+            const saldoRestante = parseFloat(document.getElementById('compra-saldo').value) || 0;
+            const saldoInicial = (saldoRestante + totalBs).toFixed(2);
+
+            let html = `
+                <div class="flex items-center justify-between glass rounded-lg px-3 py-2 text-[10px] font-bold text-purple-300/60">
+                    <span>Inicial: <span class="text-purple-100">${saldoInicial} Bs</span></span>
+                    <span>Gastado: <span class="text-red-400/80">${totalBs.toFixed(2)} Bs</span></span>
+                    <span>Restan: <span class="text-green-400/80">${saldoRestante.toFixed(2)} Bs</span></span>
+                </div>`;
+
+            html += compraItems.map((item, i) =>
                 `<div class="flex items-center justify-between glass rounded-lg px-3 py-2">
                     <div class="flex flex-col min-w-0 flex-1">
                         <span class="text-purple-100 text-sm font-semibold truncate">${item.concepto}</span>
@@ -678,6 +735,7 @@
                     </div>
                 </div>`
             ).join('');
+            lista.innerHTML = html;
             lucide.createIcons();
         }
 
@@ -703,6 +761,46 @@
             compraEditIndex = i;
             document.getElementById('compra-btn').textContent = '✓ Guardar';
         }
+
+        // Calendar
+        let calDate = new Date();
+        calDate.setDate(1);
+
+        function renderCal() {
+            const year = calDate.getFullYear();
+            const month = calDate.getMonth();
+            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            document.getElementById('cal-titulo').textContent = months[month] + ' ' + year;
+
+            const firstDow = new Date(year, month, 1).getDay(); // 0=Sun
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            const todayStr = today.toISOString().slice(0, 10);
+
+            let html = '';
+            let dow = firstDow === 0 ? 6 : firstDow - 1; // convert to Mon=0
+            for (let i = 0; i < dow; i++) html += '<div></div>';
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isToday = dateStr === todayStr;
+                html += `<div class="text-center py-1.5 text-sm font-semibold rounded-lg ${isToday ? 'bg-purple-500/30 text-purple-100' : 'text-purple-300/60'}">${d}</div>`;
+            }
+            document.getElementById('cal-grid').innerHTML = html;
+        }
+
+        function calNav(delta) {
+            calDate.setMonth(calDate.getMonth() + delta);
+            renderCal();
+        }
+
+        // Enter key submits compra item
+        document.getElementById('compra-precio').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); compraAgregar(); }
+        });
+        document.getElementById('compra-concepto').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); compraAgregar(); }
+        });
 
         fetchRates();
     </script>

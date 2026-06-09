@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Layout Tool - TasaVes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0c1d;
+            color: #f3f0ff;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        .glass { background: rgba(30,20,50,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(167,139,250,0.2); }
+
+        #preview {
+            width: 420px;
+            min-width: 420px;
+            height: 100vh;
+            border-right: 1px solid rgba(167,139,250,0.15);
+        }
+        #preview .input-box:focus, #preview .input-highlight { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,0.2); }
+        #preview .keypad-btn:active { background: rgba(167,139,250,0.25); transform: scale(0.94); }
+        #preview .rate-card:active { transform: scale(0.97); }
+
+        #controls {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        #controls::-webkit-scrollbar { width: 6px; }
+        #controls::-webkit-scrollbar-track { background: transparent; }
+        #controls::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.3); border-radius: 3px; }
+
+        .ctrl-group { background: rgba(30,20,50,0.4); border-radius: 0.65rem; padding: 0.75rem 1rem; border: 1px solid rgba(167,139,250,0.1); }
+        .ctrl-group label { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; font-weight: 600; color: rgba(243,240,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.35rem; }
+        .ctrl-group label span.val { color: #a78bfa; font-family: monospace; font-size: 0.8rem; }
+        .ctrl-group input[type="range"] { width: 100%; accent-color: #a78bfa; height: 4px; cursor: pointer; }
+        .ctrl-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #a78bfa; cursor: pointer; }
+
+        h3 { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(167,139,250,0.4); margin: 0.5rem 0 0.25rem; }
+
+        #output {
+            font-family: monospace;
+            font-size: 0.7rem;
+            background: rgba(0,0,0,0.4);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            white-space: pre-wrap;
+            color: #a78bfa;
+            border: 1px solid rgba(167,139,250,0.15);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #copy-btn {
+            background: rgba(167,139,250,0.15);
+            border: 1px solid rgba(167,139,250,0.3);
+            color: #a78bfa;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 100ms;
+        }
+        #copy-btn:active { background: rgba(167,139,250,0.3); }
+    </style>
+</head>
+<body>
+
+<div id="preview" class="flex flex-col bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
+    <div id="app" class="w-full h-full flex flex-col p-3 pb-1">
+        <div id="content" class="flex flex-col h-full">
+            <div class="flex-1 flex flex-col" id="top-section">
+                <header class="flex items-center justify-between shrink-0" id="header-el">
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold" id="title-el">Tasa<span class="text-purple-400">Ves</span></h1>
+                        <span class="text-[8px] text-purple-400/50 font-bold uppercase tracking-widest">Vigente</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-purple-300/70 font-bold flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Vigente
+                        </span>
+                        <button class="p-1.5 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-400"></i>
+                        </button>
+                    </div>
+                </header>
+                <div class="flex gap-1.5 shrink-0" id="rates-row" style="margin-top:0.5rem">
+                    <div class="rate-card flex-1 rate-card-selected">
+                        <span class="font-bold text-purple-300/70" id="rate-label">BCV</span>
+                        <span class="font-black text-white" id="rate-value">567.68</span>
+                    </div>
+                    <div class="rate-card flex-1">
+                        <span class="font-bold text-purple-300/70" id="rate-label2">Binance</span>
+                        <span class="font-black text-white" id="rate-value2">762.78</span>
+                    </div>
+                    <div class="rate-card flex-1">
+                        <span class="font-bold text-purple-300/70" id="rate-label3">Propia</span>
+                        <span class="font-black text-white" id="rate-value3">---.--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col justify-center" id="inputs-section">
+                    <div class="flex flex-col" id="inputs-inner">
+                        <div>
+                            <label class="uppercase text-purple-300/50 font-bold ml-1 block" id="usd-label">Dólares (USD)</label>
+                            <input type="text" readonly class="input-box input-highlight" value="100.00" placeholder="0.00">
+                        </div>
+                        <div class="flex justify-center relative z-10" id="swap-row">
+                            <div class="swap-btn"><i data-lucide="arrow-down-up" class="w-4 h-4"></i></div>
+                        </div>
+                        <div>
+                            <label class="uppercase text-purple-300/50 font-bold ml-1 block" id="ves-label">Bolívares (VES)</label>
+                            <input type="text" readonly class="input-box" value="56768.00" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5" style="grid-template-rows:repeat(4,1fr);">
+                <button class="keypad-btn">7</button>
+                <button class="keypad-btn">8</button>
+                <button class="keypad-btn">9</button>
+                <button class="keypad-btn keypad-btn-op"><i data-lucide="delete" class="w-4 h-4"></i></button>
+                <button class="keypad-btn">4</button>
+                <button class="keypad-btn">5</button>
+                <button class="keypad-btn">6</button>
+                <button class="keypad-btn keypad-btn-op">+</button>
+                <button class="keypad-btn">1</button>
+                <button class="keypad-btn">2</button>
+                <button class="keypad-btn">3</button>
+                <button class="keypad-btn keypad-btn-op">C</button>
+                <button class="keypad-btn">0</button>
+                <button class="keypad-btn">.</button>
+                <button class="keypad-btn keypad-btn-op">AC</button>
+                <button class="keypad-btn keypad-btn-op">⇄</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="controls">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem">
+        <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:rgba(167,139,250,0.5)">Ajustes de Layout</span>
+        <button id="copy-btn">📋 Copiar CSS</button>
+    </div>
+
+    <h3>▸ Tasas (Rate Cards)</h3>
+    <div class="ctrl-group"><label>Padding Vertical <span class="val" id="v-rate-py">1.2rem</span></label><input type="range" id="s-rate-py" min="4" max="40" value="19" step="1"></div>
+    <div class="ctrl-group"><label>Padding Horizontal <span class="val" id="v-rate-px">0.85rem</span></label><input type="range" id="s-rate-px" min="4" max="24" value="14" step="1"></div>
+    <div class="ctrl-group"><label>Font Size Label <span class="val" id="v-rate-label">11px</span></label><input type="range" id="s-rate-label" min="8" max="18" value="11" step="1"></div>
+    <div class="ctrl-group"><label>Font Size Value <span class="val" id="v-rate-value">1.125rem</span></label><input type="range" id="s-rate-value" min="12" max="32" value="18" step="1"></div>
+
+    <h3>▸ Inputs</h3>
+    <div class="ctrl-group"><label>Padding Vertical <span class="val" id="v-input-py">0.75rem</span></label><input type="range" id="s-input-py" min="4" max="32" value="12" step="1"></div>
+    <div class="ctrl-group"><label>Padding Horizontal <span class="val" id="v-input-px">1rem</span></label><input type="range" id="s-input-px" min="4" max="24" value="16" step="1"></div>
+    <div class="ctrl-group"><label>Font Size <span class="val" id="v-input-fs">1.75rem</span></label><input type="range" id="s-input-fs" min="16" max="48" value="28" step="1"></div>
+    <div class="ctrl-group"><label>Label Font Size <span class="val" id="v-label-fs">10px</span></label><input type="range" id="s-label-fs" min="8" max="18" value="10" step="1"></div>
+    <div class="ctrl-group"><label>Gap entre inputs <span class="val" id="v-input-gap">0.5rem</span></label><input type="range" id="s-input-gap" min="0" max="24" value="8" step="1"></div>
+
+    <h3>▸ Header</h3>
+    <div class="ctrl-group"><label>Título Font Size <span class="val" id="v-title-fs">1.25rem</span></label><input type="range" id="s-title-fs" min="14" max="36" value="20" step="1"></div>
+    <div class="ctrl-group"><label>Header Margin Bottom <span class="val" id="v-header-mb">0rem</span></label><input type="range" id="s-header-mb" min="0" max="16" value="0" step="1"></div>
+
+    <h3>▸ Teclado</h3>
+    <div class="ctrl-group"><label>Altura (dvh) <span class="val" id="v-keypad-h">38dvh</span></label><input type="range" id="s-keypad-h" min="25" max="55" value="38" step="1"></div>
+
+    <h3>▸ Espaciado General</h3>
+    <div class="ctrl-group"><label>Top Section Padding Y <span class="val" id="v-top-py">0.5rem</span></label><input type="range" id="s-top-py" min="0" max="20" value="8" step="1"></div>
+
+    <h3>▸ Código CSS generado</h3>
+    <div id="output"></div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const preview = document.getElementById('preview');
+
+    function px(v) { return v + 'px'; }
+    function rem(v) { return (v / 16).toFixed(3) + 'rem'; }
+
+    function update() {
+        const ratePy = +document.getElementById('s-rate-py').value;
+        const ratePx = +document.getElementById('s-rate-px').value;
+        const rateLabel = +document.getElementById('s-rate-label').value;
+        const rateValue = +document.getElementById('s-rate-value').value;
+        const inputPy = +document.getElementById('s-input-py').value;
+        const inputPx = +document.getElementById('s-input-px').value;
+        const inputFs = +document.getElementById('s-input-fs').value;
+        const labelFs = +document.getElementById('s-label-fs').value;
+        const inputGap = +document.getElementById('s-input-gap').value;
+        const titleFs = +document.getElementById('s-title-fs').value;
+        const headerMb = +document.getElementById('s-header-mb').value;
+        const keypadH = +document.getElementById('s-keypad-h').value;
+        const topPy = +document.getElementById('s-top-py').value;
+
+        // Update preview
+        preview.querySelectorAll('.rate-card').forEach(c => {
+            c.style.padding = `${rem(ratePy)} ${rem(ratePx)}`;
+        });
+        document.getElementById('rate-label').style.fontSize = px(rateLabel);
+        document.getElementById('rate-label2').style.fontSize = px(rateLabel);
+        document.getElementById('rate-label3').style.fontSize = px(rateLabel);
+        document.getElementById('rate-value').style.fontSize = rem(rateValue);
+        document.getElementById('rate-value2').style.fontSize = rem(rateValue);
+        document.getElementById('rate-value3').style.fontSize = rem(rateValue);
+
+        preview.querySelectorAll('.input-box').forEach(el => {
+            el.style.padding = `${rem(inputPy)} ${rem(inputPx)}`;
+            el.style.fontSize = rem(inputFs);
+        });
+        document.getElementById('usd-label').style.fontSize = px(labelFs);
+        document.getElementById('ves-label').style.fontSize = px(labelFs);
+
+        document.getElementById('inputs-inner').style.gap = rem(inputGap);
+        document.getElementById('swap-row').style.marginTop = `-${rem(inputGap/2)}`;
+        document.getElementById('swap-row').style.marginBottom = `-${rem(inputGap/2)}`;
+
+        document.getElementById('title-el').style.fontSize = rem(titleFs);
+        document.getElementById('header-el').style.marginBottom = rem(headerMb);
+
+        document.getElementById('keypad').style.height = keypadH + 'dvh';
+
+        document.getElementById('top-section').style.paddingTop = rem(topPy);
+        document.getElementById('top-section').style.paddingBottom = rem(topPy);
+
+        // Update value displays
+        document.getElementById('v-rate-py').textContent = rem(ratePy);
+        document.getElementById('v-rate-px').textContent = rem(ratePx);
+        document.getElementById('v-rate-label').textContent = px(rateLabel);
+        document.getElementById('v-rate-value').textContent = rem(rateValue);
+        document.getElementById('v-input-py').textContent = rem(inputPy);
+        document.getElementById('v-input-px').textContent = rem(inputPx);
+        document.getElementById('v-input-fs').textContent = rem(inputFs);
+        document.getElementById('v-label-fs').textContent = px(labelFs);
+        document.getElementById('v-input-gap').textContent = rem(inputGap);
+        document.getElementById('v-title-fs').textContent = rem(titleFs);
+        document.getElementById('v-header-mb').textContent = rem(headerMb);
+        document.getElementById('v-keypad-h').textContent = keypadH + 'dvh';
+        document.getElementById('v-top-py').textContent = rem(topPy);
+
+        // Generate CSS output
+        const code = `/* Rate Cards */\n`
+            + `.rate-card { padding: ${rem(ratePy)} ${rem(ratePx)}; }\n`
+            + `.rate-card span:first-child { font-size: ${px(rateLabel)}; }\n`
+            + `.rate-card span:last-child { font-size: ${rem(rateValue)}; }\n\n`
+            + `/* Inputs */\n`
+            + `.input-box { padding: ${rem(inputPy)} ${rem(inputPx)}; font-size: ${rem(inputFs)}; }\n`
+            + `.input-label { font-size: ${px(labelFs)}; }\n`
+            + `.inputs-inner { gap: ${rem(inputGap)}; }\n\n`
+            + `/* Header */\n`
+            + `header h1 { font-size: ${rem(titleFs)}; }\n`
+            + `header { margin-bottom: ${rem(headerMb)}; }\n\n`
+            + `/* Keypad */\n`
+            + `#keypad { height: ${keypadH}dvh; }\n\n`
+            + `/* Top section */\n`
+            + `.top-section { padding: ${rem(topPy)} 0; }`;
+        document.getElementById('output').textContent = code;
+    }
+
+    document.querySelectorAll('#controls input[type="range"]').forEach(el => {
+        el.addEventListener('input', update);
+    });
+
+    document.getElementById('copy-btn').addEventListener('click', () => {
+        const text = document.getElementById('output').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            document.getElementById('copy-btn').textContent = '✅ Copiado!';
+            setTimeout(() => {
+                document.getElementById('copy-btn').textContent = '📋 Copiar CSS';
+            }, 2000);
+        }).catch(() => {
+            // fallback
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            document.getElementById('copy-btn').textContent = '✅ Copiado!';
+            setTimeout(() => {
+                document.getElementById('copy-btn').textContent = '📋 Copiar CSS';
+            }, 2000);
+        });
+    });
+
+    update();
+</script>
+</body>
+</html>
