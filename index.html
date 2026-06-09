@@ -75,7 +75,13 @@
             min-width: 0;
             cursor: default;
             text-align: right;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
+        .input-inner::-webkit-scrollbar { display: none; }
         .input-box.input-selected {
             border-color: #a78bfa !important;
             box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.35) !important;
@@ -366,6 +372,9 @@
                     el.value += key;
                 }
 
+                scrollInputEnd(inputUsd);
+                scrollInputEnd(inputVes);
+                scrollInputEnd(inputCustomRate);
                 if (activeInput === 'custom') calculate(lastEdited);
                 else triggerCalc();
             });
@@ -376,6 +385,8 @@
             focusInput(lastEdited);
             autoSize(inputUsd, '--input-fs');
             autoSize(inputVes, '--input-fs');
+            scrollInputEnd(inputUsd);
+            scrollInputEnd(inputVes);
         }
 
         function manualRefresh() {
@@ -482,6 +493,10 @@
             if (len > 10) scale = 0.65;
             else if (len > 8) scale = 0.8;
             el.style.fontSize = (base * scale) + 'px';
+        }
+
+        function scrollInputEnd(el) {
+            requestAnimationFrame(() => { el.scrollLeft = el.scrollWidth; });
         }
 
         function parseSum(str) {
