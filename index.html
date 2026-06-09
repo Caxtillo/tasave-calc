@@ -442,8 +442,8 @@
                     <div id="auth-error" class="text-red-400 text-[11px] font-bold text-center mb-2 hidden"></div>
                     <input type="email" id="auth-email" autocomplete="email" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-2 mb-3" placeholder="Correo electrónico">
                     <input type="password" id="auth-pass" autocomplete="current-password" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-2 mb-4" placeholder="Contraseña">
-                    <button onclick="authRegistrar()" id="auth-btn-reg" class="w-full py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm mb-2">Registrarse</button>
-                    <button onclick="authIniciar()" id="auth-btn-login" class="w-full py-2 text-[10px] text-purple-400/50 font-bold">Ya tengo cuenta — Iniciar sesión</button>
+                    <button onclick="authModo === 'login' ? authIniciar() : authRegistrar()" id="auth-btn-reg" class="w-full py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm mb-2">Iniciar sesión</button>
+                    <button onclick="authToggle()" id="auth-toggle-text" class="w-full py-2 text-[10px] text-purple-400/50 font-bold">¿No tienes cuenta? Crear una</button>
                     <button onclick="authSaltar()" class="w-full mt-3 py-2 text-[10px] text-purple-400/20 font-bold">Saltar por ahora</button>
                 </div>
             </div>
@@ -1491,16 +1491,23 @@ create policy "crud_own"
             const session = await supabaseGetSession();
             if (session) {
                 await supabaseOnLogin(session);
-            } else {
-                setTimeout(authMostrar, 500);
             }
         })();
+
+        let authModo = 'login';
+
+        function authToggle() {
+            authModo = authModo === 'login' ? 'register' : 'login';
+            document.getElementById('auth-btn-reg').textContent = authModo === 'login' ? 'Iniciar sesión' : 'Crear cuenta';
+            document.getElementById('auth-toggle-text').textContent = authModo === 'login' ? '¿No tienes cuenta? Crear una' : 'Ya tengo cuenta — Iniciar sesión';
+            document.getElementById('auth-error').classList.add('hidden');
+        }
 
         document.getElementById('auth-email').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); document.getElementById('auth-pass').focus(); }
         });
         document.getElementById('auth-pass').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); authIniciar(); }
+            if (e.key === 'Enter') { e.preventDefault(); authModo === 'login' ? authIniciar() : authRegistrar(); }
         });
 
         fetchRates();
