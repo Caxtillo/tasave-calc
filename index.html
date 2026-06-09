@@ -612,7 +612,6 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
             document.getElementById('page-inicio').classList.toggle('hidden', page !== 'inicio');
             document.getElementById('page-compra').classList.toggle('hidden', page !== 'compra');
-            document.getElementById('keypad').classList.toggle('hidden', page === 'compra');
             const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
             if (navItem) navItem.classList.add('nav-active');
             lucide.createIcons();
