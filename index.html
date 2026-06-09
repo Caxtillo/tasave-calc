@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -210,22 +210,22 @@
 
         <div id="content" class="hidden flex flex-col h-full">
 
-            <div id="page-inicio" class="flex-1 flex flex-col min-h-0" style="padding-top:var(--top-py);padding-bottom:var(--top-py)">
-                <header class="flex items-center justify-between shrink-0" style="margin-bottom:var(--header-mb)">
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
-                        <span class="text-[9px] text-purple-400/50 font-bold uppercase tracking-widest" id="last-date">Cargando...</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[11px] text-purple-300/70 font-bold flex items-center gap-1" id="last-time">
-                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> --:--
-                        </span>
-                        <button onclick="manualRefresh()" id="refresh-btn" class="p-1.5 bg-purple-500/10 rounded-xl border border-purple-500/20">
-                            <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-400"></i>
-                        </button>
-                    </div>
-                </header>
+            <header class="flex items-center justify-between shrink-0" style="padding-top:var(--top-py);margin-bottom:var(--header-mb)">
+                <div class="flex items-center gap-2">
+                    <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
+                    <span class="text-[9px] text-purple-400/50 font-bold uppercase tracking-widest" id="last-date">Cargando...</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[11px] text-purple-300/70 font-bold flex items-center gap-1" id="last-time">
+                        <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> --:--
+                    </span>
+                    <button onclick="manualRefresh()" id="refresh-btn" class="p-1.5 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-400"></i>
+                    </button>
+                </div>
+            </header>
 
+            <div id="page-inicio" class="flex-1 flex flex-col min-h-0" style="padding-bottom:var(--top-py)">
                 <div class="flex gap-1.5 shrink-0 mt-2">
                     <div onclick="setSource('bcv')" id="card-bcv" class="rate-card flex-1 rate-card-selected">
                         <span class="rate-label">BCV</span>
@@ -270,7 +270,7 @@
                 </div>
             </div> <!-- fin page-inicio -->
 
-            <div id="page-compra" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto" style="padding-top:var(--top-py);padding-bottom:var(--top-py)">
+            <div id="page-compra" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto" style="padding-bottom:var(--top-py)">
                 <div class="flex flex-col gap-2 px-1 h-full">
                     <div class="glass rounded-xl px-3 py-2">
                         <label class="text-[9px] uppercase tracking-[0.2em] text-purple-300/40 font-bold">Saldo Disponible</label>
@@ -386,7 +386,10 @@
             if (name === 'usd') inputUsd.parentElement.classList.add('input-selected');
             else if (name === 'ves') inputVes.parentElement.classList.add('input-selected');
             else if (name === 'custom') inputCustomRate.parentElement.classList.add('input-selected');
-            else if (name === 'compra-saldo') document.getElementById('compra-saldo').parentElement.classList.add('input-selected');
+            else if (name === 'compra-saldo') {
+                document.getElementById('compra-saldo').parentElement.classList.add('input-selected');
+                document.getElementById('compra-saldo').focus();
+            }
         }
 
         document.querySelectorAll('.keypad-btn').forEach(btn => {
@@ -563,6 +566,7 @@
                 setTimeout(() => el.scrollLeft = el.scrollWidth, 50);
             });
             el.addEventListener('touchstart', (e) => {
+                if (el.id === 'compra-saldo') return;
                 e.preventDefault();
                 const x = e.touches[0].clientX - el.getBoundingClientRect().left;
                 const approx = Math.round(x / (el.scrollWidth / Math.max(el.value.length, 1)) * el.value.length);
