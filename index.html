@@ -293,11 +293,10 @@
             <div id="compra-form" class="hidden shrink-0 px-3 pb-1 z-10" style="background:linear-gradient(to top, rgba(15,12,29,1) 60%, transparent)">
                 <div class="glass rounded-xl px-3 py-3">
                     <div class="flex items-center gap-2 mb-2">
-                        <span class="text-purple-400/60 font-bold text-sm">Bs</span>
-                        <select id="compra-moneda" class="bg-transparent text-purple-100 text-xs font-bold outline-none border border-purple-500/20 rounded-md px-2 py-0.5">
-                            <option value="Bs" class="bg-[#0f0c1d]">Bs</option>
-                            <option value="$" class="bg-[#0f0c1d]">$</option>
-                        </select>
+                        <div id="compra-moneda" class="flex rounded-md border border-purple-500/20 overflow-hidden">
+                            <span class="px-2.5 py-0.5 text-xs font-bold cursor-pointer bg-purple-500/20 text-purple-100" data-m="Bs" onclick="toggleMoneda(this)">Bs</span>
+                            <span class="px-2.5 py-0.5 text-xs font-bold cursor-pointer text-purple-400/50" data-m="$" onclick="toggleMoneda(this)">$</span>
+                        </div>
                         <span class="text-[9px] uppercase tracking-[0.2em] text-purple-300/40 font-bold ml-auto">Precio</span>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -657,6 +656,7 @@
         let compraItems = [];
         let compraCantVal = 1;
         let compraEditIndex = null;
+        let compraMoneda = '$';
 
         function showPage(page) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
@@ -671,6 +671,15 @@
             lucide.createIcons();
         }
 
+        function toggleMoneda(el) {
+            document.getElementById('compra-moneda').querySelectorAll('span').forEach(s => {
+                s.classList.toggle('bg-purple-500/20', s === el);
+                s.classList.toggle('text-purple-100', s === el);
+                s.classList.toggle('text-purple-400/50', s !== el);
+            });
+            compraMoneda = el.dataset.m;
+        }
+
         function compraCant(delta) {
             compraCantVal = Math.max(1, compraCantVal + delta);
             document.getElementById('compra-cant').textContent = compraCantVal;
@@ -680,7 +689,7 @@
             const saldoEl = document.getElementById('compra-saldo');
             const precioEl = document.getElementById('compra-precio');
             const conceptoEl = document.getElementById('compra-concepto');
-            const moneda = document.getElementById('compra-moneda').value;
+            const moneda = compraMoneda;
 
             const precio = parseFloat(precioEl.value);
             if (isNaN(precio) || precio <= 0) return alert('Precio invalido');
@@ -762,7 +771,12 @@
             const item = compraItems[i];
             document.getElementById('compra-precio').value = item.precio;
             document.getElementById('compra-concepto').value = item.concepto;
-            document.getElementById('compra-moneda').value = item.moneda;
+            document.getElementById('compra-moneda').querySelectorAll('span').forEach(s => {
+                s.classList.toggle('bg-purple-500/20', s.dataset.m === item.moneda);
+                s.classList.toggle('text-purple-100', s.dataset.m === item.moneda);
+                s.classList.toggle('text-purple-400/50', s.dataset.m !== item.moneda);
+            });
+            compraMoneda = item.moneda;
             compraCantVal = item.cantidad;
             document.getElementById('compra-cant').textContent = item.cantidad;
             compraEditIndex = i;
