@@ -804,6 +804,20 @@
             if (!conceptoEl.value.trim()) return alert('Escribe un concepto');
 
             const rateVal = moneda === '$' ? (compraRate === 'bcv' ? rates.bcv : rates.binance) : 0;
+            const itemTotal = moneda === 'Bs' ? precio * compraCantVal : precio * compraCantVal * rateVal;
+            const saldo = parseFloat(saldoEl.value) || 0;
+            const gastadoActual = compraItems.reduce((sum, item) => {
+                if (item.moneda === 'Bs') return sum + item.precio * item.cantidad;
+                return sum + item.precio * item.cantidad * (item.rateVal || 0);
+            }, 0);
+            let gastadoEditado = 0;
+            if (compraEditIndex !== null) {
+                const old = compraItems[compraEditIndex];
+                gastadoEditado = old.moneda === 'Bs' ? old.precio * old.cantidad : old.precio * old.cantidad * (old.rateVal || 0);
+            }
+            if (gastadoActual - gastadoEditado + itemTotal > saldo) {
+                return alert('Saldo insuficiente para este item');
+            }
 
             if (compraEditIndex !== null) {
                 const old = compraItems[compraEditIndex];
@@ -840,22 +854,26 @@
 
             let html = `
                 <div class="flex items-center justify-between glass rounded-lg px-3 py-2 text-xs font-bold">
-                    <span>Gastado: <span class="text-red-400/90">${formatNum(totalBs)} Bs</span></span>
-                    <span>Restan: <span class="text-green-400/90">${formatNum(saldo - totalBs)} Bs</span></span>
+                    <span>Gastado: <span class="${totalBs > saldo ? 'text-red-400' : 'text-red-400/90'}">${formatNum(totalBs)} Bs</span></span>
+                    <span>Restan: <span class="${saldo - totalBs < 0 ? 'text-red-400' : 'text-green-400/90'}">${formatNum(saldo - totalBs)} Bs</span></span>
                 </div>`;
 
-            html += compraItems.map((item, i) =>
-                `<div class="flex items-center justify-between glass rounded-lg px-3 py-2">
+            let acc = 0;
+            html += compraItems.map((item, i) => {
+                const itemTotal = item.moneda === 'Bs' ? item.precio * item.cantidad : item.precio * item.cantidad * (item.rateVal || 0);
+                acc += itemTotal;
+                const over = acc > saldo;
+                return `<div class="flex items-center justify-between glass rounded-lg px-3 py-2 ${over ? 'border border-red-500/30' : ''}">
                     <div class="flex flex-col min-w-0 flex-1">
-                        <span class="text-purple-100 text-sm font-semibold truncate">${item.concepto}</span>
-                        <span class="text-[10px] text-purple-400/50">${item.cantidad}x ${formatNum(item.precio)} ${item.moneda}</span>
+                        <span class="${over ? 'text-red-300' : 'text-purple-100'} text-sm font-semibold truncate">${item.concepto}</span>
+                        <span class="text-[10px] ${over ? 'text-red-400/60' : 'text-purple-400/50'}">${item.cantidad}x ${formatNum(item.precio)} ${item.moneda}</span>
                     </div>
                     <div class="flex items-center gap-1 shrink-0 ml-2">
                         <button onclick="compraEditar(${i})" class="flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300/60 text-xs"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
                         <button onclick="compraEliminar(${i})" class="flex items-center justify-center w-7 h-7 rounded-md bg-red-500/10 border border-red-500/20 text-red-400/60 text-xs"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </div>
-                </div>`
-            ).join('');
+                </div>`;
+            }).join('');
             lista.innerHTML = html;
             lucide.createIcons();
             saveCompraState();
