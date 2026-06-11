@@ -196,22 +196,22 @@
         }
         @media (display-mode: browser) {
             :root {
-                --input-py: 0.875rem;
-                --input-px: 0.875rem;
-                --input-fs: 1.750rem;
-                --label-fs: 11px;
-                --input-gap: 0.5rem;
-                --header-mb: 0.625rem;
-                --keypad-h: 28dvh;
-                --top-py: 0.875rem;
-                --rate-py: 0.150rem;
-                --rate-label: 13px;
-                --rate-value: 1.25rem;
-                --title-fs: 1.25rem;
+                --input-py: 0.5rem;
+                --input-px: 0.75rem;
+                --input-fs: 1.35rem;
+                --label-fs: 9px;
+                --input-gap: 0.25rem;
+                --header-mb: 0.3rem;
+                --keypad-h: 26dvh;
+                --top-py: 0.5rem;
+                --rate-py: 0.1rem;
+                --rate-label: 10px;
+                --rate-value: 0.9rem;
+                --title-fs: 1rem;
             }
-            .rate-card { border-width: 1.5px; border-radius: 0.65rem; }
-            .input-box { border-radius: 0.65rem; border-width: 1.5px; border-radius: 0.65rem; }
-            .keypad-btn { font-size: 1.1rem; border-radius: 0.4rem; }
+            .rate-card { border-width: 1px; border-radius: 0.5rem; }
+            .input-box { border-radius: 0.5rem; border-width: 1px; }
+            .keypad-btn { font-size: 0.95rem; border-radius: 0.35rem; }
         }
         .nav-item { transition: all 150ms; }
         .nav-active { background: rgba(167,139,250,0.12); color: #a78bfa !important; }
@@ -270,7 +270,7 @@
                     </div>
                 </div>
 
-                <div id="custom-rate-row" class="hidden shrink-0 mt-2">
+                <div id="custom-rate-row" class="invisible shrink-0 mt-2">
                     <div class="flex items-center gap-2 glass rounded-xl px-3 py-1.5" onclick="focusInput('custom')">
                         <span class="text-[9px] font-bold text-purple-300/50 uppercase tracking-wider">Tu tasa:</span>
                         <input type="text" id="input-custom-rate" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false"
@@ -703,7 +703,7 @@
 
         function setSource(source) {
             currentSource = source;
-            customRateRow.classList.add('hidden');
+            customRateRow.classList.add('invisible');
 
             if (source === 'bcv') {
                 selectCard(cardBcv);
@@ -711,7 +711,7 @@
                 selectCard(cardBinance);
             } else if (source === 'custom') {
                 selectCard(cardCustom);
-                customRateRow.classList.remove('hidden');
+                customRateRow.classList.remove('invisible');
                 focusInput('custom');
             }
 
