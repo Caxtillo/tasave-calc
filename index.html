@@ -422,7 +422,7 @@
                 <button class="keypad-btn" data-key="1">1</button>
                 <button class="keypad-btn" data-key="2">2</button>
                 <button class="keypad-btn" data-key="3">3</button>
-                <button class="keypad-btn keypad-btn-op" data-key="clear">C</button>
+                <button class="keypad-btn keypad-btn-op" data-key="×">×</button>
                 <button class="keypad-btn" data-key=".">.</button>
                 <button class="keypad-btn" data-key="0">0</button>
                 <button class="keypad-btn keypad-btn-op" data-key="clear-all">AC</button>
@@ -538,18 +538,16 @@
 
                 if (isCustom) {
                     if (key === 'backspace') el.value = el.value.slice(0, -1);
-                    else if (key === 'clear') el.value = '';
                     else if (key === '.') { if (!el.value.includes('.')) el.value += '.'; }
-                    else if (key === '+') el.value += '+';
+                    else if (key === '+' || key === '×') el.value += key;
                     else el.value += key;
                 } else {
                     const raw = parseDisplay(el.value);
                     if (key === 'backspace') {
                         el.value = raw.length > 0 ? formatDisplay(raw.slice(0, -1)) : '';
-                    } else if (key === 'clear') {
-                        el.value = '';
-                    } else if (key === '+' || key === '.') {
+                    } else if (key === '+' || key === '×' || key === '.') {
                         if (key === '.' && raw.includes('.')) return;
+                        if ((key === '+' || key === '×') && /[+×]$/.test(raw)) return;
                         el.value = formatDisplay(raw + key);
                     } else {
                         el.value = formatDisplay(raw + key);
@@ -732,9 +730,13 @@
             for (const p of str.split('+')) {
                 const t = p.trim();
                 if (t === '') continue;
-                const val = parseFloat(t);
-                if (isNaN(val)) return NaN;
-                total += val;
+                let product = 1;
+                for (const f of t.split('×')) {
+                    const val = parseFloat(f.trim());
+                    if (isNaN(val)) return NaN;
+                    product *= val;
+                }
+                total += product;
             }
             return total;
         }
@@ -1065,23 +1067,27 @@
         function formatDisplay(s) {
             if (!s || s.trim() === '') return '';
             return s.split('+').map(part => {
-                part = part.trim();
-                if (!part) return '';
-                const dotIdx = part.indexOf('.');
-                let intStr = dotIdx === -1 ? part : part.slice(0, dotIdx);
-                let decStr = dotIdx === -1 ? '' : part.slice(dotIdx + 1);
-                intStr = intStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                return decStr !== '' ? intStr + ',' + decStr : intStr;
+                return part.split('×').map(sub => {
+                    sub = sub.trim();
+                    if (!sub) return '';
+                    const dotIdx = sub.indexOf('.');
+                    let intStr = dotIdx === -1 ? sub : sub.slice(0, dotIdx);
+                    let decStr = dotIdx === -1 ? '' : sub.slice(dotIdx + 1);
+                    intStr = intStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    return decStr !== '' ? intStr + ',' + decStr : intStr;
+                }).join('×');
             }).join('+');
         }
 
         function parseDisplay(s) {
             if (!s || s.trim() === '') return '';
             return s.split('+').map(part => {
-                part = part.trim();
-                if (!part) return '';
-                part = part.replace(/\./g, '').replace(',', '.');
-                return part;
+                return part.split('×').map(sub => {
+                    sub = sub.trim();
+                    if (!sub) return '';
+                    sub = sub.replace(/\./g, '').replace(',', '.');
+                    return sub;
+                }).join('×');
             }).join('+');
         }
 
