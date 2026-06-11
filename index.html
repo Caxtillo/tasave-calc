@@ -536,12 +536,6 @@
                             el.value = formatDisplay(String(result));
                             triggerCalc();
                         }
-                    } else {
-                        inputUsd.value = '';
-                        inputVes.value = '';
-                        inputCustomRate.value = '';
-                        if (currentSource !== 'bcv') setSource('bcv');
-                        focusInput('usd');
                     }
                     return;
                 }
