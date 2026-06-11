@@ -32,7 +32,13 @@
             --top-py: 1.375rem;
             --safe-t: env(safe-area-inset-top, 0px);
             --safe-b: env(safe-area-inset-bottom, 0px);
+            --a: 167, 139, 250;
+            --a-dim: 88, 28, 135;
         }
+        [data-theme="ocean"] { --a: 96, 165, 250; --a-dim: 30, 58, 138; }
+        [data-theme="emerald"] { --a: 52, 211, 153; --a-dim: 6, 78, 59; }
+        [data-theme="ruby"] { --a: 251, 113, 133; --a-dim: 136, 19, 55; }
+        [data-theme="gold"] { --a: 251, 191, 36; --a-dim: 120, 63, 4; }
         html, body {
             height: 100dvh;
             overflow: hidden;
@@ -52,11 +58,11 @@
             background: rgba(30, 20, 50, 0.6);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(167, 139, 250, 0.2);
+            border: 1px solid rgba(var(--a), 0.2);
         }
         .input-box {
             background: rgba(20, 12, 40, 0.8);
-            border: 2px solid rgba(167, 139, 250, 0.25);
+            border: 2px solid rgba(var(--a), 0.25);
             border-radius: 0.85rem;
             padding: var(--input-py) var(--input-px);
             display: flex;
@@ -67,7 +73,7 @@
         .input-currency {
             font-size: calc(var(--input-fs) * 0.6);
             font-weight: 700;
-            color: rgba(167, 139, 250, 0.5);
+            color: rgba(var(--a), 0.5);
             flex-shrink: 0;
             line-height: 1;
         }
@@ -87,17 +93,17 @@
             white-space: nowrap;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            caret-color: rgba(167, 139, 250, 0.8);
+            caret-color: rgba(var(--a), 0.8);
         }
         .input-inner::-webkit-scrollbar { display: none; }
         .input-box.input-selected {
-            border-color: #a78bfa !important;
-            box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.35) !important;
-            background: rgba(167, 139, 250, 0.08) !important;
+            border-color: rgb(var(--a)) !important;
+            box-shadow: 0 0 0 4px rgba(var(--a), 0.35) !important;
+            background: rgba(var(--a), 0.08) !important;
         }
         .input-box:focus-within {
-            border-color: #a78bfa;
-            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+            border-color: rgb(var(--a));
+            box-shadow: 0 0 0 3px rgba(var(--a), 0.2);
         }
         .keypad-btn {
             display: flex;
@@ -107,7 +113,7 @@
             font-weight: 700;
             font-size: 1.35rem;
             background: rgba(30, 20, 50, 0.5);
-            border: 1px solid rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(var(--a), 0.15);
             color: #f3f0ff;
             transition: all 100ms;
             user-select: none;
@@ -115,13 +121,13 @@
             min-height: 0;
         }
         .keypad-btn:active {
-            background: rgba(167, 139, 250, 0.25);
+            background: rgba(var(--a), 0.25);
             transform: scale(0.94);
         }
         .keypad-btn-op {
-            background: rgba(167, 139, 250, 0.15);
-            border-color: rgba(167, 139, 250, 0.3);
-            color: #a78bfa;
+            background: rgba(var(--a), 0.15);
+            border-color: rgba(var(--a), 0.3);
+            color: rgb(var(--a));
         }
         .rate-card {
             border-radius: 0.85rem;
@@ -142,10 +148,10 @@
             transform: scale(0.97);
         }
         .rate-card-selected {
-            border-color: rgba(167, 139, 250, 0.5);
-            background: rgba(167, 139, 250, 0.1);
+            border-color: rgba(var(--a), 0.5);
+            background: rgba(var(--a), 0.1);
         }
-        .rate-label { font-size: var(--rate-label); font-weight: 700; color: rgba(167, 139, 250, 0.7); }
+        .rate-label { font-size: var(--rate-label); font-weight: 700; color: rgba(var(--a), 0.7); }
         .rate-value { font-size: var(--rate-value); font-weight: 900; color: white; }
         .input-label { font-size: var(--label-fs); }
 
@@ -155,41 +161,33 @@
                 position: fixed; top: 50%; right: 0; transform: translateY(-50%);
                 z-index: 9999; width: 36px; height: 36px;
                 display: flex; align-items: center; justify-content: center;
-                background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
-                border-radius: 8px 0 0 8px; color: #a78bfa;
+                background: rgba(var(--a),0.15); border: 1px solid rgba(var(--a),0.3);
+                border-radius: 8px 0 0 8px; color: rgb(var(--a));
                 font-size: 1.1rem; cursor: pointer; transition: all 150ms;
                 border-right: none;
             }
-            #layout-btn:hover { background: rgba(167,139,250,0.25); }
+            #layout-btn:hover { background: rgba(var(--a),0.25); }
             #layout-btn.active { right: 280px; }
 
             #layout-panel {
                 position: fixed; top: 0; right: -300px; width: 280px; height: 100vh;
                 z-index: 9998; background: rgba(15,12,29,0.97);
-                border-left: 1px solid rgba(167,139,250,0.15);
+                border-left: 1px solid rgba(var(--a),0.15);
                 padding: 1rem; overflow-y: auto; transition: right 200ms;
                 font-family: 'Inter', sans-serif;
             }
             #layout-panel.open { right: 0; }
 
             #layout-panel::-webkit-scrollbar { width: 4px; }
-            #layout-panel::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.3); border-radius: 2px; }
+            #layout-panel::-webkit-scrollbar-thumb { background: rgba(var(--a),0.3); border-radius: 2px; }
 
-            .lp-hdr { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(167,139,250,0.5); margin: 10px 0 4px; }
-            .lp-group { background: rgba(30,20,50,0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; border: 1px solid rgba(167,139,250,0.08); }
+            .lp-hdr { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(var(--a),0.5); margin: 10px 0 4px; }
+            .lp-group { background: rgba(30,20,50,0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; border: 1px solid rgba(var(--a),0.08); }
             .lp-group label { display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 600; color: rgba(243,240,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-            .lp-group label span { color: #a78bfa; font-family: monospace; font-size: 10px; }
-            .lp-group input[type="range"] { width: 100%; accent-color: #a78bfa; height: 3px; cursor: pointer; }
-            .lp-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #a78bfa; cursor: pointer; }
-
-            .lp-copy {
-                display: block; width: 100%; margin-top: 8px; padding: 6px;
-                background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
-                border-radius: 6px; color: #a78bfa; font-size: 10px; font-weight: 600;
-                text-align: center; cursor: pointer; transition: all 100ms;
-            }
-            .lp-copy:active { background: rgba(167,139,250,0.3); }
-            .lp-output { font-family: monospace; font-size: 10px; background: rgba(0,0,0,0.4); border-radius: 4px; padding: 8px; white-space: pre-wrap; color: #a78bfa; border: 1px solid rgba(167,139,250,0.1); margin-top: 4px; max-height: 200px; overflow-y: auto; }
+            .lp-group label span { color: rgb(var(--a)); font-family: monospace; font-size: 10px; }
+            .lp-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: rgb(var(--a)); cursor: pointer; }
+            .lp-copy:active { background: rgba(var(--a),0.3); }
+            .lp-output { font-family: monospace; font-size: 10px; background: rgba(0,0,0,0.4); border-radius: 4px; padding: 8px; white-space: pre-wrap; color: rgb(var(--a)); border: 1px solid rgba(var(--a),0.1); margin-top: 4px; max-height: 200px; overflow-y: auto; }
         }
         @media (max-width: 1023px) {
             #layout-btn, #layout-panel { display: none !important; }
@@ -214,10 +212,38 @@
             .keypad-btn { font-size: 0.95rem; border-radius: 0.35rem; }
         }
         .nav-item { transition: all 150ms; }
-        .nav-active { background: rgba(167,139,250,0.12); color: #a78bfa !important; }
-        #page-compra input, #page-compra select { caret-color: rgba(167,139,250,0.8); cursor: text; }
+        .nav-active { background: rgba(var(--a), 0.12); color: rgb(var(--a)) !important; }
+        #page-compra input, #page-compra select { caret-color: rgba(var(--a), 0.8); cursor: text; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .animate-slide-up { animation: slideUp .3s ease-out; }
+        .theme-swatch-active { border-color: rgba(255,255,255,0.6) !important; transform: scale(1.15); }
+
+        [data-theme] .text-purple-400,
+        [data-theme] .text-purple-300 { color: rgb(var(--a)); }
+        [data-theme] .text-purple-200 { color: rgba(var(--a),0.87); }
+        [data-theme] .text-purple-100 { color: rgba(var(--a),0.93); }
+        [data-theme] .text-purple-300\/70 { color: rgba(var(--a),0.7); }
+        [data-theme] .text-purple-300\/60 { color: rgba(var(--a),0.6); }
+        [data-theme] .text-purple-300\/50 { color: rgba(var(--a),0.5); }
+        [data-theme] .text-purple-300\/40 { color: rgba(var(--a),0.4); }
+        [data-theme] .text-purple-400\/50 { color: rgba(var(--a),0.5); }
+        [data-theme] .text-purple-400\/40 { color: rgba(var(--a),0.4); }
+        [data-theme] .text-purple-400\/30 { color: rgba(var(--a),0.3); }
+        [data-theme] .text-purple-400\/20 { color: rgba(var(--a),0.2); }
+        [data-theme] .text-purple-400\/60 { color: rgba(var(--a),0.6); }
+        [data-theme] .bg-purple-500\/20 { background: rgba(var(--a),0.2); }
+        [data-theme] .bg-purple-500\/15 { background: rgba(var(--a),0.15); }
+        [data-theme] .bg-purple-500\/10 { background: rgba(var(--a),0.1); }
+        [data-theme] .bg-purple-500\/30 { background: rgba(var(--a),0.3); }
+        [data-theme] .bg-purple-500 { background: rgb(var(--a)); }
+        [data-theme] .border-purple-500\/30 { border-color: rgba(var(--a),0.3); }
+        [data-theme] .border-purple-500\/25 { border-color: rgba(var(--a),0.25); }
+        [data-theme] .border-purple-500\/20 { border-color: rgba(var(--a),0.2); }
+        [data-theme] .border-purple-500\/10 { border-color: rgba(var(--a),0.1); }
+        [data-theme] .border-purple-500\/40 { border-color: rgba(var(--a),0.4); }
+        [data-theme] .border-purple-500 { border-color: rgb(var(--a)); }
+        [data-theme] .from-purple-900\/20 { --tw-gradient-from: rgba(var(--a-dim),0.25); }
+        [data-theme] .ring-purple-500\/30 { --tw-ring-color: rgba(var(--a),0.3); }
     </style>
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
@@ -427,12 +453,23 @@
                         </div>
                     </div>
                     <div class="border-t border-purple-500/10 my-3"></div>
+                    <div class="mb-3">
+                        <div class="text-purple-300/50 font-bold text-[10px] uppercase tracking-wider mb-2">Tema</div>
+                        <div class="flex gap-2">
+                            <button onclick="setTheme('violet')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#a78bfa" data-theme-id="violet"></button>
+                            <button onclick="setTheme('ocean')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#60a5fa" data-theme-id="ocean"></button>
+                            <button onclick="setTheme('emerald')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#34d399" data-theme-id="emerald"></button>
+                            <button onclick="setTheme('ruby')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#fb7185" data-theme-id="ruby"></button>
+                            <button onclick="setTheme('gold')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#fbbf24" data-theme-id="gold"></button>
+                        </div>
+                    </div>
                     <button onclick="exportarDatos()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Exportar datos</button>
                     <button onclick="document.getElementById('import-file-input').click()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="upload" class="w-4 h-4"></i> Importar datos</button>
                     <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importarDatos(event)">
                     <div class="border-t border-red-500/20 my-4"></div>
                     <button onclick="if(confirm('¿Restablecer todos los datos? Se perderán items, historial y configuración.')){localStorage.clear();location.reload()}" class="w-full py-2.5 bg-red-500/20 text-red-300 rounded-xl border border-red-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i> Restablecer datos</button>
                 </div>
+                <div class="text-center text-[9px] text-purple-400/30 font-bold mt-4 pb-2 tracking-wider">REALIZADO POR LUIS CASTILLO</div>
             </div>
 
             <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5" style="height:var(--keypad-h);grid-template-rows:repeat(4,1fr);">
@@ -524,6 +561,16 @@
         const cardCustom = document.getElementById('card-custom');
         const installBtn = document.getElementById('install-btn');
         const installRow = document.getElementById('install-row');
+
+        function setTheme(id) {
+            document.documentElement.setAttribute('data-theme', id);
+            localStorage.setItem('theme', id);
+            document.querySelectorAll('.theme-swatch').forEach(el => el.classList.toggle('theme-swatch-active', el.dataset.themeId === id));
+        }
+        (function initTheme() {
+            const saved = localStorage.getItem('theme') || 'violet';
+            setTheme(saved);
+        })();
 
         // Hide loading immediately, fetch rates in background
         loadingEl.classList.add('hidden');
@@ -1597,8 +1644,8 @@
     <button id="layout-btn" onclick="togglePanel()">⚙</button>
     <div id="layout-panel">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:rgba(167,139,250,0.5)">Ajustes</span>
-            <span onclick="togglePanel()" style="color:rgba(167,139,250,0.5);cursor:pointer;font-size:14px">✕</span>
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:rgba(var(--a),0.5)">Ajustes</span>
+            <span onclick="togglePanel()" style="color:rgba(var(--a),0.5);cursor:pointer;font-size:14px">✕</span>
         </div>
 
         <div class="lp-hdr">▸ Tasas</div>
