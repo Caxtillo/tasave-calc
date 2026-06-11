@@ -194,6 +194,25 @@
         @media (max-width: 1023px) {
             #layout-btn, #layout-panel { display: none !important; }
         }
+        @media (display-mode: browser) {
+            :root {
+                --input-py: 0.875rem;
+                --input-px: 0.875rem;
+                --input-fs: 1.750rem;
+                --label-fs: 11px;
+                --input-gap: 0.5rem;
+                --header-mb: 0.625rem;
+                --keypad-h: 28dvh;
+                --top-py: 0.875rem;
+                --rate-py: 0.150rem;
+                --rate-label: 13px;
+                --rate-value: 1.25rem;
+                --title-fs: 1.25rem;
+            }
+            .rate-card { border-width: 1.5px; border-radius: 0.65rem; }
+            .input-box { border-radius: 0.65rem; border-width: 1.5px; border-radius: 0.65rem; }
+            .keypad-btn { font-size: 1.1rem; border-radius: 0.4rem; }
+        }
         .nav-item { transition: all 150ms; }
         .nav-active { background: rgba(167,139,250,0.12); color: #a78bfa !important; }
         #page-compra input, #page-compra select { caret-color: rgba(167,139,250,0.8); cursor: text; }
@@ -261,7 +280,7 @@
                     </div>
                 </div>
 
-                <div class="flex-1 flex flex-col justify-center px-0 min-h-0" style="gap:var(--input-gap)">
+                <div class="flex-1 flex flex-col justify-center px-0 min-h-0 mt-1" style="gap:var(--input-gap)">
                     <div>
                         <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Dólares (USD)</label>
                         <div id="wrap-usd" class="input-box input-selected" onclick="focusInput('usd')">
