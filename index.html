@@ -181,7 +181,9 @@
             #layout-btn {
                 position: fixed; top: 50%; right: 0; transform: translateY(-50%);
                 z-index: 9999; width: 36px; height: 36px;
-                display: flex; align-items: center; justify-content: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
                 background: rgba(var(--a),0.15); border: 1px solid rgba(var(--a),0.3);
                 border-radius: 8px 0 0 8px; color: rgb(var(--a));
                 font-size: 1.1rem; cursor: pointer; transition: all 150ms;
@@ -281,7 +283,7 @@
             </div>
         </div>
 
-        <div id="content" class="hidden flex flex-col flex-1 min-h-0">
+        <div id="content" class="hidden flex flex-col flex-1 min-h-0" style="width:100%;max-width:28rem;padding-top:var(--safe-t);padding-bottom:var(--safe-b)">
 
             <header class="flex items-center justify-between shrink-0" style="padding-top:var(--top-py);margin-bottom:var(--header-mb)">
                 <div class="flex items-center gap-2">
@@ -562,7 +564,6 @@
             </div>
 
         </div>
-    </div>
 
     <script>
         let rates = { bcv: 0, binance: 0, custom: 0 };
