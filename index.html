@@ -811,8 +811,9 @@
         }
 
         function calculate(triggerField) {
-            let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
-            rates.custom = parseFloat(inputCustomRate.value) || 0;
+            const rawCustom = parseDisplay(inputCustomRate.value);
+            let rate = currentSource === 'custom' ? parseFloat(rawCustom) : rates[currentSource];
+            rates.custom = parseFloat(rawCustom) || 0;
             ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
             autoSizeRate(ratePropiaEl, '--rate-value');
 
