@@ -513,7 +513,6 @@
         const rateBcvEl = document.getElementById('rate-bcv');
         const rateBinanceEl = document.getElementById('rate-binance');
         const ratePropiaEl = document.getElementById('rate-propia');
-        const lastDateEl = document.getElementById('last-date');
         const lastTimeEl = document.getElementById('last-time');
         const inputUsd = document.getElementById('input-usd');
         const inputVes = document.getElementById('input-ves');
@@ -677,8 +676,7 @@
                     rates.bcv = bcv;
                     rates.binance = binance;
                     const d = new Date(ts);
-                    lastDateEl.textContent = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' });
-                    lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> Sin conexión';
+                    lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> ' + d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short' });
                     return true;
                 }
                 return false;
@@ -729,7 +727,6 @@
             autoSizeRate(rateBinanceEl, '--rate-value');
             autoSizeRate(ratePropiaEl, '--rate-value');
             if (data && data.effective_date) {
-                lastDateEl.textContent = data.effective_date;
                 lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Vigente';
             }
             loadingEl.classList.add('hidden');
