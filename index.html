@@ -25,14 +25,16 @@
             --input-px: 1.063rem;
             --input-fs: 2.250rem;
             --label-fs: 13px;
-            --input-gap: 0.813rem;
+            --input-gap: 0.938rem;
             --title-fs: 1.563rem;
-            --header-mb: 0.938rem;
-            --keypad-h: 38dvh;
-            --top-py: 1.125rem;
+            --header-mb: 1.125rem;
+            --keypad-h: 34dvh;
+            --top-py: 1.375rem;
+            --safe-t: env(safe-area-inset-top, 0px);
+            --safe-b: env(safe-area-inset-bottom, 0px);
         }
         html, body {
-            height: 100%;
+            height: 100dvh;
             overflow: hidden;
             position: fixed;
             width: 100%;
@@ -201,7 +203,7 @@
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
 
-    <div id="app" class="w-full max-w-md mx-auto flex flex-col px-3" style="position:fixed;top:0;left:0;right:0;height:100%;overflow:hidden">
+    <div id="app" class="w-full max-w-md mx-auto flex flex-col" style="position:fixed;top:0;left:0;right:0;height:100dvh;overflow:hidden;padding-top:var(--safe-t);padding-bottom:var(--safe-b)">
         <div id="loading" class="fixed inset-0 z-50 bg-[#0f0c1d] flex flex-col items-center justify-center gap-4">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             <p class="text-purple-300 animate-pulse font-medium">Consultando tasas...</p>
@@ -216,7 +218,7 @@
             </div>
         </div>
 
-        <div id="content" class="hidden flex flex-col h-full">
+        <div id="content" class="hidden flex flex-col flex-1 min-h-0">
 
             <header class="flex items-center justify-between shrink-0" style="padding-top:var(--top-py);margin-bottom:var(--header-mb)">
                 <div class="flex items-center gap-2">
@@ -466,9 +468,11 @@
                 </div>
             </div>
 
-            <button id="install-btn" class="hidden fixed top-2 left-1/2 -translate-x-1/2 px-4 py-1 bg-purple-500 text-purple-950 text-[9px] font-black rounded-full shadow-lg shadow-purple-500/30 z-50">
-                INSTALAR APP
-            </button>
+            <div id="install-row" class="hidden shrink-0 px-4 pb-1.5">
+                <button id="install-btn" class="w-full py-2 bg-purple-500/20 text-purple-200 rounded-xl border border-purple-500/40 font-bold text-[11px] flex items-center justify-center gap-1.5">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Instalar app
+                </button>
+            </div>
 
         </div>
     </div>
@@ -497,6 +501,7 @@
         const cardBinance = document.getElementById('card-binance');
         const cardCustom = document.getElementById('card-custom');
         const installBtn = document.getElementById('install-btn');
+        const installRow = document.getElementById('install-row');
 
         // Hide loading immediately, fetch rates in background
         loadingEl.classList.add('hidden');
@@ -590,13 +595,13 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installBtn.classList.remove('hidden');
+            installRow.classList.remove('hidden');
         });
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') installBtn.classList.add('hidden');
+                if (outcome === 'accepted') installRow.classList.add('hidden');
                 deferredPrompt = null;
             }
         });
