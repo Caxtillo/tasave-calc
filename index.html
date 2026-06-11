@@ -871,7 +871,7 @@
             const rawCustom = parseDisplay(inputCustomRate.value);
             let rate = currentSource === 'custom' ? parseFloat(rawCustom) : rates[currentSource];
             rates.custom = parseFloat(rawCustom) || 0;
-            ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
+            ratePropiaEl.textContent = customRateLabel(rates.custom);
             autoSizeRate(ratePropiaEl, '--rate-value');
 
             if (!rate || isNaN(rate) || rate === 0) {
