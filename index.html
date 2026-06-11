@@ -46,6 +46,11 @@
         [data-theme="emerald"] { --a: 52, 211, 153; --a-dim: 6, 78, 59; }
         [data-theme="ruby"] { --a: 251, 113, 133; --a-dim: 136, 19, 55; }
         [data-theme="gold"] { --a: 251, 191, 36; --a-dim: 120, 63, 4; }
+        [data-theme="midnight"] { --a: 99, 102, 241; --a-dim: 49, 46, 129; }
+        [data-theme="sunset"] { --a: 251, 146, 60; --a-dim: 120, 53, 15; }
+        [data-theme="frost"] { --a: 34, 211, 238; --a-dim: 22, 78, 99; }
+        [data-theme="rose"] { --a: 244, 114, 182; --a-dim: 131, 24, 67; }
+        [data-theme="lime"] { --a: 163, 230, 53; --a-dim: 63, 98, 18; }
         [data-mode="light"] {
             --bg: 245, 240, 255;
             --text: 26, 26, 46;
@@ -468,12 +473,17 @@
                     <div class="border-t border-purple-500/10 my-3"></div>
                     <div class="mb-3">
                         <div class="text-purple-300/50 font-bold text-[10px] uppercase tracking-wider mb-2">Tema</div>
-                        <div class="flex gap-2">
-                            <button onclick="setTheme('violet')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#a78bfa" data-theme-id="violet"></button>
-                            <button onclick="setTheme('ocean')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#60a5fa" data-theme-id="ocean"></button>
-                            <button onclick="setTheme('emerald')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#34d399" data-theme-id="emerald"></button>
-                            <button onclick="setTheme('ruby')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#fb7185" data-theme-id="ruby"></button>
-                            <button onclick="setTheme('gold')" class="theme-swatch w-7 h-7 rounded-full border-2 border-transparent" style="background:#fbbf24" data-theme-id="gold"></button>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setTheme('violet')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#a78bfa" data-theme-id="violet"></button>
+                            <button onclick="setTheme('ocean')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#60a5fa" data-theme-id="ocean"></button>
+                            <button onclick="setTheme('emerald')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#34d399" data-theme-id="emerald"></button>
+                            <button onclick="setTheme('ruby')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#fb7185" data-theme-id="ruby"></button>
+                            <button onclick="setTheme('gold')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#fbbf24" data-theme-id="gold"></button>
+                            <button onclick="setTheme('midnight')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#6366f1" data-theme-id="midnight"></button>
+                            <button onclick="setTheme('sunset')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#fb923c" data-theme-id="sunset"></button>
+                            <button onclick="setTheme('frost')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#22d3ee" data-theme-id="frost"></button>
+                            <button onclick="setTheme('rose')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#f472b6" data-theme-id="rose"></button>
+                            <button onclick="setTheme('lime')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#a3e635" data-theme-id="lime"></button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between mb-3">
