@@ -244,6 +244,35 @@
         [data-theme] .border-purple-500 { border-color: rgb(var(--a)); }
         [data-theme] .from-purple-900\/20 { --tw-gradient-from: rgba(var(--a-dim),0.25); }
         [data-theme] .ring-purple-500\/30 { --tw-ring-color: rgba(var(--a),0.3); }
+
+        [data-mode="light"] body {
+            background-color: #f5f0ff !important;
+            color: #1a1a2e !important;
+        }
+        [data-mode="light"] .bg-\[#0f0c1d\] { background: #f5f0ff !important; }
+        [data-mode="light"] .glass {
+            background: rgba(255,255,255,0.7) !important;
+            border-color: rgba(var(--a),0.15) !important;
+        }
+        [data-mode="light"] .input-box {
+            background: rgba(255,255,255,0.9) !important;
+            border-color: rgba(var(--a),0.2) !important;
+        }
+        [data-mode="light"] .input-inner { color: #1a1a2e !important; }
+        [data-mode="light"] .keypad-btn {
+            background: rgba(255,255,255,0.7) !important;
+            border-color: rgba(var(--a),0.1) !important;
+            color: #1a1a2e !important;
+        }
+        [data-mode="light"] .rate-card { background: rgba(255,255,255,0.6) !important; }
+        [data-mode="light"] #bottom-nav { background: rgba(255,255,255,0.85) !important; }
+        [data-mode="light"] .rate-label { color: rgba(var(--a),0.6) !important; }
+        [data-mode="light"] .input-currency { color: rgba(var(--a),0.4) !important; }
+        [data-mode="light"] .keypad-btn-op {
+            background: rgba(var(--a),0.1) !important;
+            border-color: rgba(var(--a),0.2) !important;
+            color: rgb(var(--a)) !important;
+        }
     </style>
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
@@ -260,8 +289,12 @@
                 <i data-lucide="alert-circle" class="mx-auto h-10 w-10 text-red-400 mb-3"></i>
                 <h2 class="text-xl font-semibold text-purple-100">Error de conexión</h2>
                 <button onclick="location.reload()" class="w-full mt-4 py-3 bg-purple-500/20 text-purple-200 rounded-xl border border-purple-500/30">Reintentar</button>
-            </div>
-        </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-purple-300/50 font-bold text-[10px] uppercase tracking-wider">Modo</span>
+                        <button onclick="toggleMode()" id="mode-btn" class="px-3 py-1 rounded-lg bg-purple-500/15 border border-purple-500/25 font-bold text-[10px] text-purple-300/70">Claro</button>
+                    </div>
 
         <div id="content" class="hidden flex flex-col flex-1 min-h-0">
 
@@ -563,7 +596,7 @@
         const installRow = document.getElementById('install-row');
 
         function customRateLabel(v) {
-            if (v > 0 && Math.floor(v).toString().length > 10) return '¿Tanto subió?';
+            if (v > 0 && Math.floor(v).toString().length > 10) return '¿Tanto?';
             return v > 0 ? formatNum(v) : '--.--';
         }
         function setTheme(id) {
@@ -572,8 +605,23 @@
             document.querySelectorAll('.theme-swatch').forEach(el => el.classList.toggle('theme-swatch-active', el.dataset.themeId === id));
         }
         (function initTheme() {
-            const saved = localStorage.getItem('theme') || 'violet';
-            setTheme(saved);
+            const savedTheme = localStorage.getItem('theme') || 'violet';
+            setTheme(savedTheme);
+        })();
+        function toggleMode() {
+            const isLight = document.documentElement.getAttribute('data-mode') === 'light';
+            document.documentElement.setAttribute('data-mode', isLight ? '' : 'light');
+            localStorage.setItem('mode', isLight ? '' : 'light');
+            document.getElementById('mode-btn').textContent = isLight ? 'Claro' : 'Oscuro';
+            document.querySelector('meta[name="theme-color"]').content = isLight ? '#0f0c1d' : '#f5f0ff';
+        }
+        (function initMode() {
+            const saved = localStorage.getItem('mode');
+            if (saved === 'light') {
+                document.documentElement.setAttribute('data-mode', 'light');
+                document.getElementById('mode-btn').textContent = 'Oscuro';
+                document.querySelector('meta[name="theme-color"]').content = '#f5f0ff';
+            }
         })();
 
         // Hide loading immediately, fetch rates in background
