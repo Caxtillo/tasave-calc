@@ -543,9 +543,14 @@
                 } else if (key === '+') {
                     el.value = el.value + '+';
                     el.setSelectionRange(el.value.length, el.value.length);
+                } else if (key === '.') {
+                    if (!el.value.includes('.')) {
+                        el.value = el.value + '.';
+                        el.setSelectionRange(el.value.length, el.value.length);
+                    }
                 } else {
-                    el.value = el.value.slice(0, pos) + key + el.value.slice(pos);
-                    el.setSelectionRange(pos + 1, pos + 1);
+                    el.value = el.value + key;
+                    el.setSelectionRange(el.value.length, el.value.length);
                 }
 
                 focusInput(activeInput === 'custom' ? 'custom' : activeInput);
