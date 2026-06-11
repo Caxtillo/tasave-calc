@@ -425,7 +425,7 @@
                 <button class="keypad-btn keypad-btn-op" data-key="×">×</button>
                 <button class="keypad-btn" data-key=".">.</button>
                 <button class="keypad-btn" data-key="0">0</button>
-                <button class="keypad-btn keypad-btn-op" data-key="clear-all">AC</button>
+                <button class="keypad-btn keypad-btn-op" data-key="=">=</button>
                 <button class="keypad-btn keypad-btn-op" data-key="swap">⇄</button>
             </div>
 
@@ -522,12 +522,22 @@
                 const el = isCustom ? inputCustomRate
                           : activeInput === 'ves' ? inputVes : inputUsd;
 
-                if (key === 'clear-all') {
-                    inputUsd.value = '';
-                    inputVes.value = '';
-                    inputCustomRate.value = '';
-                    if (currentSource !== 'bcv') setSource('bcv');
-                    focusInput('usd');
+                if (key === '=') {
+                    if (isCustom) return;
+                    const raw = parseDisplay(el.value);
+                    if (raw.includes('+') || raw.includes('×')) {
+                        const result = parseSum(raw);
+                        if (!isNaN(result)) {
+                            el.value = formatDisplay(String(result));
+                            triggerCalc();
+                        }
+                    } else {
+                        inputUsd.value = '';
+                        inputVes.value = '';
+                        inputCustomRate.value = '';
+                        if (currentSource !== 'bcv') setSource('bcv');
+                        focusInput('usd');
+                    }
                     return;
                 }
                 if (key === 'swap') {
