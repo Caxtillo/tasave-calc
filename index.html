@@ -196,18 +196,18 @@
         }
         @media (display-mode: browser) {
             :root {
-                --input-py: 0.5rem;
-                --input-px: 0.75rem;
-                --input-fs: 1.35rem;
-                --label-fs: 9px;
-                --input-gap: 0.25rem;
-                --header-mb: 0.3rem;
-                --keypad-h: 26dvh;
-                --top-py: 0.5rem;
-                --rate-py: 0.1rem;
-                --rate-label: 10px;
-                --rate-value: 0.9rem;
-                --title-fs: 1rem;
+                --input-py: 0.7rem;
+                --input-px: 0.85rem;
+                --input-fs: 1.6rem;
+                --label-fs: 10px;
+                --input-gap: 0.35rem;
+                --header-mb: 0.4rem;
+                --keypad-h: 28dvh;
+                --top-py: 0.6rem;
+                --rate-py: 0.15rem;
+                --rate-label: 11px;
+                --rate-value: 1rem;
+                --title-fs: 1.15rem;
             }
             .rate-card { border-width: 1px; border-radius: 0.5rem; }
             .input-box { border-radius: 0.5rem; border-width: 1px; }
@@ -243,6 +243,7 @@
                 <div class="flex items-center gap-2">
                     <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
                     <span class="text-[9px] text-purple-400/50 font-bold uppercase tracking-widest" id="last-date">Cargando...</span>
+                    <button id="zoom-btn" onclick="toggleZoom()" class="text-[10px] px-1.5 py-0.5 bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">100%</button>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-[11px] text-purple-300/70 font-bold flex items-center gap-1" id="last-time">
@@ -529,6 +530,37 @@
 
         lucide.createIcons();
 
+        const zoomLevels = [0.8, 0.9, 1.0, 1.1, 1.2];
+        const ZOOM_DEFAULT = 2;
+        const zoomBtn = document.getElementById('zoom-btn');
+        const zoomProps = ['--input-fs','--input-py','--input-px','--title-fs','--rate-value','--rate-label','--label-fs','--top-py','--header-mb'];
+        let zoomIdx;
+
+        function applyZoom(fromIdx, toIdx) {
+            const ratio = zoomLevels[toIdx] / zoomLevels[fromIdx];
+            const r = document.documentElement;
+            zoomProps.forEach(p => {
+                const raw = getComputedStyle(r).getPropertyValue(p).trim();
+                const num = parseFloat(raw);
+                const unit = raw.replace(/[\d.]+/g, '');
+                if (!isNaN(num) && unit) r.style.setProperty(p, (num * ratio) + unit);
+            });
+            const kh = getComputedStyle(r).getPropertyValue('--keypad-h').trim();
+            const kn = parseFloat(kh), ku = kh.replace(/[\d.]+/g, '');
+            if (!isNaN(kn) && ku) r.style.setProperty('--keypad-h', Math.round(kn * (1 + (ratio - 1) * 0.5)) + ku);
+            localStorage.setItem('zoom-level', toIdx);
+            zoomBtn.textContent = Math.round(zoomLevels[toIdx] * 100) + '%';
+        }
+
+        (function initZoom() {
+            zoomIdx = parseInt(localStorage.getItem('zoom-level'));
+            if (isNaN(zoomIdx) || zoomIdx < 0 || zoomIdx >= zoomLevels.length) zoomIdx = ZOOM_DEFAULT;
+            if (zoomIdx !== ZOOM_DEFAULT) applyZoom(ZOOM_DEFAULT, zoomIdx);
+            else zoomBtn.textContent = Math.round(zoomLevels[zoomIdx] * 100) + '%';
+        })();
+
+        function toggleZoom() { const old = zoomIdx; zoomIdx = (zoomIdx + 1) % zoomLevels.length; applyZoom(old, zoomIdx); }
+
         function focusInput(name) {
             activeInput = name;
             lastEdited = name;
@@ -707,8 +739,10 @@
 
             if (source === 'bcv') {
                 selectCard(cardBcv);
+                if (lastEdited === 'custom') lastEdited = 'usd';
             } else if (source === 'binance') {
                 selectCard(cardBinance);
+                if (lastEdited === 'custom') lastEdited = 'usd';
             } else if (source === 'custom') {
                 selectCard(cardCustom);
                 customRateRow.classList.remove('invisible');
