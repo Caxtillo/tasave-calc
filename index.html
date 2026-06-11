@@ -518,46 +518,50 @@
             btn.addEventListener('click', () => {
                 if (!document.getElementById('page-compra').classList.contains('hidden')) return;
                 const key = btn.dataset.key;
-                const el = activeInput === 'custom' ? inputCustomRate
+                const isCustom = activeInput === 'custom';
+                const el = isCustom ? inputCustomRate
                           : activeInput === 'ves' ? inputVes : inputUsd;
-                const pos = el.selectionStart ?? el.value.length;
 
-                if (key === 'backspace') {
-                    if (pos > 0) {
-                        el.value = el.value.slice(0, pos - 1) + el.value.slice(pos);
-                        el.setSelectionRange(pos - 1, pos - 1);
-                    }
-                } else if (key === 'clear') {
-                    el.value = '';
-                } else if (key === 'clear-all') {
+                if (key === 'clear-all') {
                     inputUsd.value = '';
                     inputVes.value = '';
                     inputCustomRate.value = '';
                     if (currentSource !== 'bcv') setSource('bcv');
                     focusInput('usd');
                     return;
-                } else if (key === 'swap') {
+                }
+                if (key === 'swap') {
                     if (activeInput === 'usd') { focusInput('ves'); lastEdited = 'ves'; triggerCalc(); }
                     else if (activeInput === 'ves') { focusInput('usd'); lastEdited = 'usd'; triggerCalc(); }
                     return;
-                } else if (key === '+') {
-                    el.value = el.value + '+';
-                    el.setSelectionRange(el.value.length, el.value.length);
-                } else if (key === '.') {
-                    if (!el.value.includes('.')) {
-                        el.value = el.value + '.';
-                        el.setSelectionRange(el.value.length, el.value.length);
-                    }
-                } else {
-                    el.value = el.value + key;
-                    el.setSelectionRange(el.value.length, el.value.length);
                 }
 
-                focusInput(activeInput === 'custom' ? 'custom' : activeInput);
+                if (isCustom) {
+                    if (key === 'backspace') el.value = el.value.slice(0, -1);
+                    else if (key === 'clear') el.value = '';
+                    else if (key === '.') { if (!el.value.includes('.')) el.value += '.'; }
+                    else if (key === '+') el.value += '+';
+                    else el.value += key;
+                } else {
+                    const raw = parseDisplay(el.value);
+                    if (key === 'backspace') {
+                        el.value = raw.length > 0 ? formatDisplay(raw.slice(0, -1)) : '';
+                    } else if (key === 'clear') {
+                        el.value = '';
+                    } else if (key === '+' || key === '.') {
+                        if (key === '.' && raw.includes('.')) return;
+                        el.value = formatDisplay(raw + key);
+                    } else {
+                        el.value = formatDisplay(raw + key);
+                    }
+                }
+
+                el.setSelectionRange(el.value.length, el.value.length);
+                focusInput(isCustom ? 'custom' : activeInput);
                 scrollInputEnd(inputUsd);
                 scrollInputEnd(inputVes);
                 scrollInputEnd(inputCustomRate);
-                if (activeInput === 'custom') calculate(lastEdited);
+                if (isCustom) calculate(lastEdited);
                 else triggerCalc();
             });
         });
@@ -644,9 +648,9 @@
         }
 
         function updateUI(data) {
-            rateBcvEl.textContent = rates.bcv > 0 ? rates.bcv.toFixed(2) : '--.--';
-            rateBinanceEl.textContent = rates.binance > 0 ? rates.binance.toFixed(2) : '--.--';
-            ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
+            rateBcvEl.textContent = rates.bcv > 0 ? formatNum(rates.bcv) : '--.--';
+            rateBinanceEl.textContent = rates.binance > 0 ? formatNum(rates.binance) : '--.--';
+            ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
             autoSizeRate(rateBcvEl, '--rate-value');
             autoSizeRate(rateBinanceEl, '--rate-value');
             autoSizeRate(ratePropiaEl, '--rate-value');
@@ -686,7 +690,7 @@
         function autoSize(el, varName) {
             const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
             const base = raw.endsWith('rem') ? parseFloat(raw) * 16 : parseFloat(raw);
-            const nums = el.value.replace(/[^0-9.]/g, '');
+            const nums = el.value.replace(/[^0-9]/g, '');
             const len = nums.length;
             let scale = 1;
             if (len > 14) scale = 0.65;
@@ -698,7 +702,7 @@
         function autoSizeRate(el, varName) {
             const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
             const base = raw.endsWith('rem') ? parseFloat(raw) * 16 : parseFloat(raw);
-            const len = el.textContent.replace(/[^0-9.]/g, '').length;
+            const len = el.textContent.replace(/[^0-9]/g, '').length;
             let scale = 1;
             if (len > 10) scale = 0.65;
             else if (len > 8) scale = 0.8;
@@ -738,7 +742,7 @@
         function calculate(triggerField) {
             let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
             rates.custom = parseFloat(inputCustomRate.value) || 0;
-            ratePropiaEl.textContent = rates.custom > 0 ? rates.custom.toFixed(2) : '--.--';
+            ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
             autoSizeRate(ratePropiaEl, '--rate-value');
 
             if (!rate || isNaN(rate) || rate === 0) {
@@ -748,12 +752,12 @@
             }
 
             if (triggerField === 'usd' || triggerField === 'custom') {
-                const val = parseSum(inputUsd.value);
-                inputVes.value = !isNaN(val) ? (val * rate).toFixed(2) : '';
+                const val = parseSum(parseDisplay(inputUsd.value));
+                inputVes.value = !isNaN(val) ? formatDisplay((val * rate).toFixed(2)) : '';
                 autoSize(inputVes, '--input-fs');
             } else {
-                const val = parseSum(inputVes.value);
-                inputUsd.value = !isNaN(val) ? (val / rate).toFixed(2) : '';
+                const val = parseSum(parseDisplay(inputVes.value));
+                inputUsd.value = !isNaN(val) ? formatDisplay((val / rate).toFixed(2)) : '';
                 autoSize(inputUsd, '--input-fs');
             }
         }
@@ -1056,6 +1060,29 @@
             saveCompraState();
             renderCompraLista();
             renderCal();
+        }
+
+        function formatDisplay(s) {
+            if (!s || s.trim() === '') return '';
+            return s.split('+').map(part => {
+                part = part.trim();
+                if (!part) return '';
+                const dotIdx = part.indexOf('.');
+                let intStr = dotIdx === -1 ? part : part.slice(0, dotIdx);
+                let decStr = dotIdx === -1 ? '' : part.slice(dotIdx + 1);
+                intStr = intStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return decStr !== '' ? intStr + ',' + decStr : intStr;
+            }).join('+');
+        }
+
+        function parseDisplay(s) {
+            if (!s || s.trim() === '') return '';
+            return s.split('+').map(part => {
+                part = part.trim();
+                if (!part) return '';
+                part = part.replace(/\./g, '').replace(',', '.');
+                return part;
+            }).join('+');
         }
 
         function formatNum(n) {
