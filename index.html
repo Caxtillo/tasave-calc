@@ -562,6 +562,10 @@
         const installBtn = document.getElementById('install-btn');
         const installRow = document.getElementById('install-row');
 
+        function customRateLabel(v) {
+            if (v > 0 && Math.floor(v).toString().length > 10) return '¿Tanto subió?';
+            return v > 0 ? formatNum(v) : '--.--';
+        }
         function setTheme(id) {
             document.documentElement.setAttribute('data-theme', id);
             localStorage.setItem('theme', id);
@@ -769,7 +773,7 @@
         function updateUI(data) {
             rateBcvEl.textContent = rates.bcv > 0 ? formatNum(rates.bcv) : '--.--';
             rateBinanceEl.textContent = rates.binance > 0 ? formatNum(rates.binance) : '--.--';
-            ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
+            ratePropiaEl.textContent = customRateLabel(rates.custom);
             autoSizeRate(rateBcvEl, '--rate-value');
             autoSizeRate(rateBinanceEl, '--rate-value');
             autoSizeRate(ratePropiaEl, '--rate-value');
