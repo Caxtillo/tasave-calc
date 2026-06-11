@@ -196,18 +196,18 @@
         }
         @media (display-mode: browser) {
             :root {
-                --input-py: 0.7rem;
-                --input-px: 0.85rem;
-                --input-fs: 1.6rem;
-                --label-fs: 10px;
-                --input-gap: 0.35rem;
-                --header-mb: 0.4rem;
-                --keypad-h: 28dvh;
-                --top-py: 0.6rem;
-                --rate-py: 0.15rem;
-                --rate-label: 11px;
-                --rate-value: 1rem;
-                --title-fs: 1.15rem;
+                --input-py: 0.85rem;
+                --input-px: 1rem;
+                --input-fs: 1.9rem;
+                --label-fs: 12px;
+                --input-gap: 0.4rem;
+                --header-mb: 0.5rem;
+                --keypad-h: 34dvh;
+                --top-py: 0.7rem;
+                --rate-py: 0.18rem;
+                --rate-label: 13px;
+                --rate-value: 1.2rem;
+                --title-fs: 1.4rem;
             }
             .rate-card { border-width: 1px; border-radius: 0.5rem; }
             .input-box { border-radius: 0.5rem; border-width: 1px; }
@@ -242,8 +242,11 @@
             <header class="flex items-center justify-between shrink-0" style="padding-top:var(--top-py);margin-bottom:var(--header-mb)">
                 <div class="flex items-center gap-2">
                     <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
-                    <span class="text-[9px] text-purple-400/50 font-bold uppercase tracking-widest" id="last-date">Cargando...</span>
-                    <button id="zoom-btn" onclick="toggleZoom()" class="text-[10px] px-1.5 py-0.5 bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">100%</button>
+                    <div class="flex items-center gap-0.5">
+                        <button onclick="zoomIn(-1)" class="text-[11px] w-5 h-5 flex items-center justify-center bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">−</button>
+                        <span id="zoom-label" class="text-[9px] text-purple-400/50 font-bold w-7 text-center">100%</span>
+                        <button onclick="zoomIn(1)" class="text-[11px] w-5 h-5 flex items-center justify-center bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">+</button>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-[11px] text-purple-300/70 font-bold flex items-center gap-1" id="last-time">
@@ -532,7 +535,7 @@
 
         const zoomLevels = [0.8, 0.9, 1.0, 1.1, 1.2];
         const ZOOM_DEFAULT = 2;
-        const zoomBtn = document.getElementById('zoom-btn');
+        const zoomLabel = document.getElementById('zoom-label');
         const zoomProps = ['--input-fs','--input-py','--input-px','--title-fs','--rate-value','--rate-label','--label-fs','--top-py','--header-mb'];
         let zoomIdx;
 
@@ -549,17 +552,23 @@
             const kn = parseFloat(kh), ku = kh.replace(/[\d.]+/g, '');
             if (!isNaN(kn) && ku) r.style.setProperty('--keypad-h', Math.round(kn * (1 + (ratio - 1) * 0.5)) + ku);
             localStorage.setItem('zoom-level', toIdx);
-            zoomBtn.textContent = Math.round(zoomLevels[toIdx] * 100) + '%';
+            zoomLabel.textContent = Math.round(zoomLevels[toIdx] * 100) + '%';
         }
 
         (function initZoom() {
             zoomIdx = parseInt(localStorage.getItem('zoom-level'));
             if (isNaN(zoomIdx) || zoomIdx < 0 || zoomIdx >= zoomLevels.length) zoomIdx = ZOOM_DEFAULT;
             if (zoomIdx !== ZOOM_DEFAULT) applyZoom(ZOOM_DEFAULT, zoomIdx);
-            else zoomBtn.textContent = Math.round(zoomLevels[zoomIdx] * 100) + '%';
+            else zoomLabel.textContent = Math.round(zoomLevels[zoomIdx] * 100) + '%';
         })();
 
-        function toggleZoom() { const old = zoomIdx; zoomIdx = (zoomIdx + 1) % zoomLevels.length; applyZoom(old, zoomIdx); }
+        function zoomIn(dir) {
+            const next = zoomIdx + dir;
+            if (next < 0 || next >= zoomLevels.length) return;
+            const old = zoomIdx;
+            zoomIdx = next;
+            applyZoom(old, zoomIdx);
+        }
 
         function focusInput(name) {
             activeInput = name;
