@@ -193,12 +193,14 @@
             #layout-btn, #layout-panel { display: none !important; }
         }
         @media (min-width: 1024px) {
-            #app { max-width: 100% !important; padding: 0 2rem !important; }
+            #app { max-width: 100% !important; padding: 0 !important; }
+            #content { flex-direction: row !important; }
+            #sidebar { display: flex !important; }
             #keypad { display: none !important; }
+            #bottom-nav { display: none !important; }
             .input-inner { pointer-events: auto !important; }
-            #page-inicio { max-width: 520px; margin: 0 auto; }
         }
-        .nav-item { transition: all 150ms; }
+        .nav-item { transition: all 150ms; cursor: pointer; }
         .nav-active { background: rgba(167,139,250,0.12); color: #a78bfa !important; }
         #page-compra input, #page-compra select { caret-color: rgba(167,139,250,0.8); cursor: text; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -223,6 +225,30 @@
         </div>
 
         <div id="content" class="hidden flex flex-col h-full">
+
+            <nav id="sidebar" class="hidden shrink-0 flex-col pt-5 pb-3 w-52 border-r border-purple-500/10 overflow-y-auto" style="background:rgba(20,12,40,0.6)">
+                <div class="flex items-center gap-2 px-4 pb-4 mb-3 border-b border-purple-500/10">
+                    <span class="font-extrabold text-base text-purple-100">Tasa<span class="text-purple-400">Ves</span></span>
+                </div>
+                <div class="nav-item flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-purple-400 nav-active" data-page="inicio" onclick="showPage('inicio')">
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                    <span class="text-xs font-bold">Inicio</span>
+                </div>
+                <div class="nav-item flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-purple-400/50" data-page="compra" onclick="showPage('compra')">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                    <span class="text-xs font-bold">Compra</span>
+                </div>
+                <div class="nav-item flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-purple-400/50" data-page="calendario" onclick="showPage('calendario')">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span class="text-xs font-bold">Calendario</span>
+                </div>
+                <div class="nav-item flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-purple-400/50" data-page="config" onclick="showPage('config')">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span class="text-xs font-bold">Config</span>
+                </div>
+            </nav>
+
+            <div id="main-content" class="flex flex-col flex-1 min-h-0">
 
             <header class="flex items-center justify-between shrink-0" style="padding-top:var(--top-py);margin-bottom:var(--header-mb)">
                 <div class="flex items-center gap-2">
@@ -476,6 +502,7 @@
                 INSTALAR APP
             </button>
 
+            </div>
         </div>
     </div>
 
@@ -1539,28 +1566,31 @@
             if (e.key === 'Enter') { e.preventDefault(); authModo === 'login' ? authIniciar() : authRegistrar(); }
         });
 
-        // Desktop mode: inputs editables directamente
-        let _desktopInputInit = false;
-        function initDesktopMode() {
-            if (window.innerWidth < 1024 || _desktopInputInit) return;
-            _desktopInputInit = true;
+        // Desktop: inputs directamente editables
+        if (window.innerWidth >= 1024) {
             [inputUsd, inputVes, inputCustomRate].forEach(el => {
-                el.removeAttribute('inputmode');
                 el.addEventListener('input', function() {
-                    let raw = this.value.replace(/[^0-9.,+\-×*]/g, '');
+                    let raw = this.value.replace(/[^0-9.,]/g, '');
                     this.value = raw;
                     if (this === inputCustomRate) {
-                        rates.custom = parseFloat(raw.replace(',', '.')) || 0;
-                        ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
-                        calculate('custom');
+                        const v = parseFloat(raw.replace(',', '.')) || 0;
+                        rates.custom = v;
+                        ratePropiaEl.textContent = v > 0 ? formatNum(v) : '--.--';
+                        if (!v) { inputVes.value = ''; return; }
+                        const usd = parseFloat(inputUsd.value.replace(',', '.'));
+                        if (!isNaN(usd)) inputVes.value = (usd * v).toFixed(2);
                     } else {
                         lastEdited = this === inputUsd ? 'usd' : 'ves';
-                        triggerCalc();
+                        const val = parseFloat(raw.replace(',', '.'));
+                        if (isNaN(val) || raw === '') { (this === inputUsd ? inputVes : inputUsd).value = ''; return; }
+                        const rate = currentSource === 'custom' ? (parseFloat(inputCustomRate.value.replace(',', '.')) || 0) : rates[currentSource];
+                        if (!rate) return;
+                        if (lastEdited === 'usd') inputVes.value = (val * rate).toFixed(2);
+                        else inputUsd.value = (val / rate).toFixed(2);
                     }
                 });
             });
         }
-        initDesktopMode();
     </script>
 
     <button id="layout-btn" onclick="togglePanel()">⚙</button>
