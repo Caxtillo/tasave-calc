@@ -192,6 +192,12 @@
         @media (max-width: 1023px) {
             #layout-btn, #layout-panel { display: none !important; }
         }
+        @media (min-width: 1024px) {
+            #app { max-width: 100% !important; padding: 0 2rem !important; }
+            #keypad { display: none !important; }
+            .input-inner { pointer-events: auto !important; }
+            #page-inicio { max-width: 520px; margin: 0 auto; }
+        }
         .nav-item { transition: all 150ms; }
         .nav-active { background: rgba(167,139,250,0.12); color: #a78bfa !important; }
         #page-compra input, #page-compra select { caret-color: rgba(167,139,250,0.8); cursor: text; }
@@ -1532,6 +1538,29 @@
         document.getElementById('auth-pass').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); authModo === 'login' ? authIniciar() : authRegistrar(); }
         });
+
+        // Desktop mode: inputs editables directamente
+        let _desktopInputInit = false;
+        function initDesktopMode() {
+            if (window.innerWidth < 1024 || _desktopInputInit) return;
+            _desktopInputInit = true;
+            [inputUsd, inputVes, inputCustomRate].forEach(el => {
+                el.removeAttribute('inputmode');
+                el.addEventListener('input', function() {
+                    let raw = this.value.replace(/[^0-9.,+\-×*]/g, '');
+                    this.value = raw;
+                    if (this === inputCustomRate) {
+                        rates.custom = parseFloat(raw.replace(',', '.')) || 0;
+                        ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
+                        calculate('custom');
+                    } else {
+                        lastEdited = this === inputUsd ? 'usd' : 'ves';
+                        triggerCalc();
+                    }
+                });
+            });
+        }
+        initDesktopMode();
     </script>
 
     <button id="layout-btn" onclick="togglePanel()">⚙</button>
