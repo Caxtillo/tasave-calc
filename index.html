@@ -648,6 +648,13 @@
                     const list = await res.json();
                     const p2p = list.find(item => item.fuente === 'paralelo');
                     if (p2p) rates.binance = p2p.promedio || p2p.venta;
+                    const bcvApi = list.find(item => item.fuente === 'bcv');
+                    if (bcvApi) {
+                        const bcvRate = bcvApi.promedio || bcvApi.venta;
+                        if (bcvRate && bcvRate > rates.bcv) {
+                            rates.bcv = bcvRate;
+                        }
+                    }
                     localStorage.setItem('tasas', JSON.stringify({ bcv: rates.bcv, binance: rates.binance, ts: Date.now() }));
                 }
             } catch (_) { clearTimeout(t2); }
