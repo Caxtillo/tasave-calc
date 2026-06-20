@@ -209,15 +209,75 @@
         @media (max-width: 1023px) {
             #layout-btn, #layout-panel { display: none !important; }
         }
+        /* === DESKTOP LAYOUT (≥1024px) === */
         @media (min-width: 1024px) {
-            #app { max-width: 100% !important; padding: 0 !important; }
-            #content { flex-direction: row !important; }
-            #sidebar { display: flex !important; }
+            html, body {
+                position: static;
+                overflow: auto;
+                height: 100%;
+            }
+            #content {
+                flex-direction: row !important;
+                max-width: 100% !important;
+                min-height: 100vh;
+            }
+            #sidebar {
+                display: flex !important;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+                width: 220px;
+                min-width: 220px;
+                z-index: 10;
+            }
+            #main-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 2rem 2rem;
+                overflow-y: auto;
+                height: 100vh;
+            }
+            #page-inicio {
+                width: 100%;
+                max-width: 480px;
+                margin: 0 auto;
+                padding-bottom: 2rem;
+            }
+            #page-inicio .flex-1.flex-col.justify-center {
+                gap: 1rem !important;
+                margin-top: 1.5rem !important;
+            }
+            .rate-card {
+                padding: 0.6rem 0.5rem;
+                border-radius: 0.7rem;
+                cursor: default;
+            }
+            .rate-card:active { transform: none; }
+            #custom-rate-row .glass { cursor: default; }
             #keypad { display: none !important; }
             #bottom-nav { display: none !important; }
             .input-inner { pointer-events: auto !important; }
+            #install-row { display: none !important; }
+            #page-compra { max-width: 560px; margin: 0 auto; width: 100%; }
+            #page-compra .overflow-y-auto { max-height: none; }
+            #page-calendario { max-width: 560px; margin: 0 auto; width: 100%; }
+            #page-config { max-width: 560px; margin: 0 auto; width: 100%; }
+
+            header { margin-bottom: 1.5rem !important; }
+            header > div:first-child > div:last-child { display: none !important; }
+            #layout-btn { display: none !important; }
+            #layout-panel { display: none !important; }
+            body {
+                align-items: stretch;
+            }
         }
-        @media (display-mode: browser) {
+        @media (max-width: 1023px) {
+            #sidebar { display: none !important; }
+            #layout-btn, #layout-panel { display: none !important; }
+        }
+        @media (display-mode: browser) and (max-width: 1023px) {
             :root {
                 --input-py: 0.85rem;
                 --input-px: 1rem;
@@ -235,6 +295,113 @@
             .rate-card { border-width: 1px; border-radius: 0.5rem; }
             .input-box { border-radius: 0.5rem; border-width: 1px; }
             .keypad-btn { font-size: 0.95rem; border-radius: 0.35rem; }
+        }
+        .nav-item {
+            transition: all 150ms;
+            cursor: pointer;
+            user-select: none;
+        }
+        .nav-item:hover {
+            background: rgba(var(--a), 0.08);
+        }
+        #sidebar .nav-item {
+            position: relative;
+        }
+        #sidebar .nav-active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: rgb(var(--a));
+            border-radius: 0 3px 3px 0;
+        }
+        #sidebar .nav-active {
+            background: rgba(var(--a), 0.12) !important;
+            color: rgb(var(--a)) !important;
+        }
+        #sidebar .nav-active:hover {
+            background: rgba(var(--a), 0.16) !important;
+        }
+        #sidebar {
+            display: none;
+            flex-direction: column;
+            background: rgba(20, 12, 40, 0.7);
+            border-right: 1px solid rgba(var(--a), 0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 0;
+            overflow-y: auto;
+        }
+        .sidebar-brand {
+            padding: 1.5rem 1.25rem 1rem;
+            border-bottom: 1px solid rgba(var(--a), 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .sidebar-nav {
+            flex: 1;
+            padding: 0.75rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        #sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: rgba(var(--text), 0.45);
+        }
+        .sidebar-footer {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid rgba(var(--a), 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-zoom {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+        .zoom-btn {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.3rem;
+            background: rgba(var(--a), 0.1);
+            border: 1px solid rgba(var(--a), 0.15);
+            color: rgba(var(--a), 0.6);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 100ms;
+            line-height: 1;
+        }
+        .zoom-btn:hover {
+            background: rgba(var(--a), 0.2);
+            color: rgb(var(--a));
+        }
+        .zoom-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: rgba(var(--a), 0.4);
+            width: 32px;
+            text-align: center;
         }
         .nav-item { transition: all 150ms; cursor: pointer; }
         .nav-active { background: rgba(var(--a), 0.12); color: rgb(var(--a)) !important; }
@@ -287,25 +454,38 @@
 
         <div id="content" class="hidden flex flex-col flex-1 min-h-0" style="width:100%;max-width:28rem;padding-top:var(--safe-t);padding-bottom:var(--safe-b)">
 
-            <nav id="sidebar" class="hidden shrink-0 flex-col pt-5 pb-3 w-52 border-r border-purple-500/10 overflow-y-auto" style="background:rgba(20,12,40,0.6)">
-                <div class="flex items-center gap-2 px-4 pb-4 mb-3 border-b border-purple-500/10">
-                    <span class="font-extrabold text-base text-purple-100">Tasa<span class="text-purple-400">Ves</span></span>
+            <nav id="sidebar">
+                <div class="sidebar-brand">
+                    <div class="sidebar-logo">
+                        <span class="font-extrabold text-lg tracking-tight">Tasa<span class="text-purple-400">Ves</span></span>
+                    </div>
+                    <span class="text-[9px] text-purple-400/30 font-bold uppercase tracking-[0.2em]">Tasas de cambio</span>
                 </div>
-                <div class="nav-item flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-purple-400 nav-active" data-page="inicio" onclick="showPage('inicio')">
-                    <i data-lucide="home" class="w-4 h-4"></i>
-                    <span class="text-xs font-bold">Inicio</span>
+                <div class="sidebar-nav">
+                    <div class="nav-item nav-active" data-page="inicio" onclick="showPage('inicio')">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                        <span>Inicio</span>
+                    </div>
+                    <div class="nav-item" data-page="compra" onclick="showPage('compra')">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span>Compra</span>
+                    </div>
+                    <div class="nav-item" data-page="calendario" onclick="showPage('calendario')">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        <span>Calendario</span>
+                    </div>
+                    <div class="nav-item" data-page="config" onclick="showPage('config')">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                        <span>Configuración</span>
+                    </div>
                 </div>
-                <div class="nav-item flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-purple-400/50" data-page="compra" onclick="showPage('compra')">
-                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                    <span class="text-xs font-bold">Compra</span>
-                </div>
-                <div class="nav-item flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-purple-400/50" data-page="calendario" onclick="showPage('calendario')">
-                    <i data-lucide="calendar" class="w-4 h-4"></i>
-                    <span class="text-xs font-bold">Calendario</span>
-                </div>
-                <div class="nav-item flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-purple-400/50" data-page="config" onclick="showPage('config')">
-                    <i data-lucide="settings" class="w-4 h-4"></i>
-                    <span class="text-xs font-bold">Config</span>
+                <div class="sidebar-footer">
+                    <div class="flex items-center gap-1 sidebar-zoom" id="sidebar-zoom">
+                        <button onclick="zoomIn(-1)" class="zoom-btn">−</button>
+                        <span id="zoom-label-side" class="zoom-label">100%</span>
+                        <button onclick="zoomIn(1)" class="zoom-btn">+</button>
+                    </div>
+                    <span class="text-[8px] text-purple-400/20 font-bold tracking-wider">v1.0</span>
                 </div>
             </nav>
 
@@ -674,14 +854,22 @@
             const kn = parseFloat(kh), ku = kh.replace(/[\d.]+/g, '');
             if (!isNaN(kn) && ku) r.style.setProperty('--keypad-h', Math.round(kn * (1 + (ratio - 1) * 0.5)) + ku);
             localStorage.setItem('zoom-level', toIdx);
-            zoomLabel.textContent = Math.round(zoomLevels[toIdx] * 100) + '%';
+            const pct = Math.round(zoomLevels[toIdx] * 100) + '%';
+            zoomLabel.textContent = pct;
+            const sideLabel = document.getElementById('zoom-label-side');
+            if (sideLabel) sideLabel.textContent = pct;
         }
 
         (function initZoom() {
             zoomIdx = parseInt(localStorage.getItem('zoom-level'));
             if (isNaN(zoomIdx) || zoomIdx < 0 || zoomIdx >= zoomLevels.length) zoomIdx = ZOOM_DEFAULT;
             if (zoomIdx !== ZOOM_DEFAULT) applyZoom(ZOOM_DEFAULT, zoomIdx);
-            else zoomLabel.textContent = Math.round(zoomLevels[zoomIdx] * 100) + '%';
+            else {
+                const pct = Math.round(zoomLevels[zoomIdx] * 100) + '%';
+                zoomLabel.textContent = pct;
+                const sideLabel = document.getElementById('zoom-label-side');
+                if (sideLabel) sideLabel.textContent = pct;
+            }
         })();
 
         function zoomIn(dir) {
