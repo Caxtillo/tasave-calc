@@ -6,7 +6,7 @@
     <title>TasaVes - Tasas de Cambio Venezuela</title>
 
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f0c1d">
+    <meta name="theme-color" content="#0f0c1d" id="theme-color-meta">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="ico.jpg">
@@ -25,36 +25,59 @@
             --input-px: 1.063rem;
             --input-fs: 2.250rem;
             --label-fs: 13px;
-            --input-gap: 0.813rem;
+            --input-gap: 0.938rem;
             --title-fs: 1.563rem;
-            --header-mb: 0.938rem;
-            --keypad-h: 38dvh;
-            --top-py: 1.125rem;
+            --header-mb: 1.125rem;
+            --keypad-h: 34dvh;
+            --top-py: 1.375rem;
+            --safe-t: env(safe-area-inset-top, 0px);
+            --safe-b: env(safe-area-inset-bottom, 0px);
+            --a: 167, 139, 250;
+            --a-dim: 88, 28, 135;
+            --bg: 15, 12, 29;
+            --text: 243, 240, 255;
+            --glass-bg: 30, 20, 50;
+            --input-bg: 20, 12, 40;
+            --card-bg: 30, 20, 50;
+            --nav-bg: 20, 12, 40;
+            --panel-bg: 15, 12, 29;
+        }
+        [data-theme="ocean"] { --a: 96, 165, 250; --a-dim: 30, 58, 138; }
+        [data-theme="emerald"] { --a: 52, 211, 153; --a-dim: 6, 78, 59; }
+        [data-theme="ruby"] { --a: 251, 113, 133; --a-dim: 136, 19, 55; }
+        [data-theme="gold"] { --a: 251, 191, 36; --a-dim: 120, 63, 4; }
+        [data-theme="midnight"] { --a: 99, 102, 241; --a-dim: 49, 46, 129; }
+        [data-theme="sunset"] { --a: 251, 146, 60; --a-dim: 120, 53, 15; }
+        [data-theme="frost"] { --a: 34, 211, 238; --a-dim: 22, 78, 99; }
+        [data-theme="rose"] { --a: 244, 114, 182; --a-dim: 131, 24, 67; }
+        [data-theme="lime"] { --a: 163, 230, 53; --a-dim: 63, 98, 18; }
+        [data-mode="light"] {
+            --bg: 245, 240, 255;
+            --text: 26, 26, 46;
+            --glass-bg: 255, 255, 255;
+            --input-bg: 255, 255, 255;
+            --card-bg: 255, 255, 255;
+            --nav-bg: 255, 255, 255;
+            --panel-bg: 255, 255, 255;
         }
         html, body {
-            height: 100%;
+            height: 100dvh;
             overflow: hidden;
             position: fixed;
             width: 100%;
         }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f0c1d;
-            color: #f3f0ff;
+            background-color: rgb(var(--bg));
+            color: rgb(var(--text));
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             touch-action: manipulation;
-        }
-        .glass {
-            background: rgba(30, 20, 50, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(167, 139, 250, 0.2);
         }
         .input-box {
             background: rgba(20, 12, 40, 0.8);
-            border: 2px solid rgba(167, 139, 250, 0.25);
+            border: 2px solid rgba(var(--a), 0.25);
             border-radius: 0.85rem;
             padding: var(--input-py) var(--input-px);
             display: flex;
@@ -65,7 +88,7 @@
         .input-currency {
             font-size: calc(var(--input-fs) * 0.6);
             font-weight: 700;
-            color: rgba(167, 139, 250, 0.5);
+            color: rgba(var(--a), 0.5);
             flex-shrink: 0;
             line-height: 1;
         }
@@ -85,17 +108,17 @@
             white-space: nowrap;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            caret-color: rgba(167, 139, 250, 0.8);
+            caret-color: rgba(var(--a), 0.8);
         }
         .input-inner::-webkit-scrollbar { display: none; }
         .input-box.input-selected {
-            border-color: #a78bfa !important;
-            box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.35) !important;
-            background: rgba(167, 139, 250, 0.08) !important;
+            border-color: rgb(var(--a)) !important;
+            box-shadow: 0 0 0 4px rgba(var(--a), 0.35) !important;
+            background: rgba(var(--a), 0.08) !important;
         }
         .input-box:focus-within {
-            border-color: #a78bfa;
-            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+            border-color: rgb(var(--a));
+            box-shadow: 0 0 0 3px rgba(var(--a), 0.2);
         }
         .keypad-btn {
             display: flex;
@@ -104,22 +127,22 @@
             border-radius: 0.5rem;
             font-weight: 700;
             font-size: 1.35rem;
-            background: rgba(30, 20, 50, 0.5);
-            border: 1px solid rgba(167, 139, 250, 0.15);
-            color: #f3f0ff;
+            background: rgba(var(--card-bg), 0.5);
+            border: 1px solid rgba(var(--a), 0.15);
+            color: rgb(var(--text));
             transition: all 100ms;
             user-select: none;
             -webkit-user-select: none;
             min-height: 0;
         }
         .keypad-btn:active {
-            background: rgba(167, 139, 250, 0.25);
+            background: rgba(var(--a), 0.25);
             transform: scale(0.94);
         }
         .keypad-btn-op {
-            background: rgba(167, 139, 250, 0.15);
-            border-color: rgba(167, 139, 250, 0.3);
-            color: #a78bfa;
+            background: rgba(var(--a), 0.15);
+            border-color: rgba(var(--a), 0.3);
+            color: rgb(var(--a));
         }
         .rate-card {
             border-radius: 0.85rem;
@@ -129,7 +152,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.15rem;
-            background: rgba(30, 20, 50, 0.5);
+            background: rgba(var(--card-bg), 0.5);
             border: 2px solid transparent;
             transition: all 200ms;
             cursor: pointer;
@@ -140,10 +163,10 @@
             transform: scale(0.97);
         }
         .rate-card-selected {
-            border-color: rgba(167, 139, 250, 0.5);
-            background: rgba(167, 139, 250, 0.1);
+            border-color: rgba(var(--a), 0.5);
+            background: rgba(var(--a), 0.1);
         }
-        .rate-label { font-size: var(--rate-label); font-weight: 700; color: rgba(167, 139, 250, 0.7); }
+        .rate-label { font-size: var(--rate-label); font-weight: 700; color: rgba(var(--a), 0.7); }
         .rate-value { font-size: var(--rate-value); font-weight: 900; color: white; }
         .input-label { font-size: var(--label-fs); }
 
@@ -152,42 +175,36 @@
             #layout-btn {
                 position: fixed; top: 50%; right: 0; transform: translateY(-50%);
                 z-index: 9999; width: 36px; height: 36px;
-                display: flex; align-items: center; justify-content: center;
-                background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
-                border-radius: 8px 0 0 8px; color: #a78bfa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+                background: rgba(var(--a),0.15); border: 1px solid rgba(var(--a),0.3);
+                border-radius: 8px 0 0 8px; color: rgb(var(--a));
                 font-size: 1.1rem; cursor: pointer; transition: all 150ms;
                 border-right: none;
             }
-            #layout-btn:hover { background: rgba(167,139,250,0.25); }
+            #layout-btn:hover { background: rgba(var(--a),0.25); }
             #layout-btn.active { right: 280px; }
 
             #layout-panel {
                 position: fixed; top: 0; right: -300px; width: 280px; height: 100vh;
-                z-index: 9998; background: rgba(15,12,29,0.97);
-                border-left: 1px solid rgba(167,139,250,0.15);
+                z-index: 9998; background: rgba(var(--panel-bg),0.97);
+                border-left: 1px solid rgba(var(--a),0.15);
                 padding: 1rem; overflow-y: auto; transition: right 200ms;
                 font-family: 'Inter', sans-serif;
             }
             #layout-panel.open { right: 0; }
 
             #layout-panel::-webkit-scrollbar { width: 4px; }
-            #layout-panel::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.3); border-radius: 2px; }
+            #layout-panel::-webkit-scrollbar-thumb { background: rgba(var(--a),0.3); border-radius: 2px; }
 
-            .lp-hdr { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(167,139,250,0.5); margin: 10px 0 4px; }
-            .lp-group { background: rgba(30,20,50,0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; border: 1px solid rgba(167,139,250,0.08); }
+            .lp-hdr { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(var(--a),0.5); margin: 10px 0 4px; }
+            .lp-group { background: rgba(var(--card-bg),0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; border: 1px solid rgba(var(--a),0.08); }
             .lp-group label { display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 600; color: rgba(243,240,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-            .lp-group label span { color: #a78bfa; font-family: monospace; font-size: 10px; }
-            .lp-group input[type="range"] { width: 100%; accent-color: #a78bfa; height: 3px; cursor: pointer; }
-            .lp-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #a78bfa; cursor: pointer; }
-
-            .lp-copy {
-                display: block; width: 100%; margin-top: 8px; padding: 6px;
-                background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
-                border-radius: 6px; color: #a78bfa; font-size: 10px; font-weight: 600;
-                text-align: center; cursor: pointer; transition: all 100ms;
-            }
-            .lp-copy:active { background: rgba(167,139,250,0.3); }
-            .lp-output { font-family: monospace; font-size: 10px; background: rgba(0,0,0,0.4); border-radius: 4px; padding: 8px; white-space: pre-wrap; color: #a78bfa; border: 1px solid rgba(167,139,250,0.1); margin-top: 4px; max-height: 200px; overflow-y: auto; }
+            .lp-group label span { color: rgb(var(--a)); font-family: monospace; font-size: 10px; }
+            .lp-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: rgb(var(--a)); cursor: pointer; }
+            .lp-copy:active { background: rgba(var(--a),0.3); }
+            .lp-output { font-family: monospace; font-size: 10px; background: rgba(0,0,0,0.4); border-radius: 4px; padding: 8px; white-space: pre-wrap; color: rgb(var(--a)); border: 1px solid rgba(var(--a),0.1); margin-top: 4px; max-height: 200px; overflow-y: auto; }
         }
         @media (max-width: 1023px) {
             #layout-btn, #layout-panel { display: none !important; }
@@ -200,23 +217,67 @@
             #bottom-nav { display: none !important; }
             .input-inner { pointer-events: auto !important; }
         }
+        @media (display-mode: browser) {
+            :root {
+                --input-py: 0.85rem;
+                --input-px: 1rem;
+                --input-fs: 1.9rem;
+                --label-fs: 12px;
+                --input-gap: 0.4rem;
+                --header-mb: 0.5rem;
+                --keypad-h: 34dvh;
+                --top-py: 0.7rem;
+                --rate-py: 0.18rem;
+                --rate-label: 13px;
+                --rate-value: 1.2rem;
+                --title-fs: 1.4rem;
+            }
+            .rate-card { border-width: 1px; border-radius: 0.5rem; }
+            .input-box { border-radius: 0.5rem; border-width: 1px; }
+            .keypad-btn { font-size: 0.95rem; border-radius: 0.35rem; }
+        }
         .nav-item { transition: all 150ms; cursor: pointer; }
-        .nav-active { background: rgba(167,139,250,0.12); color: #a78bfa !important; }
-        #page-compra input, #page-compra select { caret-color: rgba(167,139,250,0.8); cursor: text; }
+        .nav-active { background: rgba(var(--a), 0.12); color: rgb(var(--a)) !important; }
+        #page-compra input, #page-compra select { caret-color: rgba(var(--a), 0.8); cursor: text; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .animate-slide-up { animation: slideUp .3s ease-out; }
+        .theme-swatch-active { border-color: rgb(var(--a)) !important; transform: scale(1.15); }
+
+        [data-theme] .text-purple-400,
+        [data-theme] .text-purple-300 { color: rgb(var(--a)); }
+        [data-theme] .text-purple-200 { color: rgba(var(--a),0.87); }
+        [data-theme] .text-purple-100 { color: rgba(var(--a),0.93); }
+        [data-theme] .text-purple-300\/70 { color: rgba(var(--a),0.7); }
+        [data-theme] .text-purple-300\/60 { color: rgba(var(--a),0.6); }
+        [data-theme] .text-purple-300\/50 { color: rgba(var(--a),0.5); }
+        [data-theme] .text-purple-300\/40 { color: rgba(var(--a),0.4); }
+        [data-theme] .text-purple-400\/50 { color: rgba(var(--a),0.5); }
+        [data-theme] .text-purple-400\/40 { color: rgba(var(--a),0.4); }
+        [data-theme] .text-purple-400\/30 { color: rgba(var(--a),0.3); }
+        [data-theme] .text-purple-400\/20 { color: rgba(var(--a),0.2); }
+        [data-theme] .text-purple-400\/60 { color: rgba(var(--a),0.6); }
+        [data-theme] .bg-purple-500\/20 { background: rgba(var(--a),0.2); }
+        [data-theme] .bg-purple-500\/15 { background: rgba(var(--a),0.15); }
+        [data-theme] .bg-purple-500\/10 { background: rgba(var(--a),0.1); }
+        [data-theme] .bg-purple-500\/30 { background: rgba(var(--a),0.3); }
+        [data-theme] .bg-purple-500 { background: rgb(var(--a)); }
+        [data-theme] .border-purple-500\/30 { border-color: rgba(var(--a),0.3); }
+        [data-theme] .border-purple-500\/25 { border-color: rgba(var(--a),0.25); }
+        [data-theme] .border-purple-500\/20 { border-color: rgba(var(--a),0.2); }
+        [data-theme] .border-purple-500\/10 { border-color: rgba(var(--a),0.1); }
+        [data-theme] .border-purple-500\/40 { border-color: rgba(var(--a),0.4); }
+        [data-theme] .border-purple-500 { border-color: rgb(var(--a)); }
+        [data-theme] .ring-purple-500\/30 { --tw-ring-color: rgba(var(--a),0.3); }
     </style>
 </head>
-<body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0c1d] to-[#0f0c1d]">
-
-    <div id="app" class="w-full max-w-md mx-auto flex flex-col px-3" style="position:fixed;top:0;left:0;right:0;height:100%;overflow:hidden">
-        <div id="loading" class="fixed inset-0 z-50 bg-[#0f0c1d] flex flex-col items-center justify-center gap-4">
+    <body style="background:radial-gradient(ellipse at top, rgba(var(--a-dim),0.25), rgb(var(--bg)) 60%, rgb(var(--bg)));background-color:rgb(var(--bg));color:rgb(var(--text))">
+        <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4" style="background:rgb(var(--bg))">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             <p class="text-purple-300 animate-pulse font-medium">Consultando tasas...</p>
             <button onclick="localStorage.clear();location.reload()" class="text-[10px] text-red-400/50 font-bold mt-8 underline underline-offset-2">Reiniciar app</button>
         </div>
 
-        <div id="error" class="hidden fixed inset-0 z-50 bg-[#0f0c1d] flex flex-col items-center justify-center gap-4">
+        <div id="error" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center gap-4" style="background:rgb(var(--bg))">
             <div class="glass rounded-3xl p-6 text-center w-11/12 max-w-sm">
                 <i data-lucide="alert-circle" class="mx-auto h-10 w-10 text-red-400 mb-3"></i>
                 <h2 class="text-xl font-semibold text-purple-100">Error de conexión</h2>
@@ -224,7 +285,7 @@
             </div>
         </div>
 
-        <div id="content" class="hidden flex flex-col h-full">
+        <div id="content" class="hidden flex flex-col flex-1 min-h-0" style="width:100%;max-width:28rem;padding-top:var(--safe-t);padding-bottom:var(--safe-b)">
 
             <nav id="sidebar" class="hidden shrink-0 flex-col pt-5 pb-3 w-52 border-r border-purple-500/10 overflow-y-auto" style="background:rgba(20,12,40,0.6)">
                 <div class="flex items-center gap-2 px-4 pb-4 mb-3 border-b border-purple-500/10">
@@ -253,7 +314,11 @@
             <header class="flex items-center justify-between shrink-0" style="padding-top:var(--top-py);margin-bottom:var(--header-mb)">
                 <div class="flex items-center gap-2">
                     <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
-                    <span class="text-[9px] text-purple-400/50 font-bold uppercase tracking-widest" id="last-date">Cargando...</span>
+                    <div class="flex items-center gap-0.5">
+                        <button onclick="zoomIn(-1)" class="text-[11px] w-5 h-5 flex items-center justify-center bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">−</button>
+                        <span id="zoom-label" class="text-[9px] text-purple-400/50 font-bold w-7 text-center">100%</span>
+                        <button onclick="zoomIn(1)" class="text-[11px] w-5 h-5 flex items-center justify-center bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">+</button>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-[11px] text-purple-300/70 font-bold flex items-center gap-1" id="last-time">
@@ -281,7 +346,7 @@
                     </div>
                 </div>
 
-                <div id="custom-rate-row" class="hidden shrink-0 mt-2">
+                <div id="custom-rate-row" class="invisible shrink-0 mt-2">
                     <div class="flex items-center gap-2 glass rounded-xl px-3 py-1.5" onclick="focusInput('custom')">
                         <span class="text-[9px] font-bold text-purple-300/50 uppercase tracking-wider">Tu tasa:</span>
                         <input type="text" id="input-custom-rate" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false"
@@ -291,7 +356,7 @@
                     </div>
                 </div>
 
-                <div class="flex-1 flex flex-col justify-center px-0 min-h-0" style="gap:var(--input-gap)">
+                <div class="flex-1 flex flex-col justify-center px-0 min-h-0 mt-1" style="gap:var(--input-gap)">
                     <div>
                         <label class="uppercase text-purple-300/50 font-bold ml-1 mb-1 block input-label">Dólares (USD)</label>
                         <div id="wrap-usd" class="input-box input-selected" onclick="focusInput('usd')">
@@ -327,7 +392,7 @@
                 </div>
             </div>
 
-            <div id="compra-form" class="hidden shrink-0 px-3 pb-1 z-10" style="background:linear-gradient(to top, rgba(15,12,29,1) 60%, transparent)">
+            <div id="compra-form" class="hidden shrink-0 px-3 pb-1 z-10" style="background:linear-gradient(to top, rgba(var(--bg),1) 60%, transparent)">
                 <div class="glass rounded-xl px-3 py-3">
                     <div class="flex items-center gap-2 mb-2">
                         <div id="compra-moneda" class="flex rounded-md border border-purple-500/20 overflow-hidden">
@@ -434,12 +499,32 @@
                         </div>
                     </div>
                     <div class="border-t border-purple-500/10 my-3"></div>
+                    <div class="mb-3">
+                        <div class="text-purple-300/50 font-bold text-[10px] uppercase tracking-wider mb-2">Tema</div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setTheme('violet')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#a78bfa" data-theme-id="violet"></button>
+                            <button onclick="setTheme('ocean')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#60a5fa" data-theme-id="ocean"></button>
+                            <button onclick="setTheme('emerald')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#34d399" data-theme-id="emerald"></button>
+                            <button onclick="setTheme('ruby')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#fb7185" data-theme-id="ruby"></button>
+                            <button onclick="setTheme('gold')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#fbbf24" data-theme-id="gold"></button>
+                            <button onclick="setTheme('midnight')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#6366f1" data-theme-id="midnight"></button>
+                            <button onclick="setTheme('sunset')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#fb923c" data-theme-id="sunset"></button>
+                            <button onclick="setTheme('frost')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#22d3ee" data-theme-id="frost"></button>
+                            <button onclick="setTheme('rose')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#f472b6" data-theme-id="rose"></button>
+                            <button onclick="setTheme('lime')" class="theme-swatch w-6 h-6 rounded-full border-2 border-transparent" style="background:#a3e635" data-theme-id="lime"></button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-purple-300/50 font-bold text-[10px] uppercase tracking-wider">Modo</span>
+                        <button onclick="toggleMode()" id="mode-btn" class="px-3 py-1 rounded-lg bg-purple-500/15 border border-purple-500/25 font-bold text-[10px] text-purple-300/70">Claro</button>
+                    </div>
                     <button onclick="exportarDatos()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Exportar datos</button>
                     <button onclick="document.getElementById('import-file-input').click()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="upload" class="w-4 h-4"></i> Importar datos</button>
                     <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importarDatos(event)">
                     <div class="border-t border-red-500/20 my-4"></div>
                     <button onclick="if(confirm('¿Restablecer todos los datos? Se perderán items, historial y configuración.')){localStorage.clear();location.reload()}" class="w-full py-2.5 bg-red-500/20 text-red-300 rounded-xl border border-red-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i> Restablecer datos</button>
                 </div>
+                <div class="text-center text-[9px] text-purple-400/30 font-bold mt-4 pb-2 tracking-wider">REALIZADO POR LUIS CASTILLO</div>
             </div>
 
             <div id="keypad" class="shrink-0 grid grid-cols-4 gap-1.5" style="height:var(--keypad-h);grid-template-rows:repeat(4,1fr);">
@@ -455,7 +540,7 @@
                 <button class="keypad-btn" data-key="2">2</button>
                 <button class="keypad-btn" data-key="3">3</button>
                 <button class="keypad-btn keypad-btn-op" data-key="×">×</button>
-                <button class="keypad-btn" data-key=".">.</button>
+                <button class="keypad-btn" data-key=".">,</button>
                 <button class="keypad-btn" data-key="0">0</button>
                 <button class="keypad-btn keypad-btn-op" data-key="=">=</button>
                 <button class="keypad-btn keypad-btn-op" data-key="swap">⇄</button>
@@ -479,7 +564,7 @@
                 </div>
             </div>
 
-            <div id="bottom-nav" class="shrink-0 flex items-center justify-around px-2 pt-3 pb-1 border-t border-purple-500/10" style="background:rgba(20,12,40,0.6)">
+            <div id="bottom-nav" class="shrink-0 flex items-center justify-around px-2 pt-3 pb-1 border-t border-purple-500/10" style="background:rgba(var(--nav-bg), 0.6)">
                 <div class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-purple-400 nav-active" data-page="inicio" onclick="showPage('inicio')">
                     <i data-lucide="home" class="w-5 h-5"></i>
                     <span class="text-[8px] font-bold uppercase tracking-wider">Inicio</span>
@@ -498,13 +583,14 @@
                 </div>
             </div>
 
-            <button id="install-btn" class="hidden fixed top-2 left-1/2 -translate-x-1/2 px-4 py-1 bg-purple-500 text-purple-950 text-[9px] font-black rounded-full shadow-lg shadow-purple-500/30 z-50">
-                INSTALAR APP
-            </button>
+            <div id="install-row" class="hidden shrink-0 px-4 pb-1.5">
+                <button id="install-btn" class="w-full py-2 bg-purple-500/20 text-purple-200 rounded-xl border border-purple-500/40 font-bold text-[11px] flex items-center justify-center gap-1.5">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Instalar app
+                </button>
+            </div>
 
             </div>
         </div>
-    </div>
 
     <script>
         let rates = { bcv: 0, binance: 0, custom: 0 };
@@ -519,7 +605,6 @@
         const rateBcvEl = document.getElementById('rate-bcv');
         const rateBinanceEl = document.getElementById('rate-binance');
         const ratePropiaEl = document.getElementById('rate-propia');
-        const lastDateEl = document.getElementById('last-date');
         const lastTimeEl = document.getElementById('last-time');
         const inputUsd = document.getElementById('input-usd');
         const inputVes = document.getElementById('input-ves');
@@ -530,6 +615,38 @@
         const cardBinance = document.getElementById('card-binance');
         const cardCustom = document.getElementById('card-custom');
         const installBtn = document.getElementById('install-btn');
+        const installRow = document.getElementById('install-row');
+
+        function customRateLabel(v) {
+            if (v > 0 && Math.floor(v).toString().length > 10) return '¿Tanto?';
+            return v > 0 ? formatNum(v) : '--.--';
+        }
+        function setTheme(id) {
+            document.documentElement.setAttribute('data-theme', id);
+            localStorage.setItem('theme', id);
+            document.querySelectorAll('.theme-swatch').forEach(el => el.classList.toggle('theme-swatch-active', el.dataset.themeId === id));
+        }
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'violet';
+            setTheme(savedTheme);
+        })();
+        function toggleMode() {
+            const isLight = document.documentElement.getAttribute('data-mode') === 'light';
+            document.documentElement.setAttribute('data-mode', isLight ? '' : 'light');
+            localStorage.setItem('mode', isLight ? '' : 'light');
+            document.getElementById('mode-btn').textContent = isLight ? 'Claro' : 'Oscuro';
+            document.querySelector('meta[name="theme-color"]').content = isLight ? '#0f0c1d' : '#f5f0ff';
+            document.documentElement.style.colorScheme = isLight ? 'dark' : 'light';
+        }
+        (function initMode() {
+            const saved = localStorage.getItem('mode');
+            if (saved === 'light') {
+                document.documentElement.setAttribute('data-mode', 'light');
+                document.getElementById('mode-btn').textContent = 'Oscuro';
+                document.querySelector('meta[name="theme-color"]').content = '#f5f0ff';
+                document.documentElement.style.colorScheme = 'light';
+            }
+        })();
 
         // Hide loading immediately, fetch rates in background
         loadingEl.classList.add('hidden');
@@ -537,6 +654,43 @@
         fetchRates();
 
         lucide.createIcons();
+
+        const zoomLevels = [0.8, 0.9, 1.0, 1.1, 1.2];
+        const ZOOM_DEFAULT = 2;
+        const zoomLabel = document.getElementById('zoom-label');
+        const zoomProps = ['--input-fs','--input-py','--input-px','--title-fs','--rate-value','--rate-label','--label-fs','--top-py','--header-mb'];
+        let zoomIdx;
+
+        function applyZoom(fromIdx, toIdx) {
+            const ratio = zoomLevels[toIdx] / zoomLevels[fromIdx];
+            const r = document.documentElement;
+            zoomProps.forEach(p => {
+                const raw = getComputedStyle(r).getPropertyValue(p).trim();
+                const num = parseFloat(raw);
+                const unit = raw.replace(/[\d.]+/g, '');
+                if (!isNaN(num) && unit) r.style.setProperty(p, (num * ratio) + unit);
+            });
+            const kh = getComputedStyle(r).getPropertyValue('--keypad-h').trim();
+            const kn = parseFloat(kh), ku = kh.replace(/[\d.]+/g, '');
+            if (!isNaN(kn) && ku) r.style.setProperty('--keypad-h', Math.round(kn * (1 + (ratio - 1) * 0.5)) + ku);
+            localStorage.setItem('zoom-level', toIdx);
+            zoomLabel.textContent = Math.round(zoomLevels[toIdx] * 100) + '%';
+        }
+
+        (function initZoom() {
+            zoomIdx = parseInt(localStorage.getItem('zoom-level'));
+            if (isNaN(zoomIdx) || zoomIdx < 0 || zoomIdx >= zoomLevels.length) zoomIdx = ZOOM_DEFAULT;
+            if (zoomIdx !== ZOOM_DEFAULT) applyZoom(ZOOM_DEFAULT, zoomIdx);
+            else zoomLabel.textContent = Math.round(zoomLevels[zoomIdx] * 100) + '%';
+        })();
+
+        function zoomIn(dir) {
+            const next = zoomIdx + dir;
+            if (next < 0 || next >= zoomLevels.length) return;
+            const old = zoomIdx;
+            zoomIdx = next;
+            applyZoom(old, zoomIdx);
+        }
 
         function focusInput(name) {
             activeInput = name;
@@ -564,12 +718,6 @@
                             el.value = formatDisplay(String(result));
                             triggerCalc();
                         }
-                    } else {
-                        inputUsd.value = '';
-                        inputVes.value = '';
-                        inputCustomRate.value = '';
-                        if (currentSource !== 'bcv') setSource('bcv');
-                        focusInput('usd');
                     }
                     return;
                 }
@@ -580,10 +728,17 @@
                 }
 
                 if (isCustom) {
-                    if (key === 'backspace') el.value = el.value.slice(0, -1);
-                    else if (key === '.') { if (!el.value.includes('.')) el.value += '.'; }
-                    else if (key === '+' || key === '×') el.value += key;
-                    else el.value += key;
+                    const raw = parseDisplay(el.value);
+                    if (key === 'backspace') {
+                        el.value = raw.length > 0 ? formatDisplay(raw.slice(0, -1)) : '';
+                    } else if (key === '+') {
+                        el.value = formatDisplay(raw + '+');
+                    } else if (key === '×' || key === '.') {
+                        if (key === '.' && raw.includes('.')) return;
+                        el.value = formatDisplay(raw + '.');
+                    } else {
+                        el.value = formatDisplay(raw + key);
+                    }
                 } else {
                     const raw = parseDisplay(el.value);
                     if (key === 'backspace') {
@@ -623,13 +778,13 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installBtn.classList.remove('hidden');
+            installRow.classList.remove('hidden');
         });
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') installBtn.classList.add('hidden');
+                if (outcome === 'accepted') installRow.classList.add('hidden');
                 deferredPrompt = null;
             }
         });
@@ -644,8 +799,7 @@
                     rates.bcv = bcv;
                     rates.binance = binance;
                     const d = new Date(ts);
-                    lastDateEl.textContent = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' });
-                    lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> Sin conexión';
+                    lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> ' + d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short' });
                     return true;
                 }
                 return false;
@@ -698,12 +852,11 @@
         function updateUI(data) {
             rateBcvEl.textContent = rates.bcv > 0 ? formatNum(rates.bcv) : '--.--';
             rateBinanceEl.textContent = rates.binance > 0 ? formatNum(rates.binance) : '--.--';
-            ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
+            ratePropiaEl.textContent = customRateLabel(rates.custom);
             autoSizeRate(rateBcvEl, '--rate-value');
             autoSizeRate(rateBinanceEl, '--rate-value');
             autoSizeRate(ratePropiaEl, '--rate-value');
             if (data && data.effective_date) {
-                lastDateEl.textContent = data.effective_date;
                 lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Vigente';
             }
             loadingEl.classList.add('hidden');
@@ -718,15 +871,17 @@
 
         function setSource(source) {
             currentSource = source;
-            customRateRow.classList.add('hidden');
+            customRateRow.classList.add('invisible');
 
             if (source === 'bcv') {
                 selectCard(cardBcv);
+                if (lastEdited === 'custom') lastEdited = 'usd';
             } else if (source === 'binance') {
                 selectCard(cardBinance);
+                if (lastEdited === 'custom') lastEdited = 'usd';
             } else if (source === 'custom') {
                 selectCard(cardCustom);
-                customRateRow.classList.remove('hidden');
+                customRateRow.classList.remove('invisible');
                 focusInput('custom');
             }
 
@@ -792,9 +947,10 @@
         }
 
         function calculate(triggerField) {
-            let rate = currentSource === 'custom' ? parseFloat(inputCustomRate.value) : rates[currentSource];
-            rates.custom = parseFloat(inputCustomRate.value) || 0;
-            ratePropiaEl.textContent = rates.custom > 0 ? formatNum(rates.custom) : '--.--';
+            const rawCustom = parseDisplay(inputCustomRate.value);
+            let rate = currentSource === 'custom' ? parseFloat(rawCustom) : rates[currentSource];
+            rates.custom = parseFloat(rawCustom) || 0;
+            ratePropiaEl.textContent = customRateLabel(rates.custom);
             autoSizeRate(ratePropiaEl, '--rate-value');
 
             if (!rate || isNaN(rate) || rate === 0) {
@@ -1124,7 +1280,8 @@
                     let intStr = dotIdx === -1 ? sub : sub.slice(0, dotIdx);
                     let decStr = dotIdx === -1 ? '' : sub.slice(dotIdx + 1);
                     intStr = intStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                    return decStr !== '' ? intStr + ',' + decStr : intStr;
+                    if (dotIdx >= 0) return intStr + ',' + decStr;
+                    return intStr;
                 }).join('×');
             }).join('+');
         }
@@ -1596,8 +1753,8 @@
     <button id="layout-btn" onclick="togglePanel()">⚙</button>
     <div id="layout-panel">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:rgba(167,139,250,0.5)">Ajustes</span>
-            <span onclick="togglePanel()" style="color:rgba(167,139,250,0.5);cursor:pointer;font-size:14px">✕</span>
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:rgba(var(--a),0.5)">Ajustes</span>
+            <span onclick="togglePanel()" style="color:rgba(var(--a),0.5);cursor:pointer;font-size:14px">✕</span>
         </div>
 
         <div class="lp-hdr">▸ Tasas</div>
