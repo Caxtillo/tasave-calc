@@ -65,6 +65,13 @@
             max-width: 28rem;
             margin: 0 auto;
         }
+        #desktop-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+        #rate-history { display: none !important; }
         html, body {
             height: 100dvh;
             overflow: hidden;
@@ -221,6 +228,9 @@
                 overflow: auto;
                 height: 100%;
             }
+            body {
+                align-items: stretch;
+            }
             #content {
                 flex-direction: row;
                 max-width: none;
@@ -241,20 +251,30 @@
                 flex: 1;
                 display: flex;
                 flex-direction: column;
-                align-items: center;
-                padding: 2rem 2rem;
-                overflow-y: auto;
                 height: 100vh;
+                overflow-y: auto;
+            }
+            #desktop-body {
+                flex: 1;
+                display: flex;
+                flex-direction: row;
+                overflow: hidden;
+                min-height: 0;
             }
             #page-inicio {
-                width: 100%;
-                max-width: 480px;
-                margin: 0 auto;
-                padding-bottom: 2rem;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+                overflow-y: auto;
+                min-height: 0;
             }
             #page-inicio .flex-1.flex-col.justify-center {
-                gap: 1rem !important;
-                margin-top: 1.5rem !important;
+                flex: none !important;
+                gap: 0.75rem;
+                margin-top: 0;
             }
             .rate-card {
                 padding: 0.6rem 0.5rem;
@@ -272,12 +292,76 @@
             #page-calendario { max-width: 560px; margin: 0 auto; width: 100%; }
             #page-config { max-width: 560px; margin: 0 auto; width: 100%; }
 
-            header { margin-bottom: 1.5rem !important; }
+            header {
+                margin-bottom: 0 !important;
+                padding: 0.75rem 2rem !important;
+                border-bottom: 1px solid rgba(var(--a), 0.08);
+                flex-shrink: 0;
+            }
             header > div:first-child > div:last-child { display: none !important; }
             #layout-btn { display: none !important; }
             #layout-panel { display: none !important; }
-            body {
-                align-items: stretch;
+
+            /* Rate History Panel */
+            #rate-history {
+                display: flex !important;
+                flex-direction: column;
+                width: 280px;
+                min-width: 280px;
+                border-left: 1px solid rgba(var(--a), 0.08);
+                padding: 1.5rem;
+                overflow-y: auto;
+                height: 100vh;
+                position: sticky;
+                top: 0;
+                background: rgba(var(--nav-bg), 0.3);
+            }
+            #rate-history.compact .rh-item {
+                padding: 0.35rem 0.5rem;
+            }
+            .rh-title {
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.15em;
+                color: rgba(var(--a), 0.5);
+                margin-bottom: 0.75rem;
+            }
+            .rh-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.4rem 0.5rem;
+                border-radius: 0.4rem;
+                font-size: 11px;
+                font-weight: 600;
+                color: rgba(var(--text), 0.45);
+                border-bottom: 1px solid rgba(var(--a), 0.04);
+            }
+            .rh-item .rh-date {
+                color: rgba(var(--text), 0.35);
+                font-weight: 500;
+                font-size: 10px;
+            }
+            .rh-item .rh-val {
+                color: rgb(var(--text));
+                font-weight: 700;
+                font-family: monospace;
+            }
+            .rh-empty {
+                font-size: 10px;
+                color: rgba(var(--text), 0.2);
+                font-weight: 500;
+                text-align: center;
+                padding: 1rem;
+            }
+            .rh-today {
+                background: rgba(var(--a), 0.08);
+                border-radius: 0.4rem;
+            }
+            .rh-today .rh-date {
+                color: rgb(var(--a));
+                font-weight: 700;
             }
         }
         @media (max-width: 1023px) {
@@ -517,6 +601,7 @@
                 </div>
             </header>
 
+            <div id="desktop-body">
             <div id="page-inicio" class="flex-1 flex flex-col min-h-0" style="padding-bottom:var(--top-py)">
                 <div class="flex gap-1.5 shrink-0 mt-2">
                     <div onclick="setSource('bcv')" id="card-bcv" class="rate-card flex-1 rate-card-selected">
@@ -561,6 +646,8 @@
                     </div>
                 </div>
             </div> <!-- fin page-inicio -->
+            <div id="rate-history" class="hidden"></div>
+            </div> <!-- fin desktop-body -->
 
             <div id="page-compra" class="hidden flex-1 flex flex-col min-h-0 overflow-y-auto px-1" style="padding-bottom:var(--top-py)">
                 <div class="flex flex-col gap-2 h-full">
@@ -1222,6 +1309,8 @@
             document.getElementById('page-config').classList.toggle('hidden', page !== 'config');
             document.getElementById('keypad').classList.toggle('hidden', page !== 'inicio');
             document.getElementById('compra-finalizar-row').classList.toggle('hidden', page !== 'compra');
+            const db = document.getElementById('desktop-body');
+            if (db) db.style.display = page !== 'inicio' ? 'none' : '';
             const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
             if (navItem) navItem.classList.add('nav-active');
             if (page === 'calendario') renderCal();
@@ -1893,6 +1982,53 @@
             reader.readAsText(file);
             e.target.value = '';
         }
+
+        // ── Rate History ──
+        function saveRateSnapshot() {
+            const today = new Date().toISOString().slice(0, 10);
+            let history = JSON.parse(localStorage.getItem('rateHistory') || '[]');
+            history = history.filter(h => h.date !== today);
+            history.push({ date: today, bcv: rates.bcv, binance: rates.binance });
+            history.sort((a, b) => a.date.localeCompare(b.date));
+            if (history.length > 30) history = history.slice(-30);
+            localStorage.setItem('rateHistory', JSON.stringify(history));
+        }
+
+        function renderRateHistory() {
+            const el = document.getElementById('rate-history');
+            if (!el) return;
+            const history = JSON.parse(localStorage.getItem('rateHistory') || '[]');
+            if (history.length === 0) {
+                el.innerHTML = '<div class="rh-title">Historial de tasas</div><div class="rh-empty">Aún no hay datos históricos</div>';
+                return;
+            }
+            const days = history.slice(-14).reverse();
+            let html = '<div class="rh-title">Historial de tasas</div>';
+            html += days.map(h => {
+                const d = new Date(h.date + 'T12:00:00');
+                const label = d.toLocaleDateString('es-VE', { weekday: 'short', day: 'numeric', month: 'short' });
+                const bcv = h.bcv > 0 ? h.bcv.toFixed(2) : '—';
+                const binance = h.binance > 0 ? h.binance.toFixed(2) : '—';
+                const isToday = h.date === new Date().toISOString().slice(0, 10);
+                return `<div class="rh-item${isToday ? ' rh-today' : ''}">
+                    <span class="rh-date">${label}</span>
+                    <span class="rh-val">${bcv}</span>
+                </div>`;
+            }).join('');
+            el.innerHTML = html;
+        }
+
+        // Hook into fetchRates to save snapshots
+        const _origUpdateUI = updateUI;
+        updateUI = function(data) {
+            _origUpdateUI(data);
+            if (rates.bcv > 0) {
+                saveRateSnapshot();
+                renderRateHistory();
+            }
+        };
+
+        renderRateHistory();
 
         // Init auth and sync
         (async () => {
