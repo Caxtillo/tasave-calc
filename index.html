@@ -298,7 +298,7 @@
                 border-bottom: 1px solid rgba(var(--a), 0.08);
                 flex-shrink: 0;
             }
-            header > div:first-child > div:last-child { display: none !important; }
+            header > div:first-child > div:first-child > div:last-child { display: none !important; }
             #layout-btn { display: none !important; }
             #layout-panel { display: none !important; }
 
@@ -582,22 +582,27 @@
 
             <div id="main-content" class="flex flex-col flex-1 min-h-0">
 
-            <header class="flex items-center justify-between shrink-0" style="padding-top:var(--top-py);margin-bottom:var(--header-mb)">
-                <div class="flex items-center gap-2">
-                    <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
-                    <div class="flex items-center gap-0.5">
-                        <button onclick="zoomIn(-1)" class="text-[11px] w-5 h-5 flex items-center justify-center bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">−</button>
-                        <span id="zoom-label" class="text-[9px] text-purple-400/50 font-bold w-7 text-center">100%</span>
-                        <button onclick="zoomIn(1)" class="text-[11px] w-5 h-5 flex items-center justify-center bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">+</button>
+            <header class="shrink-0 flex flex-col gap-1.5" style="padding-top:var(--top-py);margin-bottom:var(--header-mb)">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold" style="font-size:var(--title-fs)">Tasa<span class="text-purple-400">Ves</span></h1>
+                        <div class="flex items-center gap-0.5">
+                            <button onclick="zoomIn(-1)" class="text-[11px] w-5 h-5 flex items-center justify-center bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">−</button>
+                            <span id="zoom-label" class="text-[9px] text-purple-400/50 font-bold w-7 text-center">100%</span>
+                            <button onclick="zoomIn(1)" class="text-[11px] w-5 h-5 flex items-center justify-center bg-purple-500/15 rounded-lg border border-purple-500/25 font-bold text-purple-300/70 leading-none">+</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="manualRefresh()" id="refresh-btn" class="p-1.5 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-400"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-[11px] text-purple-300/70 font-bold flex items-center gap-1" id="last-time">
+                <div class="flex items-center gap-1">
+                    <span class="text-[10px] text-purple-400/40 font-bold uppercase tracking-wider shrink-0">Vigencia</span>
+                    <span class="text-[10px] text-purple-300/70 font-bold flex items-center gap-1" id="last-time">
                         <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> --:--
                     </span>
-                    <button onclick="manualRefresh()" id="refresh-btn" class="p-1.5 bg-purple-500/10 rounded-xl border border-purple-500/20">
-                        <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-400"></i>
-                    </button>
                 </div>
             </header>
 
