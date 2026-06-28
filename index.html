@@ -1140,7 +1140,7 @@
             autoSizeRate(ratePropiaEl, '--rate-value');
             if (data && data.effective_date) {
                 const fecha = data.effective_date.replace(/\s+/g, ' ').trim();
-                lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ' + fecha;
+                lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Hasta ' + fecha;
             }
             loadingEl.classList.add('hidden');
             contentEl.classList.remove('hidden');
