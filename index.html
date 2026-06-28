@@ -1139,7 +1139,8 @@
             autoSizeRate(rateBinanceEl, '--rate-value');
             autoSizeRate(ratePropiaEl, '--rate-value');
             if (data && data.effective_date) {
-                lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Vigente';
+                const fecha = data.effective_date.replace(/\s+/g, ' ').trim();
+                lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ' + fecha;
             }
             loadingEl.classList.add('hidden');
             contentEl.classList.remove('hidden');

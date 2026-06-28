@@ -63,7 +63,7 @@ def parse_rates(html):
             content_start = html.find(">", span_start) + 1
             span_end = html.find("</span>", content_start)
             if span_end >= 0:
-                date_str = html[content_start:span_end].strip()
+                date_str = ' '.join(html[content_start:span_end].split())
 
     return rates, date_str
 
