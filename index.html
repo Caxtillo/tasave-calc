@@ -1059,7 +1059,7 @@
             const key = btn.dataset.key;
             if (key !== 'backspace') btn.addEventListener('click', () => keypadAction(key));
             if (key === 'backspace') {
-                let holdTimer, holdInterval, held;
+                let holdTimer, holdInterval, held, touched;
                 const startHold = () => {
                     held = false;
                     holdTimer = setTimeout(() => {
@@ -1072,12 +1072,12 @@
                     clearTimeout(holdTimer);
                     clearInterval(holdInterval);
                 };
-                btn.addEventListener('mousedown', startHold);
-                btn.addEventListener('mouseup', stopHold);
-                btn.addEventListener('mouseleave', stopHold);
-                btn.addEventListener('touchstart', startHold);
-                btn.addEventListener('touchend', stopHold);
-                btn.addEventListener('touchcancel', stopHold);
+                btn.addEventListener('mousedown', () => { if (!touched) startHold(); });
+                btn.addEventListener('mouseup', () => { if (!touched) stopHold(); });
+                btn.addEventListener('mouseleave', () => { if (!touched) stopHold(); });
+                btn.addEventListener('touchstart', () => { touched = true; startHold(); });
+                btn.addEventListener('touchend', () => { stopHold(); setTimeout(() => touched = false, 400); });
+                btn.addEventListener('touchcancel', () => { stopHold(); setTimeout(() => touched = false, 400); });
             }
         });
 
