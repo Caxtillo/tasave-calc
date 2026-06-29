@@ -1057,23 +1057,25 @@
 
         document.querySelectorAll('.keypad-btn').forEach(btn => {
             const key = btn.dataset.key;
-            btn.addEventListener('click', () => keypadAction(key));
+            if (key !== 'backspace') btn.addEventListener('click', () => keypadAction(key));
             if (key === 'backspace') {
-                let holdTimer, holdInterval;
-                const startHold = (e) => {
-                    e.preventDefault();
+                let holdTimer, holdInterval, held;
+                const startHold = () => {
+                    held = false;
                     holdTimer = setTimeout(() => {
+                        held = true;
                         holdInterval = setInterval(() => keypadAction('backspace'), 60);
                     }, 300);
                 };
                 const stopHold = () => {
+                    if (!held) keypadAction('backspace');
                     clearTimeout(holdTimer);
                     clearInterval(holdInterval);
                 };
                 btn.addEventListener('mousedown', startHold);
                 btn.addEventListener('mouseup', stopHold);
                 btn.addEventListener('mouseleave', stopHold);
-                btn.addEventListener('touchstart', startHold, { passive: false });
+                btn.addEventListener('touchstart', startHold);
                 btn.addEventListener('touchend', stopHold);
                 btn.addEventListener('touchcancel', stopHold);
             }
