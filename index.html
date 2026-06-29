@@ -1002,60 +1002,81 @@
             else if (name === 'custom') inputCustomRate.parentElement.classList.add('input-selected');
         }
 
-        document.querySelectorAll('.keypad-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (!document.getElementById('page-compra').classList.contains('hidden')) return;
-                const key = btn.dataset.key;
-                const isCustom = activeInput === 'custom';
-                const el = isCustom ? inputCustomRate
-                          : activeInput === 'ves' ? inputVes : inputUsd;
+        function keypadAction(key) {
+            if (!document.getElementById('page-compra').classList.contains('hidden')) return;
+            const isCustom = activeInput === 'custom';
+            const el = isCustom ? inputCustomRate
+                      : activeInput === 'ves' ? inputVes : inputUsd;
 
-                if (key === '=') {
-                    if (isCustom) return;
-                    const raw = parseDisplay(el.value);
-                    if (raw.includes('+') || raw.includes('×')) {
-                        const result = parseSum(raw);
-                        if (!isNaN(result)) {
-                            el.value = formatDisplay(String(result));
-                            triggerCalc();
-                        }
+            if (key === '=') {
+                if (isCustom) return;
+                const raw = parseDisplay(el.value);
+                if (raw.includes('+') || raw.includes('×')) {
+                    const result = parseSum(raw);
+                    if (!isNaN(result)) {
+                        el.value = formatDisplay(String(result));
+                        triggerCalc();
                     }
-                    return;
                 }
+                return;
+            }
 
-                if (isCustom) {
-                    const raw = parseDisplay(el.value);
-                    if (key === 'backspace') {
-                        el.value = raw.length > 0 ? formatDisplay(raw.slice(0, -1)) : '';
-                    } else if (key === '+') {
-                        el.value = formatDisplay(raw + '+');
-                    } else if (key === '×' || key === '.') {
-                        if (key === '.' && raw.includes('.')) return;
-                        el.value = formatDisplay(raw + '.');
-                    } else {
-                        el.value = formatDisplay(raw + key);
-                    }
+            if (isCustom) {
+                const raw = parseDisplay(el.value);
+                if (key === 'backspace') {
+                    el.value = raw.length > 0 ? formatDisplay(raw.slice(0, -1)) : '';
+                } else if (key === '+') {
+                    el.value = formatDisplay(raw + '+');
+                } else if (key === '×' || key === '.') {
+                    if (key === '.' && raw.includes('.')) return;
+                    el.value = formatDisplay(raw + '.');
                 } else {
-                    const raw = parseDisplay(el.value);
-                    if (key === 'backspace') {
-                        el.value = raw.length > 0 ? formatDisplay(raw.slice(0, -1)) : '';
-                    } else if (key === '+' || key === '×' || key === '.') {
-                        if (key === '.' && raw.includes('.')) return;
-                        if ((key === '+' || key === '×') && /[+×]$/.test(raw)) return;
-                        el.value = formatDisplay(raw + key);
-                    } else {
-                        el.value = formatDisplay(raw + key);
-                    }
+                    el.value = formatDisplay(raw + key);
                 }
+            } else {
+                const raw = parseDisplay(el.value);
+                if (key === 'backspace') {
+                    el.value = raw.length > 0 ? formatDisplay(raw.slice(0, -1)) : '';
+                } else if (key === '+' || key === '×' || key === '.') {
+                    if (key === '.' && raw.includes('.')) return;
+                    if ((key === '+' || key === '×') && /[+×]$/.test(raw)) return;
+                    el.value = formatDisplay(raw + key);
+                } else {
+                    el.value = formatDisplay(raw + key);
+                }
+            }
 
-                el.setSelectionRange(el.value.length, el.value.length);
-                focusInput(isCustom ? 'custom' : activeInput);
-                scrollInputEnd(inputUsd);
-                scrollInputEnd(inputVes);
-                scrollInputEnd(inputCustomRate);
-                if (isCustom) calculate(lastEdited);
-                else triggerCalc();
-            });
+            el.setSelectionRange(el.value.length, el.value.length);
+            focusInput(isCustom ? 'custom' : activeInput);
+            scrollInputEnd(inputUsd);
+            scrollInputEnd(inputVes);
+            scrollInputEnd(inputCustomRate);
+            if (isCustom) calculate(lastEdited);
+            else triggerCalc();
+        }
+
+        document.querySelectorAll('.keypad-btn').forEach(btn => {
+            const key = btn.dataset.key;
+            btn.addEventListener('click', () => keypadAction(key));
+            if (key === 'backspace') {
+                let holdTimer, holdInterval;
+                const startHold = (e) => {
+                    e.preventDefault();
+                    holdTimer = setTimeout(() => {
+                        holdInterval = setInterval(() => keypadAction('backspace'), 60);
+                    }, 300);
+                };
+                const stopHold = () => {
+                    clearTimeout(holdTimer);
+                    clearInterval(holdInterval);
+                };
+                btn.addEventListener('mousedown', startHold);
+                btn.addEventListener('mouseup', stopHold);
+                btn.addEventListener('mouseleave', stopHold);
+                btn.addEventListener('touchstart', startHold, { passive: false });
+                btn.addEventListener('touchend', stopHold);
+                btn.addEventListener('touchcancel', stopHold);
+            }
         });
 
         function triggerCalc() {
