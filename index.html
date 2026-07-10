@@ -663,6 +663,7 @@
                             <span class="input-currency">Bs</span>
                             <input type="text" id="input-ves" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false" class="input-inner" placeholder="0.00">
                         </div>
+                        <div id="copy-toast" class="hidden text-center text-[10px] font-bold mt-1 transition-opacity duration-200" style="color:rgb(var(--a));opacity:0">Copiado</div>
                     </div>
                 </div>
             </div> <!-- fin page-inicio -->
@@ -1260,6 +1261,45 @@
                 const approx = Math.round(x / (el.scrollWidth / Math.max(el.value.length, 1)) * el.value.length);
                 el.setSelectionRange(Math.min(approx, el.value.length), Math.min(approx, el.value.length));
             });
+        });
+
+        // Long-press to copy value
+        const copyToast = document.getElementById('copy-toast');
+        let holdTimer2;
+
+        function showCopyToast() {
+            copyToast.classList.remove('hidden');
+            copyToast.style.opacity = '0';
+            requestAnimationFrame(() => { copyToast.style.opacity = '1'; });
+            setTimeout(() => {
+                copyToast.style.opacity = '0';
+                setTimeout(() => copyToast.classList.add('hidden'), 200);
+            }, 1200);
+        }
+
+        function startCopyHold(el) {
+            holdTimer2 = setTimeout(() => {
+                const val = el.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+                if (val && !isNaN(parseFloat(val))) {
+                    navigator.clipboard.writeText(parseFloat(val).toString()).catch(() => {});
+                    showCopyToast();
+                }
+                holdTimer2 = null;
+            }, 500);
+        }
+
+        function cancelCopyHold() {
+            if (holdTimer2) { clearTimeout(holdTimer2); holdTimer2 = null; }
+        }
+
+        [inputUsd, inputVes].forEach(el => {
+            el.addEventListener('mousedown', () => startCopyHold(el));
+            el.addEventListener('mouseup', cancelCopyHold);
+            el.addEventListener('mouseleave', cancelCopyHold);
+            el.addEventListener('touchstart', () => startCopyHold(el));
+            el.addEventListener('touchend', cancelCopyHold);
+            el.addEventListener('touchmove', cancelCopyHold);
+            el.addEventListener('touchcancel', cancelCopyHold);
         });
 
         function parseSum(str) {
