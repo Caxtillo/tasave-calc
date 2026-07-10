@@ -126,6 +126,9 @@
             width: 100%;
             min-width: 0;
             pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
             text-align: right;
             overflow-x: auto;
             overflow-y: hidden;
@@ -1343,6 +1346,7 @@
             el.addEventListener('touchend', cancelCopyHold);
             el.addEventListener('touchmove', cancelCopyHold);
             el.addEventListener('touchcancel', cancelCopyHold);
+            el.addEventListener('contextmenu', (e) => e.preventDefault());
         });
         // Inputs directos en desktop (pointer-events: auto)
         [inputUsd, inputVes].forEach(el => {
