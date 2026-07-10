@@ -18,10 +18,12 @@ const STATIC_ASSETS = [
   './tailwind.css',
   './abeja.png'
 ];
-const CDN_CACHE = 'tasaves-cdn-v1';
+const CDN_CACHE = 'tasaves-cdn-v2';
 const CDN_ASSETS = [
   'https://unpkg.com/lucide@latest',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+  'https://cdn.jsdelivr.net/npm/chart.js@4',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap',
   'https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_fFQtVMgLB1v2g0b9DH.woff2'
 ];
