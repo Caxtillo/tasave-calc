@@ -123,7 +123,7 @@
             outline: none;
             font-size: var(--input-fs);
             font-weight: 800;
-            color: white;
+            color: rgb(var(--text));
             width: 100%;
             min-width: 0;
             pointer-events: none;
@@ -195,7 +195,7 @@
             background: rgba(var(--a), 0.1);
         }
         .rate-label { font-size: var(--rate-label); font-weight: 700; color: rgba(var(--a), 0.7); }
-        .rate-value { font-size: var(--rate-value); font-weight: 900; color: white; }
+        .rate-value { font-size: var(--rate-value); font-weight: 900; color: rgb(var(--text)); }
         .input-label { font-size: var(--label-fs); }
 
         /* Panel tool - solo en desktop */
@@ -542,13 +542,41 @@
         [data-theme] .border-purple-500\/40 { border-color: rgba(var(--a),0.4); }
         [data-theme] .border-purple-500 { border-color: rgb(var(--a)); }
         [data-theme] .ring-purple-500\/30 { --tw-ring-color: rgba(var(--a),0.3); }
+
+        /* Light mode: darken accent text for readability, boost low-opacity accents */
+        [data-mode="light"] [data-theme] .text-purple-100 { color: rgb(var(--text)); }
+        [data-mode="light"] [data-theme] .text-purple-200 { color: rgba(var(--text),0.87); }
+        [data-mode="light"] [data-theme] .text-purple-300\/50,
+        [data-mode="light"] [data-theme] .text-purple-400\/50 { color: rgba(var(--a),0.75); }
+        [data-mode="light"] [data-theme] .text-purple-300\/40,
+        [data-mode="light"] [data-theme] .text-purple-400\/40 { color: rgba(var(--text),0.6); }
+        [data-mode="light"] [data-theme] .text-purple-400\/30 { color: rgba(var(--text),0.5); }
+        [data-mode="light"] [data-theme] .text-purple-400\/20 { color: rgba(var(--text),0.4); }
+        [data-mode="light"] [data-theme] .text-purple-300\/60,
+        [data-mode="light"] [data-theme] .text-purple-400\/60 { color: rgba(var(--text),0.75); }
+        [data-mode="light"] [data-theme] .bg-purple-500\/10 { background: rgba(var(--a),0.18); }
+        [data-mode="light"] [data-theme] .bg-purple-500\/15 { background: rgba(var(--a),0.25); }
+        [data-mode="light"] [data-theme] .bg-purple-500\/20 { background: rgba(var(--a),0.32); }
+        [data-mode="light"] [data-theme] .bg-purple-500\/30 { background: rgba(var(--a),0.42); }
+        [data-mode="light"] [data-theme] .border-purple-500\/10 { border-color: rgba(var(--a),0.2); }
+        [data-mode="light"] [data-theme] .border-purple-500\/20 { border-color: rgba(var(--a),0.35); }
+        [data-mode="light"] [data-theme] .border-purple-500\/25 { border-color: rgba(var(--a),0.4); }
+        [data-mode="light"] [data-theme] .border-purple-500\/30 { border-color: rgba(var(--a),0.5); }
+        [data-mode="light"] [data-theme] .border-purple-500\/40 { border-color: rgba(var(--a),0.6); }
+        [data-mode="light"] [data-theme] .ring-purple-500\/30 { --tw-ring-color: rgba(var(--a),0.5); }
+        [data-mode="light"] .input-currency { color: rgba(var(--a),0.7); }
+        [data-mode="light"] .rate-label { color: rgba(var(--text),0.85); }
+        [data-mode="light"] .lp-hdr { color: rgba(var(--text),0.65); }
+        [data-mode="light"] .rh-title { color: rgba(var(--text),0.7); }
+        [data-mode="light"] .zoom-btn { color: rgba(var(--text),0.8); }
+        [data-mode="light"] .zoom-label { color: rgba(var(--text),0.55); }
     </style>
 </head>
     <body style="background:radial-gradient(ellipse at top, rgba(var(--a-dim),0.25), rgb(var(--bg)) 60%, rgb(var(--bg)));background-color:rgb(var(--bg));color:rgb(var(--text))">
         <div id="loading" style="background:rgb(var(--bg));gap:1rem">
             <div class="spinner"></div>
             <p id="loading-text">Consultando tasas...</p>
-            <p id="loading-sub" class="hidden text-[9px] font-bold uppercase tracking-wider" style="color:rgba(var(--a),0.4)"></p>
+            <p id="loading-sub" class="hidden text-[9px] font-bold uppercase tracking-wider" style="color:rgba(var(--a),0.65)"></p>
             <button onclick="localStorage.clear();location.reload()" style="font-size:10px;color:rgba(248,113,113,0.5);font-weight:700;margin-top:2rem;text-decoration:underline;text-underline-offset:2px;background:none;border:none;cursor:pointer">Reiniciar app</button>
         </div>
 
