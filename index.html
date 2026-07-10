@@ -950,8 +950,9 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
         else document.addEventListener('DOMContentLoaded', () => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
 
-        const zoomLevels = [0.8, 0.9, 1.0, 1.1, 1.2];
-        const ZOOM_DEFAULT = 2;
+        const zoomLevels = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5];
+        const ZOOM_BASE = 2;
+        const ZOOM_DEFAULT = 7;
         const zoomLabel = document.getElementById('zoom-label');
         const zoomProps = ['--input-fs','--input-py','--input-px','--title-fs','--rate-value','--rate-label','--label-fs','--top-py','--header-mb'];
         let zoomIdx;
@@ -978,7 +979,7 @@
         (function initZoom() {
             zoomIdx = parseInt(localStorage.getItem('zoom-level'));
             if (isNaN(zoomIdx) || zoomIdx < 0 || zoomIdx >= zoomLevels.length) zoomIdx = ZOOM_DEFAULT;
-            if (zoomIdx !== ZOOM_DEFAULT) applyZoom(ZOOM_DEFAULT, zoomIdx);
+            if (zoomIdx !== ZOOM_BASE) applyZoom(ZOOM_BASE, zoomIdx);
             else {
                 const pct = Math.round(zoomLevels[zoomIdx] * 100) + '%';
                 zoomLabel.textContent = pct;
