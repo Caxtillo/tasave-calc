@@ -1263,11 +1263,12 @@
             });
         });
 
-        // Long-press to copy value
+        // Long-press to copy/paste value
         const copyToast = document.getElementById('copy-toast');
         let holdTimer2;
 
-        function showCopyToast() {
+        function showToast(msg) {
+            copyToast.textContent = msg;
             copyToast.classList.remove('hidden');
             copyToast.style.opacity = '0';
             requestAnimationFrame(() => { copyToast.style.opacity = '1'; });
@@ -1277,18 +1278,49 @@
             }, 1200);
         }
 
+        function getInputEl(el) {
+            return el.tagName === 'INPUT' ? el : el.querySelector('.input-inner');
+        }
+
         function getInputValue(el) {
-            const inp = el.tagName === 'INPUT' ? el : el.querySelector('.input-inner');
+            const inp = getInputEl(el);
             if (!inp) return '';
             return inp.value.replace(/[^0-9.,]/g, '').replace(',', '.');
         }
 
+        function setInputValue(el, val) {
+            const inp = getInputEl(el);
+            if (!inp) return;
+            const fmt = Number(val).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            inp.value = fmt;
+            const isCustom = inp === inputCustomRate;
+            if (isCustom) {
+                rates.custom = val;
+                ratePropiaEl.textContent = val > 0 ? formatNum(val) : '--.--';
+                focusInput('custom');
+            } else {
+                if (inp === inputUsd) lastEdited = 'usd';
+                else if (inp === inputVes) lastEdited = 'ves';
+                focusInput(lastEdited);
+            }
+            triggerCalc();
+        }
+
         function startCopyHold(el) {
-            holdTimer2 = setTimeout(() => {
+            holdTimer2 = setTimeout(async () => {
                 const val = getInputValue(el);
                 if (val && !isNaN(parseFloat(val))) {
                     navigator.clipboard.writeText(parseFloat(val).toString()).catch(() => {});
-                    showCopyToast();
+                    showToast('Copiado');
+                } else {
+                    try {
+                        const txt = await navigator.clipboard.readText();
+                        const num = parseFloat(txt.replace(',', '.'));
+                        if (!isNaN(num) && num > 0) {
+                            setInputValue(el, num);
+                            showToast('Pegado');
+                        }
+                    } catch {}
                 }
                 holdTimer2 = null;
             }, 500);
@@ -1301,7 +1333,7 @@
         function copyText(val) {
             if (val && !isNaN(parseFloat(val))) {
                 navigator.clipboard.writeText(parseFloat(val).toString()).catch(() => {});
-                showCopyToast();
+                showToast('Copiado');
             }
         }
 
