@@ -2427,14 +2427,30 @@
         }
         function showRateNotif(rate, isTest) {
             try {
+                const iconUrl = new URL('abeja.png', location.origin + location.pathname).href;
                 const n = new Notification('TasaVes' + (isTest ? ' 🔔' : ''), {
                     body: isTest ? 'Notificación de prueba — funciona correctamente' : 'BCV: ' + formatNum(rate) + ' Bs/USD',
-                    icon: 'abeja.png',
-                    silent: false,
-                    tag: 'bcv-rate'
+                    icon: iconUrl
                 });
                 if (!isTest) setTimeout(() => n.close(), 8000);
-            } catch(e) {}
+            } catch(e) { console.error('Notif error:', e); }
+            notifToast(isTest ? '🔔 Notificación de prueba enviada' : '🔔 BCV: ' + formatNum(rate) + ' Bs/USD');
+        }
+        function notifToast(msg) {
+            const old = document.getElementById('notif-toast');
+            if (old) old.remove();
+            const t = document.createElement('div');
+            t.id = 'notif-toast';
+            t.textContent = msg;
+            Object.assign(t.style, {
+                position:'fixed', bottom:'90px', left:'50%', transform:'translateX(-50%)', zIndex:'9999',
+                background:'rgba(0,0,0,.85)', color:'#fff', padding:'10px 20px', borderRadius:'12px',
+                fontSize:'13px', fontWeight:'700', maxWidth:'90%', textAlign:'center',
+                boxShadow:'0 4px 20px rgba(0,0,0,.4)', opacity:'1'
+            });
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.transition = 'opacity .6s'; t.style.opacity = '0'; }, 2000);
+            setTimeout(() => t.remove(), 2700);
         }
         function shouldCheckNow() {
             const p = getNotifPref();
