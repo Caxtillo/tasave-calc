@@ -659,7 +659,7 @@
             <div id="page-inicio" class="flex-1 flex flex-col min-h-0 px-4" style="padding-bottom:var(--top-py)">
                 <div class="flex gap-1.5 shrink-0 mt-2">
                     <div onclick="setSource('bcv')" id="card-bcv" class="rate-card flex-1 rate-card-selected">
-                        <span class="rate-label">BCV</span>
+                        <span class="rate-label">BCV<span id="notif-dot" class="hidden ml-0.5 w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse"></span></span>
                         <span class="rate-value" id="rate-bcv">--.--</span>
                     </div>
                     <div onclick="setSource('binance')" id="card-binance" class="rate-card flex-1">
@@ -850,6 +850,26 @@
                         <span class="text-purple-300/50 font-bold text-[10px] uppercase tracking-wider">Modo</span>
                         <button onclick="toggleMode()" id="mode-btn" class="px-3 py-1 rounded-lg bg-purple-500/15 border border-purple-500/25 font-bold text-[10px] text-purple-300/70">Claro</button>
                     </div>
+                    <div class="border-t border-purple-500/10 my-3"></div>
+                    <div class="mb-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-purple-300/50 font-bold text-[10px] uppercase tracking-wider">Notificar BCV</span>
+                            <button onclick="toggleNotif()" id="notif-btn" class="px-3 py-1 rounded-lg bg-purple-500/15 border border-purple-500/25 font-bold text-[10px] text-purple-300/70">Activar</button>
+                        </div>
+                        <button onclick="testNotif()" class="w-full text-[9px] py-2 mb-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300/70 font-bold flex items-center justify-center gap-1.5"><i data-lucide="bell" class="w-3.5 h-3.5"></i> Probar notificación</button>
+                        <div id="notif-config" class="hidden flex flex-col gap-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] text-purple-400/40 font-bold">Desde</span>
+                                <input type="text" id="notif-start" value="17:00" class="w-16 bg-transparent border-b border-purple-500/30 text-xs text-purple-200 font-bold outline-none text-center" maxlength="5" placeholder="17:00">
+                                <span class="text-[9px] text-purple-400/40 font-bold">hasta</span>
+                                <input type="text" id="notif-end" value="20:00" class="w-16 bg-transparent border-b border-purple-500/30 text-xs text-purple-200 font-bold outline-none text-center" maxlength="5" placeholder="20:00">
+                                <span class="text-[8px] text-purple-400/20 font-bold">UTC-4</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[8px] text-purple-400/30" id="notif-status">Sin notificaciones</span>
+                            </div>
+                        </div>
+                    </div>
                     <button onclick="exportarDatos()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Exportar datos</button>
                     <button onclick="document.getElementById('import-file-input').click()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="upload" class="w-4 h-4"></i> Importar datos</button>
                     <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importarDatos(event)">
@@ -979,6 +999,7 @@
                 document.documentElement.style.colorScheme = 'light';
             }
         })();
+        initNotif();
 
         // Hide loading immediately, fetch rates in background
         loadingEl.classList.add('hidden');
@@ -1282,6 +1303,7 @@
 
             if (source === 'bcv') {
                 selectCard(cardBcv);
+                document.getElementById('notif-dot').classList.add('hidden');
                 if (lastEdited === 'custom') lastEdited = 'usd';
             } else if (source === 'binance') {
                 selectCard(cardBinance);
@@ -2340,6 +2362,148 @@
             };
             reader.readAsText(file);
             e.target.value = '';
+        }
+
+        // ── Notificación BCV ──
+        let notifTimer = null;
+        function loadNotifPref() {
+            try { return JSON.parse(localStorage.getItem('notif-pref')) || {}; } catch { return {}; }
+        }
+        function saveNotifPref(p) {
+            localStorage.setItem('notif-pref', JSON.stringify(p));
+        }
+        function getNotifPref() {
+            const p = loadNotifPref();
+            return { enabled: p.enabled || false, start: p.start || '17:00', end: p.end || '20:00', lastRate: p.lastRate || 0, lastAt: p.lastAt || null };
+        }
+        function updateNotifUI() {
+            const p = getNotifPref();
+            const btn = document.getElementById('notif-btn');
+            const config = document.getElementById('notif-config');
+            btn.textContent = p.enabled ? 'Desactivar' : 'Activar';
+            btn.classList.toggle('bg-purple-500/15', !p.enabled);
+            btn.classList.toggle('text-purple-300/70', !p.enabled);
+            btn.classList.toggle('bg-green-500/20', p.enabled);
+            btn.classList.toggle('text-green-300/80', p.enabled);
+            btn.classList.toggle('border-green-500/30', p.enabled);
+            btn.classList.toggle('border-purple-500/25', !p.enabled);
+            config.classList.toggle('hidden', !p.enabled);
+            document.getElementById('notif-start').value = p.start;
+            document.getElementById('notif-end').value = p.end;
+            const status = document.getElementById('notif-status');
+            if (p.lastRate > 0 && p.lastAt) {
+                const d = new Date(p.lastAt);
+                status.textContent = 'Última: ' + formatNum(p.lastRate) + ' Bs (' + d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' }) + ')';
+            } else {
+                status.textContent = 'Sin notificaciones';
+            }
+        }
+        function toggleNotif() {
+            const p = getNotifPref();
+            if (!p.enabled) {
+                if (!('Notification' in window)) return alert('Notificaciones no soportadas');
+                if (Notification.permission === 'denied') return alert('Permiso denegado. Actívalo en la configuración del navegador.');
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission().then(perm => {
+                        if (perm === 'granted') { p.enabled = true; saveNotifPref(p); startNotifPoll(); updateNotifUI(); }
+                    });
+                    return;
+                }
+                p.enabled = true; saveNotifPref(p); startNotifPoll(); updateNotifUI();
+            } else {
+                p.enabled = false; saveNotifPref(p); stopNotifPoll(); updateNotifUI();
+            }
+        }
+        function testNotif() {
+            if (!('Notification' in window)) return alert('Notificaciones no soportadas');
+            if (Notification.permission === 'denied') return alert('Permiso denegado');
+            if (Notification.permission === 'default') {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') showRateNotif(rates.bcv, true);
+                });
+                return;
+            }
+            showRateNotif(rates.bcv > 0 ? rates.bcv : 75.42, true);
+        }
+        function showRateNotif(rate, isTest) {
+            try {
+                const n = new Notification('TasaVes' + (isTest ? ' 🔔' : ''), {
+                    body: isTest ? 'Notificación de prueba — funciona correctamente' : 'BCV: ' + formatNum(rate) + ' Bs/USD',
+                    icon: 'abeja.png',
+                    silent: false,
+                    tag: 'bcv-rate'
+                });
+                if (!isTest) setTimeout(() => n.close(), 8000);
+            } catch(e) {}
+        }
+        function shouldCheckNow() {
+            const p = getNotifPref();
+            if (!p.enabled) return false;
+            const ahora = new Date();
+            const vet = new Date(ahora.getTime() - 4 * 3600000);
+            const hs = p.start.split(':').map(Number);
+            const he = p.end.split(':').map(Number);
+            const nowMin = vet.getUTCHours() * 60 + vet.getUTCMinutes();
+            const startMin = hs[0] * 60 + (hs[1] || 0);
+            const endMin = he[0] * 60 + (he[1] || 0);
+            return nowMin >= startMin && nowMin < endMin;
+        }
+        async function pollRateChange() {
+            if (!shouldCheckNow()) return;
+            try {
+                const ac = new AbortController();
+                setTimeout(() => ac.abort(), 5000);
+                const res = await fetch('/rates.json?' + Date.now(), { signal: ac.signal, cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data.USD || data.USD <= 0) return;
+                const p = getNotifPref();
+                if (data.USD !== p.lastRate) {
+                    p.lastRate = data.USD;
+                    p.lastAt = new Date().toISOString();
+                    saveNotifPref(p);
+                    showRateNotif(p.lastRate, false);
+                    updateNotifUI();
+                    const dot = document.getElementById('notif-dot');
+                    if (dot) dot.classList.remove('hidden');
+                }
+            } catch (_) {}
+        }
+        function startNotifPoll() {
+            stopNotifPoll();
+            pollRateChange();
+            notifTimer = setInterval(pollRateChange, 300000);
+        }
+        function stopNotifPoll() {
+            if (notifTimer) { clearInterval(notifTimer); notifTimer = null; }
+        }
+        function checkNotifOnReturn() {
+            if (!shouldCheckNow()) return;
+            const dot = document.getElementById('notif-dot');
+            const p = getNotifPref();
+            if (p.lastRate > 0 && rates.bcv > 0 && rates.bcv !== p.lastRate) {
+                if (dot) dot.classList.remove('hidden');
+            }
+        }
+        function initNotif() {
+            updateNotifUI();
+            const p = getNotifPref();
+            if (p.enabled) startNotifPoll();
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    checkNotifOnReturn();
+                    const pp = getNotifPref();
+                    if (pp.enabled) startNotifPoll();
+                } else {
+                    if (notifTimer) stopNotifPoll();
+                }
+            });
+            document.getElementById('notif-start').addEventListener('change', function() {
+                const p = getNotifPref(); p.start = this.value || '17:00'; saveNotifPref(p);
+            });
+            document.getElementById('notif-end').addEventListener('change', function() {
+                const p = getNotifPref(); p.end = this.value || '20:00'; saveNotifPref(p);
+            });
         }
 
         // ── Rate History ──
