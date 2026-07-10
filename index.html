@@ -1132,6 +1132,7 @@
         }
 
         function manualRefresh() {
+            localStorage.setItem('_refreshing', '1');
             location.reload();
         }
 
@@ -2403,6 +2404,12 @@
                 });
             });
         }
+        // Ensure bottom nav is visible after page load
+        (function() {
+            const nav = document.getElementById('bottom-nav');
+            if (nav) nav.style.display = '';
+            localStorage.removeItem('_refreshing');
+        })();
     </script>
 
     <button id="layout-btn" onclick="togglePanel()">⚙</button>
