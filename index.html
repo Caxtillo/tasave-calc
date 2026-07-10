@@ -1117,7 +1117,7 @@
             const loadCached = () => {
                 const cached = localStorage.getItem('tasas');
                 if (cached) {
-                    const { bcv, binance, ts } = JSON.parse(cached);
+                    const { bcv, binance, ts, effective_date } = JSON.parse(cached);
                     rates.bcv = bcv;
                     rates.binance = binance;
                     const d = new Date(ts);
@@ -1126,6 +1126,10 @@
                         document.getElementById('loading-text').textContent = 'Usando datos guardados';
                         loadingSub.classList.remove('hidden');
                         loadingSub.textContent = 'Última actualización: ' + d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
+                    }
+                    if (effective_date) {
+                        const ef = parseFechaEfectiva(effective_date);
+                        if (ef) backfillHistory(ef);
                     }
                     return true;
                 }
@@ -1141,7 +1145,7 @@
                     const data = await response.json();
                     if (data.USD) rates.bcv = data.USD;
                     updateUI(data);
-                    localStorage.setItem('tasas', JSON.stringify({ bcv: rates.bcv, binance: rates.binance, ts: Date.now() }));
+                    localStorage.setItem('tasas', JSON.stringify({ bcv: rates.bcv, binance: rates.binance, ts: Date.now(), effective_date: data.effective_date || null }));
                 } else {
                     if (!loadCached()) throw new Error();
                 }
@@ -2045,14 +2049,41 @@
         }
 
         // ── Rate History ──
-        function saveRateSnapshot() {
-            const today = new Date().toISOString().slice(0, 10);
+        function parseFechaEfectiva(str) {
+            if (!str) return null;
+            const meses = { 'enero':'01','febrero':'02','marzo':'03','abril':'04','mayo':'05','junio':'06','julio':'07','agosto':'08','septiembre':'09','octubre':'10','noviembre':'11','diciembre':'12' };
+            const m = str.match(/(\d+)\s+(\w+)\s+(\d{4})/);
+            if (!m) return null;
+            const dia = m[1].padStart(2,'0'), mes = meses[m[2].toLowerCase()]||'01', ano = m[3];
+            return ano + '-' + mes + '-' + dia;
+        }
+
+        function backfillHistory(dateStr) {
             let history = JSON.parse(localStorage.getItem('rateHistory') || '[]');
-            history = history.filter(h => h.date !== today);
-            history.push({ date: today, bcv: rates.bcv, binance: rates.binance });
+            if (history.length === 0) return;
+            const ultima = history[history.length - 1];
+            const inicio = new Date(ultima.date + 'T12:00:00');
+            inicio.setDate(inicio.getDate() + 1);
+            const fin = new Date(dateStr + 'T12:00:00');
+            fin.setDate(fin.getDate() - 1);
+            if (inicio > fin) return;
+            for (let d = new Date(inicio); d <= fin; d.setDate(d.getDate() + 1)) {
+                const iso = d.toISOString().slice(0, 10);
+                history.push({ date: iso, bcv: ultima.bcv, binance: 0 });
+            }
+            history.sort((a, b) => a.date.localeCompare(b.date));
+            localStorage.setItem('rateHistory', JSON.stringify(history));
+        }
+
+        function saveRateSnapshot(dateStr) {
+            const fecha = dateStr || new Date().toISOString().slice(0, 10);
+            let history = JSON.parse(localStorage.getItem('rateHistory') || '[]');
+            history = history.filter(h => h.date !== fecha);
+            history.push({ date: fecha, bcv: rates.bcv, binance: rates.binance });
             history.sort((a, b) => a.date.localeCompare(b.date));
             if (history.length > 30) history = history.slice(-30);
             localStorage.setItem('rateHistory', JSON.stringify(history));
+            renderRateHistory();
         }
 
         function renderRateHistory() {
@@ -2084,8 +2115,9 @@
         updateUI = function(data) {
             _origUpdateUI(data);
             if (rates.bcv > 0) {
-                saveRateSnapshot();
-                renderRateHistory();
+                const dateStr = data && data.effective_date ? parseFechaEfectiva(data.effective_date) : null;
+                if (dateStr) backfillHistory(dateStr);
+                saveRateSnapshot(dateStr);
             }
         };
 
