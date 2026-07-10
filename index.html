@@ -2426,14 +2426,16 @@
             showRateNotif(rates.bcv > 0 ? rates.bcv : 75.42, true);
         }
         function showRateNotif(rate, isTest) {
-            try {
-                const iconUrl = new URL('abeja.png', location.origin + location.pathname).href;
-                const n = new Notification('TasaVes' + (isTest ? ' 🔔' : ''), {
-                    body: isTest ? 'Notificación de prueba — funciona correctamente' : 'BCV: ' + formatNum(rate) + ' Bs/USD',
-                    icon: iconUrl
+            const title = 'TasaVes' + (isTest ? ' 🔔' : '');
+            const body = isTest ? 'Notificación de prueba — funciona correctamente' : 'BCV: ' + formatNum(rate) + ' Bs/USD';
+            const iconUrl = new URL('abeja.png', location.origin + location.pathname).href;
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'SHOW_NOTIFICATION', title, body, icon: iconUrl
                 });
-                if (!isTest) setTimeout(() => n.close(), 8000);
-            } catch(e) { console.error('Notif error:', e); }
+            } else if ('Notification' in window && Notification.permission === 'granted') {
+                try { new Notification(title, { body, icon: iconUrl }); } catch(e) { console.error('Notif err:', e); }
+            }
             notifToast(isTest ? '🔔 Notificación de prueba enviada' : '🔔 BCV: ' + formatNum(rate) + ' Bs/USD');
         }
         function notifToast(msg) {

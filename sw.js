@@ -1,4 +1,16 @@
-const CACHE_NAME = 'tasaves-v5';
+const CACHE_NAME = 'tasaves-v6';
+const NOTIF_TAG = 'bcv-rate';
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    self.registration.showNotification(event.data.title, {
+      body: event.data.body,
+      icon: event.data.icon,
+      tag: NOTIF_TAG,
+      requireInteraction: false
+    });
+  }
+});
 const STATIC_ASSETS = [
   './',
   './index.html',
