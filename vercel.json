@@ -5,7 +5,7 @@
     { "source": "/rates.json", "destination": "/rates.json" },
     { "source": "/sw.js", "destination": "/sw.js" },
     { "source": "/manifest.json", "destination": "/manifest.json" },
-    { "source": "/bee.svg", "destination": "/bee.svg" },
+    { "source": "/abeja.png", "destination": "/abeja.png" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
