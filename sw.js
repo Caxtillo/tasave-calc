@@ -4,7 +4,7 @@ const STATIC_ASSETS = [
   './index.html',
   './manifest.json',
   './tailwind.css',
-  './ico.jpg'
+  './bee.svg'
 ];
 const CDN_CACHE = 'tasaves-cdn-v1';
 const CDN_ASSETS = [
