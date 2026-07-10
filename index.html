@@ -663,7 +663,7 @@
                             <span class="input-currency">Bs</span>
                             <input type="text" id="input-ves" inputmode="none" autocomplete="off" autocorrect="off" spellcheck="false" class="input-inner" placeholder="0.00">
                         </div>
-                        <div id="copy-toast" class="hidden text-center text-[10px] font-bold" style="color:rgb(var(--a));opacity:0;position:absolute;right:0;left:0;bottom:-1.25rem;pointer-events:none">Copiado</div>
+                        <div class="hidden text-center text-[10px] font-bold" style="color:rgb(var(--a));opacity:0;pointer-events:none;position:fixed;left:50%;bottom:6rem;transform:translateX(-50%);z-index:100;background:rgba(var(--bg),0.9);padding:0.4rem 1.2rem;border-radius:0.5rem;border:1px solid rgba(var(--a),0.2)" id="copy-toast">Copiado</div>
                     </div>
                 </div>
             </div> <!-- fin page-inicio -->
@@ -1298,6 +1298,13 @@
             if (holdTimer2) { clearTimeout(holdTimer2); holdTimer2 = null; }
         }
 
+        function copyText(val) {
+            if (val && !isNaN(parseFloat(val))) {
+                navigator.clipboard.writeText(parseFloat(val).toString()).catch(() => {});
+                showCopyToast();
+            }
+        }
+
         // Wrappers reciben eventos táctiles en mobile (pointer-events: none en .input-inner)
         document.querySelectorAll('#wrap-usd, #wrap-ves').forEach(el => {
             el.addEventListener('touchstart', (e) => { startCopyHold(el); }, { passive: true });
@@ -1310,6 +1317,21 @@
             el.addEventListener('mousedown', () => startCopyHold(el));
             el.addEventListener('mouseup', cancelCopyHold);
             el.addEventListener('mouseleave', cancelCopyHold);
+        });
+
+        // Long-press en tarjetas de tasa
+        document.querySelectorAll('#card-bcv, #card-binance, #card-custom').forEach(card => {
+            const rateEl = card.querySelector('.rate-value');
+            card.addEventListener('touchstart', () => {
+                holdTimer2 = setTimeout(() => {
+                    const txt = rateEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.');
+                    copyText(txt);
+                    holdTimer2 = null;
+                }, 500);
+            }, { passive: true });
+            card.addEventListener('touchend', cancelCopyHold);
+            card.addEventListener('touchmove', cancelCopyHold);
+            card.addEventListener('touchcancel', cancelCopyHold);
         });
 
         function parseSum(str) {
