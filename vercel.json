@@ -1,4 +1,6 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/rates.json", "destination": "/rates.json" },
     { "source": "/sw.js", "destination": "/sw.js" },

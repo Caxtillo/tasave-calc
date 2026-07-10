@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TasaVes - Tasas de Cambio Venezuela</title>
 
-    <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,10 +17,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="ico.jpg">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="tailwind.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --rate-py: 0.250rem;
@@ -544,7 +543,8 @@
     <body style="background:radial-gradient(ellipse at top, rgba(var(--a-dim),0.25), rgb(var(--bg)) 60%, rgb(var(--bg)));background-color:rgb(var(--bg));color:rgb(var(--text))">
         <div id="loading" style="background:rgb(var(--bg));gap:1rem">
             <div class="spinner"></div>
-            <p>Consultando tasas...</p>
+            <p id="loading-text">Consultando tasas...</p>
+            <p id="loading-sub" class="hidden text-[9px] font-bold uppercase tracking-wider" style="color:rgba(var(--a),0.4)"></p>
             <button onclick="localStorage.clear();location.reload()" style="font-size:10px;color:rgba(248,113,113,0.5);font-weight:700;margin-top:2rem;text-decoration:underline;text-underline-offset:2px;background:none;border:none;cursor:pointer">Reiniciar app</button>
         </div>
 
@@ -555,6 +555,8 @@
                 <button onclick="location.reload()" class="w-full mt-4 py-3 bg-purple-500/20 text-purple-200 rounded-xl border border-purple-500/30">Reintentar</button>
             </div>
         </div>
+
+        <div id="offline-banner" class="hidden shrink-0 px-4 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider" style="background:rgba(251,146,60,0.15);color:rgb(var(--a));border-bottom:1px solid rgba(251,146,60,0.2)">Sin conexión — mostrando datos guardados</div>
 
         <div id="content" class="hidden flex flex-col flex-1 min-h-0" style="padding-top:var(--safe-t);padding-bottom:var(--safe-b)">
 
@@ -1110,6 +1112,7 @@
 
         async function fetchRates() {
             let loadedFromCache = false;
+            const loadingSub = document.getElementById('loading-sub');
 
             const loadCached = () => {
                 const cached = localStorage.getItem('tasas');
@@ -1119,6 +1122,11 @@
                     rates.binance = binance;
                     const d = new Date(ts);
                     lastTimeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> ' + d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short' });
+                    if (!navigator.onLine) {
+                        document.getElementById('loading-text').textContent = 'Usando datos guardados';
+                        loadingSub.classList.remove('hidden');
+                        loadingSub.textContent = 'Última actualización: ' + d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
+                    }
                     return true;
                 }
                 return false;
@@ -1295,6 +1303,21 @@
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
             });
         }
+
+        // Offline detection
+        const offlineBanner = document.getElementById('offline-banner');
+        function updateOnlineStatus() {
+            if (!navigator.onLine) {
+                offlineBanner.classList.remove('hidden');
+                document.getElementById('refresh-btn').classList.add('hidden');
+            } else {
+                offlineBanner.classList.add('hidden');
+                document.getElementById('refresh-btn').classList.remove('hidden');
+            }
+        }
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
 
         let compraItems = [];
         let compraCantVal = 1;

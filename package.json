@@ -1,0 +1,12 @@
+{
+  "name": "tasaves",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npx @tailwindcss/cli -i src/input.css -o tailwind.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.6",
+    "tailwindcss": "^4.1.6"
+  }
+}
