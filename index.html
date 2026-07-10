@@ -1277,9 +1277,15 @@
             }, 1200);
         }
 
+        function getInputValue(el) {
+            const inp = el.tagName === 'INPUT' ? el : el.querySelector('.input-inner');
+            if (!inp) return '';
+            return inp.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+        }
+
         function startCopyHold(el) {
             holdTimer2 = setTimeout(() => {
-                const val = el.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+                const val = getInputValue(el);
                 if (val && !isNaN(parseFloat(val))) {
                     navigator.clipboard.writeText(parseFloat(val).toString()).catch(() => {});
                     showCopyToast();
@@ -1292,14 +1298,18 @@
             if (holdTimer2) { clearTimeout(holdTimer2); holdTimer2 = null; }
         }
 
+        // Wrappers reciben eventos táctiles en mobile (pointer-events: none en .input-inner)
+        document.querySelectorAll('#wrap-usd, #wrap-ves').forEach(el => {
+            el.addEventListener('touchstart', (e) => { startCopyHold(el); }, { passive: true });
+            el.addEventListener('touchend', cancelCopyHold);
+            el.addEventListener('touchmove', cancelCopyHold);
+            el.addEventListener('touchcancel', cancelCopyHold);
+        });
+        // Inputs directos en desktop (pointer-events: auto)
         [inputUsd, inputVes].forEach(el => {
             el.addEventListener('mousedown', () => startCopyHold(el));
             el.addEventListener('mouseup', cancelCopyHold);
             el.addEventListener('mouseleave', cancelCopyHold);
-            el.addEventListener('touchstart', () => startCopyHold(el));
-            el.addEventListener('touchend', cancelCopyHold);
-            el.addEventListener('touchmove', cancelCopyHold);
-            el.addEventListener('touchcancel', cancelCopyHold);
         });
 
         function parseSum(str) {
