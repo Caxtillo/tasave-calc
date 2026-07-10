@@ -21,6 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
     <style>
         :root {
             --rate-py: 0.250rem;
@@ -746,7 +747,10 @@
                     <input type="text" id="compra-concepto" inputmode="text" enterkeyhint="go" autocomplete="off" class="w-full bg-transparent border-b border-purple-500/30 text-sm text-purple-200 outline-none py-1.5 mt-2" placeholder="Concepto...">
                     <div class="flex gap-2 mt-2">
                         <button onclick="compraAgregar()" id="compra-btn" class="flex-1 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm">+ Agregar</button>
+                        <button onclick="compraFotoOcr()" id="compra-ocr-btn" class="py-2.5 px-3 bg-purple-500/10 text-purple-300/80 rounded-xl border border-purple-500/20 font-bold text-sm flex items-center gap-1.5 shrink-0" title="Añadir por foto"><i data-lucide="camera" class="w-4 h-4"></i></button>
+                        <input type="file" id="compra-ocr-input" accept="image/*" capture="environment" class="hidden" onchange="compraOcrProcesar(event)">
                     </div>
+                    <div id="compra-ocr-toast" style="position:fixed;left:50%;bottom:6rem;transform:translateX(-50%);z-index:100;background:rgba(var(--bg),0.92);padding:0.4rem 1.2rem;border-radius:0.5rem;border:1px solid rgba(var(--a),0.2);font-size:12px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none"></div>
                 </div>
             </div>
 
@@ -1700,6 +1704,94 @@
             compraFoto = null;
             document.getElementById('modal-foto-empty').classList.add('hidden');
             document.getElementById('compra-foto-input').value = '';
+        }
+
+        function compraFotoOcr() {
+            document.getElementById('compra-ocr-input').value = '';
+            document.getElementById('compra-ocr-input').click();
+        }
+
+        function compraOcrToast(msg, ok) {
+            const el = document.getElementById('compra-ocr-toast');
+            el.textContent = msg;
+            el.style.opacity = '1';
+            el.style.color = ok ? 'rgb(var(--text))' : '#f87171';
+            setTimeout(() => { el.style.opacity = '0'; }, 3000);
+        }
+
+        function preprocessImage(canvas, img, maxW) {
+            const scale = Math.min(maxW / img.naturalWidth, 1);
+            canvas.width = img.naturalWidth * scale;
+            canvas.height = img.naturalHeight * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < d.data.length; i += 4) {
+                const g = d.data[i] * 0.299 + d.data[i + 1] * 0.587 + d.data[i + 2] * 0.114;
+                const v = g > 128 ? 255 : 0;
+                d.data[i] = d.data[i + 1] = d.data[i + 2] = v;
+            }
+            ctx.putImageData(d, 0, 0);
+        }
+
+        function parseOCRText(text) {
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+            let price = null, bestLine = '';
+            for (const line of lines) {
+                const m = line.match(/(\d{1,6})[,.](\d{2})\b/);
+                if (m) {
+                    const p = parseFloat(m[1] + '.' + m[2]);
+                    if (p > 0 && (price === null || p < price)) {
+                        price = p;
+                        const before = line.slice(0, m.index).replace(/[^a-zA-ZáéíóúñÑ\s]/g, '').trim();
+                        bestLine = before || bestLine;
+                    }
+                }
+            }
+            if (!bestLine) {
+                for (const line of lines) {
+                    const clean = line.replace(/\d[,.]\d{2}/g, '').replace(/[^a-zA-ZáéíóúñÑ\s]/g, '').trim();
+                    if (clean.length > 1) { bestLine = clean; break; }
+                }
+            }
+            return { price, name: bestLine };
+        }
+
+        async function compraOcrProcesar(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const btn = document.getElementById('compra-ocr-btn');
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = '<svg class="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="32" stroke-dashoffset="32" stroke-linecap="round"/></svg>';
+            btn.disabled = true;
+            try {
+                const img = await new Promise((res, rej) => {
+                    const i = new Image();
+                    i.onload = () => res(i);
+                    i.onerror = rej;
+                    i.src = URL.createObjectURL(file);
+                });
+                const canvas = document.createElement('canvas');
+                preprocessImage(canvas, img, 1200);
+                if (typeof Tesseract === 'undefined') throw new Error('OCR no cargado');
+                const { data } = await Tesseract.recognize(canvas, 'eng', {
+                    logger: m => { if (m.status === 'recognizing text') btn.innerHTML = Math.round(m.progress * 100) + '%'; }
+                });
+                const { price, name } = parseOCRText(data.text);
+                if (price !== null) {
+                    document.getElementById('compra-precio').value = price.toString().replace('.', ',');
+                }
+                if (name) {
+                    document.getElementById('compra-concepto').value = name;
+                }
+                compraOcrToast(price ? (name ? '✓ ' + name : '✓ ' + price + ' Bs') : '✗ No se encontró precio', price !== null);
+            } catch (err) {
+                compraOcrToast('✗ Error: ' + err.message, false);
+            } finally {
+                btn.innerHTML = origHTML;
+                btn.disabled = false;
+                URL.revokeObjectURL(img?.src);
+            }
         }
 
         function compraModalAbrir() {
