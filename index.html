@@ -999,7 +999,7 @@
                 document.documentElement.style.colorScheme = 'light';
             }
         })();
-        initNotif();
+        try { initNotif(); } catch(e) { console.error('initNotif:', e); }
 
         // Hide loading immediately, fetch rates in background
         loadingEl.classList.add('hidden');
