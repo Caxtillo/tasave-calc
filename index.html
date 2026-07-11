@@ -304,7 +304,6 @@
             #keypad { display: none !important; }
             #bottom-nav { display: none !important; }
             .input-inner { pointer-events: auto !important; }
-            #install-row { display: none !important; }
             #page-compra { max-width: 560px; margin: 0 auto; width: 100%; }
             #page-compra .overflow-y-auto { max-height: none; }
             #page-calendario { max-width: 560px; margin: 0 auto; width: 100%; }
@@ -913,6 +912,7 @@
                     <button onclick="exportarDatos()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Exportar datos</button>
                     <button onclick="document.getElementById('import-file-input').click()" class="w-full mb-2 py-2.5 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="upload" class="w-4 h-4"></i> Importar datos</button>
                     <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importarDatos(event)">
+                    <button id="install-btn-config" onclick="instalarApp()" class="w-full mb-2 py-2.5 bg-purple-500/30 text-purple-100 rounded-xl border border-purple-500/40 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Instalar app</button>
                     <div class="border-t border-red-500/20 my-4"></div>
                     <button onclick="if(confirm('¿Restablecer todos los datos? Se perderán items, historial y configuración.')){localStorage.clear();location.reload()}" class="w-full py-2.5 bg-red-500/20 text-red-300 rounded-xl border border-red-500/30 font-bold text-sm flex items-center justify-center gap-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i> Restablecer datos</button>
                 </div>
@@ -979,12 +979,6 @@
                 </div>
             </div>
 
-            <div id="install-row" class="hidden shrink-0 px-4 pb-1.5">
-                <button id="install-btn" class="w-full py-2 bg-purple-500/20 text-purple-200 rounded-xl border border-purple-500/40 font-bold text-[11px] flex items-center justify-center gap-1.5">
-                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Instalar app
-                </button>
-            </div>
-
             </div>
         </div>
 
@@ -1010,8 +1004,6 @@
         const cardBcv = document.getElementById('card-bcv');
         const cardBinance = document.getElementById('card-binance');
         const cardCustom = document.getElementById('card-custom');
-        const installBtn = document.getElementById('install-btn');
-        const installRow = document.getElementById('install-row');
 
         function customRateLabel(v) {
             if (v > 0 && Math.floor(v).toString().length > 10) return '¿Tanto?';
@@ -1238,16 +1230,20 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installRow.classList.remove('hidden');
         });
-        installBtn.addEventListener('click', async () => {
+        function instalarApp() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') installRow.classList.add('hidden');
-                deferredPrompt = null;
+                deferredPrompt.userChoice.then(({ outcome }) => {
+                    if (outcome === 'accepted') {
+                        document.getElementById('install-btn-config').textContent = '✓ Instalado';
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                alert('Abre este sitio en Chrome para instalar la app.\n\nEn Chrome toca los 3 puntos → "Instalar app"');
             }
-        });
+        }
 
         async function fetchRates() {
             let loadedFromCache = false;
