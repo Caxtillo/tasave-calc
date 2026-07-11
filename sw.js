@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasaves-v6';
+const CACHE_NAME = 'tasaves-v7';
 const NOTIF_TAG = 'bcv-rate';
 
 self.addEventListener('message', (event) => {
@@ -63,7 +63,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // API calls: network-first with cache fallback
-  if (url.pathname === '/rates.json' || url.hostname === 've.dolarapi.com') {
+  if (url.pathname === '/rates.json' || url.pathname === '/manifest.json' || url.hostname === 've.dolarapi.com') {
     event.respondWith(
       fetch(request).then(async (response) => {
         if (response.ok) {
