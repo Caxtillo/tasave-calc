@@ -1217,9 +1217,8 @@
                     if (data.effective_date) {
                         const ef = parseFechaEfectiva(data.effective_date);
                         if (ef) backfillHistory(ef);
+                        document.getElementById('last-time').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Hasta ' + data.effective_date.replace(/\s+/g, ' ').trim();
                     }
-                    const d = new Date();
-                    document.getElementById('last-time').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> ' + d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' });
                 }
                 const ac2 = new AbortController();
                 setTimeout(() => ac2.abort(), 5000);
