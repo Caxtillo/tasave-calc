@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasaves-v7';
+const CACHE_NAME = 'tasaves-v8';
 const NOTIF_TAG = 'bcv-rate';
 
 self.addEventListener('message', (event) => {
