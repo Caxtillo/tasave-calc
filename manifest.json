@@ -13,13 +13,13 @@
   "icons": [
     {
       "src": "abeja.png",
-      "sizes": "319x317",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "abeja.png",
-      "sizes": "319x317",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
