@@ -1,25 +1,28 @@
 """
-Scraper for BCV (Banco Central de Venezuela) exchange rates.
+Scraper for BCV (Banco Central de Venezuela) and Binance P2P exchange rates.
 Extracts official USD, EUR, CNY, TRY, RUB rates from bcv.org.ve
+and the Binance (P2P) dollar price from exchangemonitor.net.
 """
 
 import json
 import os
+import re
 import ssl
 import urllib.request
 from datetime import datetime, timezone
 
 URL = "https://www.bcv.org.ve/"
+URL_BINANCE = "https://exchangemonitor.net/venezuela/dolar-binance"
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rates.json")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 
 
-def fetch_html():
+def fetch_html(url):
     ssl_ctx = ssl.create_default_context()
     ssl_ctx.check_hostname = False
     ssl_ctx.verify_mode = ssl.CERT_NONE
 
-    req = urllib.request.Request(URL, headers={"User-Agent": USER_AGENT})
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     resp = urllib.request.urlopen(req, timeout=30, context=ssl_ctx)
     return resp.read().decode("utf-8")
 
@@ -68,12 +71,26 @@ def parse_rates(html):
     return rates, date_str
 
 
-def save_rates(rates, effective_date):
+def parse_binance(html):
+    """Extract Binance P2P dollar price (VES/USD) from exchangemonitor.net."""
+    match = re.search(
+        r"<meta name=\"description\" content=\"[^\"]*?es de ([0-9]+(?:\.[0-9]{3})*,[0-9]{2}) VES/USD",
+        html,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+    return float(match.group(1).replace(".", "").replace(",", "."))
+
+
+def save_rates(rates, effective_date, binance=None):
     data = {
         **rates,
         "effective_date": effective_date,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
+    if binance is not None:
+        data["BINANCE"] = binance
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
     return data
@@ -81,15 +98,26 @@ def save_rates(rates, effective_date):
 
 def scrape():
     print(f"[{datetime.now().isoformat()}] Scraping BCV...")
-    html = fetch_html()
+    html = fetch_html(URL)
     rates, effective_date = parse_rates(html)
     if not rates:
         print("ERROR: No rates found!")
         return False
 
-    data = save_rates(rates, effective_date)
+    binance = None
+    try:
+        print(f"[{datetime.now().isoformat()}] Scraping Binance (exchangemonitor.net)...")
+        b_html = fetch_html(URL_BINANCE)
+        binance = parse_binance(b_html)
+        if binance is None:
+            print("WARN: Binance price not found on page")
+    except Exception as exc:
+        print(f"WARN: Binance scrape failed: {exc}")
+
+    data = save_rates(rates, effective_date, binance)
     print(f"USD: {data.get('USD', 'N/A')}")
     print(f"EUR: {data.get('EUR', 'N/A')}")
+    print(f"Binance: {data.get('BINANCE', 'N/A')}")
     print(f"Effective: {effective_date}")
     print(f"Saved to {DATA_FILE}")
     return True

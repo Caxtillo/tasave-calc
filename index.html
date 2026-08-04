@@ -1204,6 +1204,7 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (data.USD) rates.bcv = data.USD;
+                    if (data.BINANCE) rates.binance = data.BINANCE;
                     updateRates();
                     localStorage.setItem('tasas', JSON.stringify({ bcv: rates.bcv, binance: rates.binance, ts: Date.now(), effective_date: data.effective_date || null }));
                     if (data.effective_date) {
@@ -1212,14 +1213,16 @@
                         document.getElementById('last-time').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Hasta ' + data.effective_date.replace(/\s+/g, ' ').trim();
                     }
                 }
-                const ac2 = new AbortController();
-                setTimeout(() => ac2.abort(), 5000);
-                const res2 = await fetch('https://ve.dolarapi.com/v1/dolares?' + Date.now(), { signal: ac2.signal, cache: 'no-store' });
-                if (res2.ok) {
-                    const list = await res2.json();
-                    const p2p = list.find(item => item.fuente === 'paralelo');
-                    if (p2p) rates.binance = p2p.promedio || p2p.venta;
-                    updateRates();
+                if (!rates.binance) {
+                    const ac2 = new AbortController();
+                    setTimeout(() => ac2.abort(), 5000);
+                    const res2 = await fetch('https://ve.dolarapi.com/v1/dolares?' + Date.now(), { signal: ac2.signal, cache: 'no-store' });
+                    if (res2.ok) {
+                        const list = await res2.json();
+                        const p2p = list.find(item => item.fuente === 'paralelo');
+                        if (p2p) rates.binance = p2p.promedio || p2p.venta;
+                        updateRates();
+                    }
                 }
             } catch (_) {}
             btn.innerHTML = '<i data-lucide="refresh-cw" class="w-4 h-4 text-purple-400"></i>';
@@ -1279,6 +1282,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.USD) rates.bcv = data.USD;
+                    if (data.BINANCE) rates.binance = data.BINANCE;
                     updateUI(data);
                     localStorage.setItem('tasas', JSON.stringify({ bcv: rates.bcv, binance: rates.binance, ts: Date.now(), effective_date: data.effective_date || null }));
                 } else {
@@ -1300,7 +1304,7 @@
                 if (res.ok) {
                     const list = await res.json();
                     const p2p = list.find(item => item.fuente === 'paralelo');
-                    if (p2p) rates.binance = p2p.promedio || p2p.venta;
+                    if (p2p && !rates.binance) rates.binance = p2p.promedio || p2p.venta;
                     const bcvApi = list.find(item => item.fuente === 'bcv');
                     if (bcvApi) {
                         const bcvRate = bcvApi.promedio || bcvApi.venta;

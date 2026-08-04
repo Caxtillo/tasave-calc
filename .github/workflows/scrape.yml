@@ -1,12 +1,8 @@
-name: Scrape BCV daily
+name: Scrape rates (BCV + Binance)
 
 on:
   schedule:
-    - cron: '0 22 * * *'
-    - cron: '30 22 * * *'
-    - cron: '0 23 * * *'
-    - cron: '30 23 * * *'
-    - cron: '0 0 * * *'
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 permissions:
@@ -27,5 +23,5 @@ jobs:
           git config user.name "TasaVes Bot"
           git config user.email "bot@tasaves.com"
           git add rates.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "auto: update BCV rates $(date +%Y-%m-%d)"
+          git diff --quiet && git diff --staged --quiet || git commit -m "auto: update rates $(date +%Y-%m-%d %H:%M)"
           git push
