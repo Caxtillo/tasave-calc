@@ -17,14 +17,21 @@ DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rates.json
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 
 
-def fetch_html(url):
+def fetch_html(url, retries=3):
     ssl_ctx = ssl.create_default_context()
     ssl_ctx.check_hostname = False
     ssl_ctx.verify_mode = ssl.CERT_NONE
 
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    resp = urllib.request.urlopen(req, timeout=30, context=ssl_ctx)
-    return resp.read().decode("utf-8")
+    last_exc = None
+    for attempt in range(1, retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            resp = urllib.request.urlopen(req, timeout=30, context=ssl_ctx)
+            return resp.read().decode("utf-8")
+        except Exception as exc:
+            last_exc = exc
+            print(f"WARN: fetch attempt {attempt}/{retries} failed: {exc}")
+    raise last_exc
 
 
 def extract_between(text, start_marker, end_marker, from_pos=0):
