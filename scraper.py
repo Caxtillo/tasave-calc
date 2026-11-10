@@ -34,35 +34,43 @@ def fetch_html(url, retries=3):
     raise last_exc
 
 
-def extract_between(text, start_marker, end_marker, from_pos=0):
-    start = text.find(start_marker, from_pos)
-    if start == -1:
-        return None, -1
-    content_start = start + len(start_marker)
-    end = text.find(end_marker, content_start)
-    if end == -1:
-        return None, -1
-    return text[content_start:end].strip(), end
+def parse_number(value_str):
+    """BCV uses Venezuelan format: 1.006,60742688 -> 1006.60742688"""
+    value_str = value_str.strip().replace(" ", "")
+    if "," in value_str:
+        value_str = value_str.replace(".", "").replace(",", ".")
+    return float(value_str)
 
 
 def parse_rates(html):
+    # BCV cambia el markup con frecuencia: los <span> de la divisa ahora llevan
+    # atributos inline (style="..."), así que buscamos por el id del bloque.
+    blocks = {"USD": "dolar", "EUR": "euro", "CNY": "yuan", "TRY": "lira", "RUB": "rublo"}
     rates = {}
-    currencies = {"EUR": "EUR ", "CNY": "CNY ", "TRY": "TRY", "RUB": "RUB", "USD": "USD"}
 
-    for code, span_text in currencies.items():
-        span_marker = f"<span> {span_text}</span>"
-        idx = html.find(span_marker)
-        if idx == -1:
+    for code, block_id in blocks.items():
+        match = re.search(
+            r'<div[^>]*\bid="%s"[^>]*>.*?<strong class="strong-tb">\s*([0-9.,]+)\s*</strong>'
+            % block_id,
+            html,
+            re.DOTALL | re.IGNORECASE,
+        )
+        if not match:
+            # Respaldo: buscar por el texto de la divisa antes del valor.
+            match = re.search(
+                r"<span[^>]*>\s*%s\s*</span>.*?<strong class=\"strong-tb\">\s*([0-9.,]+)\s*</strong>"
+                % code,
+                html,
+                re.DOTALL | re.IGNORECASE,
+            )
+        if not match:
+            print(f"WARN: rate for {code} not found in BCV page")
             continue
 
-        strong_marker = '<strong class="strong-tb">'
-        strong_idx = html.find(strong_marker, idx)
-        if strong_idx == -1:
-            continue
-
-        value_str, _ = extract_between(html, strong_marker, "</strong>", strong_idx)
-        if value_str:
-            rates[code] = float(value_str.replace(",", "."))
+        try:
+            rates[code] = parse_number(match.group(1))
+        except ValueError as exc:
+            print(f"WARN: could not parse {code} value {match.group(1)!r}: {exc}")
 
     date_str = None
     date_marker = "Fecha Valor:"
@@ -107,8 +115,8 @@ def scrape():
     print(f"[{datetime.now().isoformat()}] Scraping BCV...")
     html = fetch_html(URL)
     rates, effective_date = parse_rates(html)
-    if not rates:
-        print("ERROR: No rates found!")
+    if "USD" not in rates:
+        print("ERROR: USD rate not found, aborting (BCV markup may have changed)")
         return False
 
     binance = None
@@ -131,4 +139,8 @@ def scrape():
 
 
 if __name__ == "__main__":
-    scrape()
+    import sys
+
+    # Importante: salir con error para que el workflow de GitHub Actions se
+    # marque en rojo si el scraping falla (antes quedaba en verde sin datos).
+    sys.exit(0 if scrape() else 1)
