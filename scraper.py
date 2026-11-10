@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 
 URL = "https://www.bcv.org.ve/"
 URL_BINANCE = "https://exchangemonitor.net/venezuela/dolar-binance"
+URL_DOLARAPI = "https://ve.dolarapi.com/v1/dolares"
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rates.json")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 
@@ -98,6 +99,18 @@ def parse_binance(html):
     return float(match.group(1).replace(".", "").replace(",", "."))
 
 
+def parse_dolarapi(text):
+    """Extract the parallel (Binance-like) dollar price from dolarapi.com."""
+    data = json.loads(text)
+    for item in data:
+        if item.get("fuente") != "paralelo":
+            continue
+        value = item.get("promedio") or item.get("venta") or item.get("compra")
+        if value:
+            return round(float(value), 2)
+    return None
+
+
 def save_rates(rates, effective_date, binance=None):
     data = {
         **rates,
@@ -120,14 +133,17 @@ def scrape():
         return False
 
     binance = None
-    try:
-        print(f"[{datetime.now().isoformat()}] Scraping Binance (exchangemonitor.net)...")
-        b_html = fetch_html(URL_BINANCE)
-        binance = parse_binance(b_html)
-        if binance is None:
-            print("WARN: Binance price not found on page")
-    except Exception as exc:
-        print(f"WARN: Binance scrape failed: {exc}")
+    # exchangemonitor bloquea con 403 a las IPs de GitHub Actions, así que
+    # dolarapi.com es la fuente principal y exchangemonitor el respaldo.
+    for url, parser in ((URL_DOLARAPI, parse_dolarapi), (URL_BINANCE, parse_binance)):
+        try:
+            print(f"[{datetime.now().isoformat()}] Scraping Binance via {url}...")
+            binance = parser(fetch_html(url, retries=2))
+            if binance is not None:
+                break
+            print(f"WARN: Binance price not found on {url}")
+        except Exception as exc:
+            print(f"WARN: Binance scrape failed on {url}: {exc}")
 
     data = save_rates(rates, effective_date, binance)
     print(f"USD: {data.get('USD', 'N/A')}")
