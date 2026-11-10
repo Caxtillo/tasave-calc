@@ -119,6 +119,20 @@ def save_rates(rates, effective_date, binance=None):
     }
     if binance is not None:
         data["BINANCE"] = binance
+
+    # Si los datos son idénticos al archivo actual, no se reescribe: evita un
+    # commit (y un deploy de Vercel) cada 20 minutos cuando la tasa no cambia.
+    try:
+        with open(DATA_FILE, encoding="utf-8") as f:
+            previous = json.load(f)
+    except (OSError, ValueError):
+        previous = {}
+    if {k: v for k, v in previous.items() if k != "updated_at"} == {
+        k: v for k, v in data.items() if k != "updated_at"
+    }:
+        print("Sin cambios respecto a rates.json (no se reescribe)")
+        return previous
+
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
     return data
